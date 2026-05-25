@@ -4496,52 +4496,56 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
         }, 0.96);
 
       // ═════════════════════════════════════════════════════════════════
-      //  DIRECTIONAL SCROLL DRIVER
+      //  DIRECTIONAL SCROLL DRIVER  (quickTo-based, conflict-free)
       //  ─────────────────────────────────────────────────────────────────
-      //  Scroll DOWN  → animation plays normally (scrubs to current
-      //                 scroll position, same smooth feel as scrub: 1.1).
-      //  Scroll UP    → animation RESETS to its initial state (the
-      //                 starting flower, no phases, no dive) and stays
-      //                 there. The page just scrolls normally past the
-      //                 section — no reverse animation, no rewind.
+      //  Scroll DOWN  → animation tracks scroll position (smooth glide).
+      //  Scroll UP    → animation snaps back to its initial state.
       //
-      //  We watch `self.direction` on each scroll tick:
-      //     direction =  1  → moving down → advance to current progress
-      //     direction = -1  → moving up   → snap back to progress 0
-      //  ─────────────────────────────────────────────────────────────────
-      let smoothTween = null;
+      //  Implementation: a single `gsap.quickTo` perpetual tween that
+      //  smoothly drives `zoomTl.progress` toward whatever destination
+      //  we hand it on each scroll tick. Unlike the previous version
+      //  (which created + killed a new tween on every update), quickTo
+      //  reuses ONE tween across all calls — no overlapping in-flight
+      //  tweens, no accumulated state, no direction-flip bugs.
+      //
+      //  We also track the previous scroll progress so we can derive
+      //  direction from actual scroll change rather than relying on
+      //  ScrollTrigger's `self.direction`, which can flicker under
+      //  Lenis smooth-scroll deceleration.
+      // ─────────────────────────────────────────────────────────────────
+      const setProgress = gsap.quickTo(zoomTl, "progress", {
+        duration: 0.45,
+        ease: "power2.out",
+      });
+
+      let lastProgress = 0;
 
       ScrollTrigger.create({
         trigger: ".bloom-zoom",
         start: "top 80%",
         end: "bottom bottom",
         invalidateOnRefresh: true,
+        onRefresh: () => {
+          // On layout invalidation (resize / refresh), re-sync our state
+          // tracker so we don't think we're "reversing" just because the
+          // new layout produced a different progress value.
+          lastProgress = 0;
+          zoomTl.progress(0);
+        },
         onUpdate: (self) => {
-          if (self.direction === -1) {
-            // Scrolling UP — reset to start, do not animate in reverse.
-            // Only kick off a reset tween if we're not already near 0,
-            // so we don't waste cycles tweening 0 → 0.
-            if (zoomTl.progress() > 0.001) {
-              if (smoothTween) smoothTween.kill();
-              smoothTween = gsap.to(zoomTl, {
-                progress: 0,
-                duration: 0.35,
-                ease: "power2.out",
-                overwrite: true,
-              });
-            }
-            return;
-          }
-          // Scrolling DOWN — smoothly advance to current scroll position.
-          // Same buttery cinematic feel the previous scrub: 1.1 gave us.
           const p = self.progress;
-          if (smoothTween) smoothTween.kill();
-          smoothTween = gsap.to(zoomTl, {
-            progress: p,
-            duration: 0.55,
-            ease: "power2.out",
-            overwrite: true,
-          });
+          // Derive direction from actual scroll change — more reliable
+          // than self.direction under smooth-scroll deceleration.
+          const isReversing = p < lastProgress - 0.0005;
+          lastProgress = p;
+          // Forward → target current scroll. Reverse → target 0.
+          setProgress(isReversing ? 0 : p);
+        },
+        onLeaveBack: () => {
+          // Fully scrolled past the section start — hard-reset state so
+          // the next entry plays cleanly from the beginning.
+          lastProgress = 0;
+          setProgress(0);
         },
       });
     }
