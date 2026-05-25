@@ -2367,6 +2367,159 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
   background: radial-gradient(circle, rgba(196, 165, 224, 0.40), transparent 65%);
   will-change: transform, opacity;
 }
+
+/* ============================================================
+   MOBILE TUNING — comprehensive responsiveness pass
+   ============================================================
+   Covers: nav layout, hero scaling, hero CTAs, hero meta, tier
+   cards (featured ribbon + scale), bloom-zoom ovule text, drawer,
+   forms, footer, callout, and global touch / overflow protections.
+   Two tiers: tablet (<= 760px) and small phone (<= 480px).
+   ============================================================ */
+
+/* Prevent any element from causing horizontal overflow on small screens */
+@media (max-width: 760px) {
+  html, body { max-width: 100vw; }
+
+  /* Nav: tighter padding, smaller brand mark, gap controlled */
+  .nav-inner { padding: 14px 0; }
+  .nav-brand .brand-mark { width: 30px; height: 30px; }
+  .brand-word { font-size: 18px; }
+  .nav-links { gap: 16px; }
+  .nav-links a { font-size: 13px; }
+
+  /* Hero: more breathing room, comfortable text scale */
+  .hero { padding-top: clamp(110px, 16vh, 150px); padding-bottom: 60px; }
+  .hero-eyebrow { margin-bottom: 24px; }
+  .hero-title { margin-bottom: 24px; }
+  .hero-headline { text-align: left; }
+  .hero-lede {
+    font-size: 16px;
+    line-height: 1.55;
+    margin: 0 0 28px;
+  }
+  .hero-motto { font-size: 18px; line-height: 1.45; margin: 28px 0; }
+
+  /* Hero CTAs: stack cleanly on phones, full-width-ish for tappability */
+  .hero-actions { gap: 12px; }
+  .hero-actions .btn {
+    padding: 14px 22px;
+    font-size: 14px;
+    flex: 1 1 auto;
+    justify-content: center;
+    min-height: 48px;          /* iOS HIG-friendly touch target */
+  }
+
+  /* Hero meta: stack, tighter gaps so it doesn't overflow */
+  .hero-meta { gap: 28px; margin-top: 50px; }
+  .hero-meta .item span { font-size: 18px; }
+  .hero-meta--line, .hero-meta--mixed { gap: 14px; }
+
+  /* Hero flower: cap size so it doesn't dominate on small viewports */
+  .hero-flower svg { max-width: 360px; margin: 0 auto; }
+
+  /* Section padding tighter on phones */
+  .section { padding-top: clamp(60px, 10vw, 90px); padding-bottom: clamp(60px, 10vw, 90px); }
+
+  /* Process intro: tighter top */
+  .process-intro--centered { margin-bottom: 50px; }
+
+  /* Tier cards: remove the scale lift on featured (causes overflow on narrow viewports) */
+  .tier.t-bloom.featured { transform: none; }
+  .tier.t-bloom.featured:hover { transform: translateY(-3px); }
+  .tier { padding: 28px 24px; }
+  .tier-grid { gap: 24px; }
+
+  /* "Most chosen" ribbon: reposition so it doesn't get clipped on the card edge */
+  .tier .ribbon {
+    top: 16px;
+    right: -32px;
+    padding: 4px 34px;
+    font-size: 9px;
+  }
+
+  /* Tier CTA: make sure it has tap height */
+  .tier-cta, a.tier-cta, button.tier-cta { padding: 14px 18px; min-height: 48px; }
+
+  /* Bloom-zoom ovule text: tighter halo + sizes so it fits */
+  .ovule-reveal {
+    max-width: 86vw;
+    padding: 22px 18px;
+  }
+  .ovule-title { font-size: clamp(28px, 7.5vw, 40px); }
+  .ovule-body  { font-size: 15px; }
+  .ovule-label { font-size: 11px; letter-spacing: 0.22em; }
+
+  /* Callout text & padding */
+  .callout { padding-top: 70px; padding-bottom: 70px; }
+  .callout-line { font-size: clamp(28px, 7vw, 44px); line-height: 1.05; }
+
+  /* Drawer / overlay: full-width on phones */
+  .drawer { width: 100%; max-width: 100%; border-radius: 0; }
+
+  /* Forms: comfortable tap heights, full width */
+  .portal-card input,
+  .portal-card textarea,
+  .portal-card .btn,
+  .portal-card button {
+    font-size: 16px;            /* prevents iOS auto-zoom on focus */
+    min-height: 48px;
+  }
+  .portal-card { padding: 28px 22px; }
+
+  /* Pricing footnote / small text: keep readable */
+  .pricing-footnote { font-size: 13px; padding: 0 8px; }
+
+  /* Reduce ambient effects density on mobile for perf */
+  .ambient-petals .dp:nth-child(n+5) { display: none; }
+  .aurora { filter: blur(60px); }
+}
+
+/* ─── Very small phones (≤ 480px) — tightest layout ─── */
+@media (max-width: 480px) {
+  :root { --pad-x: 18px; }
+
+  .hero { padding-top: 100px; }
+  .hero-title { font-size: clamp(36px, 12vw, 52px); }
+  .hero-eyebrow { font-size: 10px; letter-spacing: 0.26em; }
+  .hero-lede { font-size: 15px; }
+  .hero-motto { font-size: 16px; }
+
+  .hero-actions { flex-direction: column; align-items: stretch; }
+  .hero-actions .btn { width: 100%; }
+
+  .hero-meta { flex-direction: column; align-items: flex-start; gap: 20px; }
+
+  /* Even more compact section padding on tiny screens */
+  .section { padding-top: 56px; padding-bottom: 56px; }
+
+  /* Tier price + name sizing */
+  .tier-name { font-size: 28px; }
+  .tier-price { font-size: 28px; }
+
+  /* Hero flower: smaller still */
+  .hero-flower svg { max-width: 280px; }
+
+  /* Hero meta line (italic byline) — keep punchy but readable */
+  .hero-meta-line { font-size: 14px; }
+
+  /* Footer: single column on tiny phones for clarity */
+  .footer-inner { grid-template-columns: 1fr !important; gap: 30px; }
+  .footer-bottom { flex-direction: column; gap: 10px; align-items: flex-start; }
+
+  /* Disable aurora entirely on tiny phones — GPU savings */
+  .aurora { display: none; }
+}
+
+/* ─── Touch-device global rules ─── */
+@media (hover: none) {
+  /* Disable hover-only flourishes that don't apply on touch */
+  .glow-track::after { display: none; }
+  /* Re-enable native scrolling smoothness on iOS */
+  body { -webkit-overflow-scrolling: touch; }
+  /* Custom cursor stays hidden — already handled, just confirming */
+  .cursor-dot, .cursor-ring { display: none !important; }
+}
 </style>
 </head>
 <body>

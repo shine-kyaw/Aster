@@ -587,6 +587,91 @@ img, svg { display: block; max-width: 100%; }
   color: var(--ink-mute);
   text-align: center;
 }
+
+/* ============================================================
+   MOBILE TUNING — pricing page responsiveness pass
+   ============================================================ */
+@media (max-width: 760px) {
+  html, body { max-width: 100vw; }
+
+  /* Nav: tighter padding, smaller brand */
+  .nav-inner { padding: 14px 0; }
+  .nav-brand { font-size: 18px; gap: 8px; }
+  .brand-mark { width: 24px; height: 24px; }
+  .nav-links { gap: 18px; font-size: 13px; }
+  .nav-cta { padding: 10px 16px; font-size: 12px; }
+
+  /* Hero: tighter padding and scale */
+  .hero { padding: 80px 0 50px; }
+  .hero h1 { font-size: clamp(36px, 11vw, 56px); }
+  .hero p.lede { font-size: 15px; }
+
+  /* Tier cards: tighter padding, stack header/price */
+  .tier-card { padding: 30px 22px; margin-bottom: 28px; }
+  .tier-header { grid-template-columns: 1fr; gap: 18px; }
+  .tier-card-price-block { text-align: left; }
+  .tier-card-name { font-size: clamp(30px, 8vw, 42px); }
+  .tier-card-price { font-size: clamp(26px, 7vw, 34px); }
+  .tier-card-blurb { font-size: 14px; }
+  .tier-body { grid-template-columns: 1fr; gap: 28px; }
+  .tier-feature-list li { font-size: 14px; }
+  .tier-meta { padding: 18px 20px; }
+  .tier-meta-row .v { font-size: 15px; }
+
+  /* CTA block: stack, full-width-feeling button */
+  .tier-cta-block { flex-direction: column; align-items: stretch; gap: 16px; }
+  .tier-cta-btn { justify-content: center; padding: 14px 22px; min-height: 48px; }
+  .tier-cta-note { font-size: 12px; }
+
+  /* Comparison table: scroll horizontally instead of cramming columns */
+  .compare-section { padding: 60px 0; }
+  .compare-section h2 { font-size: clamp(28px, 8vw, 40px); }
+  .compare-section .lede { font-size: 14px; margin-bottom: 28px; }
+  .compare-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 calc(-1 * var(--pad-x));
+    padding: 0 var(--pad-x);
+  }
+  .compare-table { min-width: 520px; font-size: 12px; }
+  .compare-table th, .compare-table td { padding: 10px 8px; }
+
+  /* FAQ: comfortable tap targets, smaller heading */
+  .faq-section { padding: 60px 0; }
+  .faq-section h2 { font-size: clamp(28px, 8vw, 40px); margin-bottom: 30px; }
+  .faq-item { padding: 18px 0; }
+  .faq-item summary { font-size: 16px; }
+  .faq-item summary::after { font-size: 24px; }
+  .faq-item-body { font-size: 14px; }
+
+  /* Final CTA: tighter padding */
+  .final-cta-section { padding: 70px 0; }
+  .final-cta-section h2 { font-size: clamp(32px, 9vw, 48px); }
+  .final-cta-section p { font-size: 15px; margin-bottom: 28px; }
+  .final-cta-btn { padding: 14px 24px; font-size: 14px; min-height: 48px; }
+}
+
+@media (max-width: 480px) {
+  :root { --pad-x: 18px; }
+
+  .hero { padding: 70px 0 40px; }
+  .hero h1 { font-size: clamp(32px, 10vw, 44px); }
+
+  /* Hide secondary nav links on tiny phones — keep brand + CTA */
+  .nav-link-text { display: none; }
+
+  .tier-card { padding: 24px 18px; }
+  .tier-section h4 { font-size: 10px; letter-spacing: 0.22em; }
+
+  /* Tier name/price aligned left, tighter */
+  .tier-card-eyebrow { font-size: 10px; }
+}
+
+/* Touch device tweaks */
+@media (hover: none) {
+  body { -webkit-overflow-scrolling: touch; }
+  .tier-card:hover { transform: none; box-shadow: none; }
+}
 </style>
 </head>
 <body>
@@ -832,6 +917,7 @@ img, svg { display: block; max-width: 100%; }
   <div class="wrap">
     <h2>Compared, <em>side by side.</em></h2>
     <p class="lede">A quick at-a-glance comparison of what each tier delivers.</p>
+    <div class="compare-table-wrap">
     <table class="compare-table">
       <thead>
         <tr>
@@ -859,6 +945,7 @@ img, svg { display: block; max-width: 100%; }
         <tr><th>Delivery timeline</th><td class="cell">~7 days</td><td class="cell featured-col">~2 weeks</td><td class="cell">~3 weeks</td></tr>
       </tbody>
     </table>
+    </div>
   </div>
 </section>
 
