@@ -1,0 +1,4403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Aster Studio — A deeply personal design journey</title>
+<meta name="description" content="Aster is a bespoke design studio. Every project blooms from a single seed into a wholly handcrafted brand identity." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+<style>
+/* ========== Design tokens ========== */
+:root {
+  --cream: #f5ede0;
+  --cream-deep: #ece2cc;
+  --cream-soft: #faf5e9;
+  --paper: #fbf6ea;
+  --ink: #1f1d18;
+  --ink-soft: #4a4640;
+  --ink-mute: #7e786c;
+  --line: #d8cfb8;
+  --line-soft: #e3dac3;
+  --gold: #c4a5e0;
+  --gold-deep: #c4a5e0;
+  --gold-shadow: #8a7d48;
+  --leaf: #6b8e63;
+  --leaf-deep: #4a5c3c;
+
+  /* ── MTK hybrid accent palette ── */
+  --aster: #8b5fbf;
+  --aster-deep: #5e3d8a;
+  --aster-light: #c4a5e0;
+  --aster-mist: #ebdef5;
+  --bloom: #e89a7c;
+  --bloom-deep: #d97757;
+  --sage: #6b8e63;
+  --sage-soft: #a7c09a;
+  --sage-deep: #4a5c3c;
+
+  --serif: "Playfair Display", "Cormorant Garamond", serif;
+  --sans: "Inter", system-ui, -apple-system, sans-serif;
+
+  --pad-x: clamp(20px, 5vw, 80px);
+  --pad-section: clamp(96px, 14vw, 200px);
+  --max: 1320px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-weight: 400;
+  line-height: 1.55;
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  /* `clip` instead of `hidden` — same visual clipping but does NOT create
+     a scroll-clipping context, which is what was breaking position:sticky
+     on the bloom-zoom stage (and any future sticky descendant). */
+  overflow-x: clip;
+}
+::selection { background: var(--aster); color: var(--paper); }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+img, svg { display: block; max-width: 100%; }
+
+.wrap { max-width: var(--max); margin: 0 auto; padding-left: var(--pad-x); padding-right: var(--pad-x); }
+.section { padding-top: var(--pad-section); padding-bottom: var(--pad-section); position: relative; }
+
+/* ========== Typography ========== */
+.display {
+  font-family: var(--serif);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 0.96;
+  color: var(--ink);
+}
+.h-xl { font-family: var(--serif); font-weight: 400; font-size: clamp(45px, 9vw, 135px); line-height: 0.96; letter-spacing: -0.025em; }
+.h-lg { font-family: var(--serif); font-weight: 400; font-size: clamp(44px, 6vw, 96px); line-height: 1.0; letter-spacing: -0.02em; }
+.h-md { font-family: var(--serif); font-weight: 400; font-size: clamp(28px, 3.4vw, 48px); line-height: 1.1; letter-spacing: -0.015em; }
+.h-sm { font-family: var(--serif); font-weight: 400; font-size: clamp(22px, 2vw, 30px); line-height: 1.15; letter-spacing: -0.01em; }
+.italic { font-style: italic; font-weight: 400; color: var(--aster-deep); }
+.lede {
+  font-family: var(--sans);
+  font-weight: 400;
+  font-size: clamp(17px, 1.4vw, 20px);
+  line-height: 1.55;
+  color: var(--ink-soft);
+  max-width: 52ch;
+}
+.eyebrow {
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+}
+.eyebrow::before { content: none; }
+
+/* ========== Navigation ========== */
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 22px var(--pad-x);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(180deg, rgba(245, 237, 224, 0.84), rgba(245, 237, 224, 0));
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  transition: padding 0.4s var(--ease), background 0.4s;
+}
+.nav.scrolled {
+  padding-top: 14px;
+  padding-bottom: 14px;
+  background: rgba(245, 237, 224, 0.78);
+  border-bottom: 1px solid var(--line-soft);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.brand-mark {
+  width: 36px; height: 36px;
+  flex-shrink: 0;
+}
+.brand-word {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 22px;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+.brand-sub {
+  font-family: var(--sans);
+  font-size: 10px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin-top: 2px;
+}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 44px;
+}
+.nav-links a {
+  font-size: 14px;
+  color: var(--ink-soft);
+  letter-spacing: 0.02em;
+  transition: color 0.25s var(--ease);
+  position: relative;
+}
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: -4px;
+  height: 1px;
+  background: var(--aster-deep);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.4s var(--ease);
+}
+.nav-links a:hover { color: var(--ink); }
+.nav-links a:hover::after { transform: scaleX(1); transform-origin: left; }
+
+@media (max-width: 760px) {
+  .nav-links { gap: 20px; }
+  .nav-links a { font-size: 13px; }
+  .brand-sub { display: none; }
+}
+
+/* ========== Hero ========== */
+.hero {
+  min-height: 100vh;
+  padding-top: clamp(140px, 18vh, 220px);
+  padding-bottom: 80px;
+  position: relative;
+  overflow: hidden;
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: clamp(40px, 8vw, 120px);
+  align-items: center;
+}
+@media (max-width: 980px) {
+  .hero-grid { grid-template-columns: 1fr; gap: 50px; }
+}
+.hero-headline {
+  position: relative;
+  z-index: 2;
+}
+.hero-eyebrow {
+  margin-bottom: 36px;
+}
+.hero-title {
+  margin: 0 0 32px;
+}
+.hero-title .l { display: block; overflow: hidden; }
+.hero-title .l > span {
+  display: block;
+  transform: translateY(110%);
+  transition: transform 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.loaded .hero-title .l > span { transform: translateY(0); }
+.hero-title .l:nth-child(2) > span { transition-delay: 0.12s; }
+.hero-title .l:nth-child(3) > span { transition-delay: 0.24s; }
+
+.hero-lede {
+  margin: 0 0 44px;
+  max-width: 44ch;
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 28px;
+  border-radius: 999px;
+  font-family: var(--sans);
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  font-weight: 500;
+  transition: transform 0.3s var(--ease), background 0.3s, color 0.3s, border-color 0.3s;
+  border: 1px solid transparent;
+}
+.btn .ar {
+  width: 16px; height: 16px;
+  transition: transform 0.35s var(--ease);
+}
+.btn:hover .ar { transform: translate(3px, -3px) rotate(0deg); }
+.btn-primary {
+  background: var(--ink);
+  color: var(--cream);
+}
+.btn-primary:hover { background: #000; transform: translateY(-1px); }
+.btn-ghost {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+.btn-ghost:hover { background: var(--ink); color: var(--cream); }
+
+.hero-meta--line,
+.hero-meta--mixed {
+  margin-top: 48px;
+  display: flex;
+  align-items: center;
+  gap: clamp(20px, 3vw, 44px);
+  flex-wrap: wrap;
+}
+.hero-meta-line {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(15px, 1.5vw, 19px);
+  letter-spacing: -0.012em;
+  color: var(--ink-soft);
+  line-height: 1.1;
+}
+.hero-meta-line .dot {
+  color: var(--aster);
+  font-style: normal;
+  margin: 0 6px;
+}
+
+.hero-meta {
+  margin-top: 90px;
+  display: flex;
+  gap: 50px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--ink-mute);
+}
+.hero-meta .item span {
+  display: block;
+  font-family: var(--serif);
+  font-size: 22px;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  margin-bottom: 2px;
+}
+.hero-meta .item small {
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.hero-flower {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.hero-flower svg {
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+}
+.hero-flower-halo {
+  position: absolute;
+  width: 110%;
+  height: 110%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(196, 165, 224, 0.35), transparent 65%);
+  filter: blur(20px);
+  pointer-events: none;
+}
+
+/* ========== Section divider ========== */
+.fine-divide {
+  height: 1px;
+  background: var(--line-soft);
+  max-width: var(--max);
+  margin: 0 auto;
+}
+
+/* ========== Process section ========== */
+.process {
+  background: var(--cream-soft);
+  position: relative;
+  /* `clip` not `hidden` — `hidden` would break the sticky bloom-zoom stage
+     by creating a scroll-clipping context on this ancestor. */
+  overflow: clip;
+}
+.process-intro {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 60px;
+  margin-bottom: 80px;
+  align-items: end;
+}
+.process-intro--centered {
+  grid-template-columns: 1fr;
+  justify-items: center;
+  text-align: center;
+  margin-bottom: 96px;
+}
+.process-intro--centered h2 { max-width: 18ch; }
+@media (max-width: 900px) {
+  .process-intro { grid-template-columns: 1fr; gap: 24px; margin-bottom: 50px; }
+}
+.process-stage {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  position: relative;
+}
+@media (max-width: 900px) {
+  .process-stage { grid-template-columns: 1fr; }
+}
+.flower-stage {
+  position: sticky;
+  top: 14vh;
+  height: 72vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+@media (max-width: 900px) {
+  .flower-stage {
+    position: sticky;
+    top: 10vh;
+    height: 50vh;
+  }
+}
+.flower-stage svg {
+  width: 100%;
+  max-width: 460px;
+  height: 100%;
+  overflow: visible;
+}
+.flower-stage-bg {
+  position: absolute;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(196, 165, 224, 0.4), transparent 65%);
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.steps-column {
+  display: flex;
+  flex-direction: column;
+  gap: 40vh;
+  padding-top: 8vh;
+  padding-bottom: 30vh;
+}
+@media (max-width: 900px) {
+  .steps-column { gap: 60px; padding-top: 30px; padding-bottom: 30px; }
+}
+.step {
+  position: relative;
+  padding: 36px 0 36px 36px;
+  border-left: 1px solid var(--line);
+  transition: border-color 0.6s var(--ease);
+}
+.step.active {
+  border-left-color: var(--aster-deep);
+}
+.step-num {
+  position: absolute;
+  left: -1px;
+  top: 36px;
+  background: var(--cream-soft);
+  padding: 4px 0 4px 0;
+  margin-left: -8px;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--cream);
+  border: 1px solid var(--line);
+  transition: background 0.5s var(--ease), border-color 0.5s, transform 0.6s var(--ease);
+}
+.step.active .step-num {
+  background: var(--aster-deep);
+  border-color: var(--aster-deep);
+  transform: scale(1.3);
+  box-shadow: 0 0 0 6px rgba(94, 61, 138, 0.18);
+}
+.step-label {
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin-bottom: 12px;
+  display: block;
+  transition: color 0.4s;
+}
+.step.active .step-label { color: var(--aster-deep); }
+.step-title {
+  font-family: var(--serif);
+  font-size: clamp(34px, 4.2vw, 56px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin: 0 0 18px;
+  color: var(--ink);
+}
+.step-title em {
+  color: var(--aster-deep);
+  font-style: italic;
+  font-weight: 400;
+}
+.step-body {
+  font-family: var(--sans);
+  color: var(--ink-soft);
+  font-size: 16px;
+  line-height: 1.55;
+  margin: 0;
+  max-width: 38ch;
+}
+
+/* ========== Philosophy (cyclical) ========== */
+.philosophy {
+  text-align: center;
+  background: var(--cream);
+  position: relative;
+  overflow: hidden;
+}
+.philosophy-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+@media (max-width: 900px) {
+  .philosophy-grid { grid-template-columns: 1fr; gap: 50px; }
+}
+.philosophy-copy {
+  text-align: left;
+}
+.philosophy-copy .eyebrow { margin-bottom: 28px; }
+.philosophy-copy h2 {
+  margin: 0 0 28px;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(40px, 5.2vw, 78px);
+  line-height: 1.0;
+  letter-spacing: -0.022em;
+}
+.philosophy-copy p {
+  font-size: 17px;
+  color: var(--ink-soft);
+  line-height: 1.6;
+  margin: 0 0 18px;
+  max-width: 42ch;
+}
+.philosophy-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 36px;
+}
+.tag {
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 9px 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink-soft);
+  background: var(--cream-soft);
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+  transition:
+    background 0.45s var(--ease),
+    color 0.45s var(--ease),
+    border-color 0.45s var(--ease),
+    transform 0.5s var(--ease),
+    box-shadow 0.5s var(--ease),
+    letter-spacing 0.45s var(--ease);
+  animation: tagFloat 6s ease-in-out infinite;
+  will-change: transform;
+}
+.tag::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 30% 20%, rgba(196, 165, 224, 0.55), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s var(--ease);
+  pointer-events: none;
+  z-index: -1;
+}
+.tag:hover,
+.tag:focus-visible {
+  background: var(--aster);
+  color: var(--ink);
+  border-color: var(--aster-deep);
+  transform: translateY(-6px) rotate(-2deg) scale(1.06);
+  box-shadow: 0 14px 26px -10px rgba(94, 61, 138, 0.55);
+  letter-spacing: 0.22em;
+  outline: none;
+}
+.tag:hover::before,
+.tag:focus-visible::before { opacity: 1; }
+.tag:active {
+  transform: translateY(-2px) rotate(0deg) scale(1.02);
+  transition-duration: 0.15s;
+}
+/* Stagger the idle float so they don't drift in unison */
+.philosophy-tags .tag:nth-child(1) { animation-delay: -0.0s; }
+.philosophy-tags .tag:nth-child(2) { animation-delay: -1.5s; }
+.philosophy-tags .tag:nth-child(3) { animation-delay: -3.0s; }
+.philosophy-tags .tag:nth-child(4) { animation-delay: -4.5s; }
+/* On hover, the chip "wakes" — pause the idle float so the hover transform takes over */
+.tag:hover, .tag:focus-visible { animation-play-state: paused; }
+
+@keyframes tagFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-3px) rotate(-1deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tag { animation: none; }
+  .tag:hover { transform: scale(1.03); }
+}
+
+.cyclical-stage {
+  position: relative;
+  aspect-ratio: 1;
+  max-width: 560px;
+  margin: 0 auto;
+}
+.cyclical-stage svg { width: 100%; height: 100%; overflow: visible; }
+.cyclical-ring {
+  animation: spinSlow 40s linear infinite;
+  transform-origin: 50% 50%;
+}
+@keyframes spinSlow {
+  to { transform: rotate(360deg); }
+}
+.cyclical-ring-reverse {
+  animation: spinSlow 60s linear infinite reverse;
+  transform-origin: 50% 50%;
+}
+.cyclical-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+}
+.cyclical-center .micro {
+  font-family: var(--sans);
+  font-size: 10px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin-bottom: 14px;
+}
+.cyclical-center .word {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(28px, 3.4vw, 44px);
+  line-height: 1.1;
+  color: var(--ink);
+}
+.cyclical-center .word em {
+  color: var(--aster-deep);
+}
+
+/* ========== Pricing ========== */
+.pricing {
+  background: var(--cream-soft);
+}
+.pricing-intro {
+  text-align: center;
+  margin-bottom: 80px;
+}
+.pricing-intro .eyebrow { margin-bottom: 24px; justify-content: center; }
+.pricing-intro h2 {
+  margin: 0 auto 20px;
+  max-width: 16ch;
+}
+.pricing-intro p { margin: 0 auto; }
+
+.tier-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  align-items: stretch;
+}
+@media (max-width: 900px) { .tier-grid { grid-template-columns: 1fr; } }
+
+.tier {
+  background: var(--paper);
+  border: 1px solid var(--line-soft);
+  border-radius: 24px;
+  padding: 44px 38px 38px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.5s var(--ease), border-color 0.5s, box-shadow 0.5s;
+  position: relative;
+  overflow: hidden;
+}
+.tier::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: var(--aster);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.6s var(--ease);
+}
+.tier:hover {
+  transform: translateY(-6px);
+  border-color: var(--aster);
+  box-shadow: 0 22px 50px -20px rgba(94, 61, 138, 0.35);
+}
+.tier:hover::before { transform: scaleX(1); }
+.tier.featured {
+  background: linear-gradient(180deg, #fbf5e3 0%, var(--paper) 60%);
+  border-color: var(--aster);
+}
+.tier.featured::before { transform: scaleX(1); }
+.tier-flower {
+  width: 44px; height: 44px;
+  margin-bottom: 28px;
+  color: var(--aster-deep);
+}
+.tier-name {
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin-bottom: 8px;
+}
+.tier-title {
+  font-family: var(--serif);
+  font-size: clamp(28px, 2.4vw, 36px);
+  letter-spacing: -0.018em;
+  line-height: 1.05;
+  margin: 0 0 22px;
+  color: var(--ink);
+}
+.tier-title em { color: var(--aster-deep); font-style: italic; }
+.tier-price {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 28px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.tier-price .num {
+  font-family: var(--serif);
+  font-size: clamp(46px, 4.6vw, 64px);
+  letter-spacing: -0.025em;
+  line-height: 1;
+  color: var(--ink);
+  font-weight: 400;
+}
+.tier-price .unit {
+  font-family: var(--sans);
+  color: var(--ink-mute);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+.tier ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 36px;
+  display: grid;
+  gap: 14px;
+}
+.tier li {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  gap: 14px;
+  align-items: flex-start;
+  font-size: 15px;
+  color: var(--ink-soft);
+  line-height: 1.45;
+}
+.tier li::before {
+  content: "";
+  width: 10px; height: 10px;
+  margin-top: 7px;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2 L13.2 10.8 L22 12 L13.2 13.2 L12 22 L10.8 13.2 L2 12 L10.8 10.8 Z' fill='%235e3d8a'/></svg>") no-repeat center / contain;
+}
+.tier-cta {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 22px;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  transition: background 0.3s var(--ease), color 0.3s, border-color 0.3s, transform 0.3s var(--ease);
+}
+.tier-cta:hover {
+  background: var(--ink);
+  color: var(--cream);
+}
+.tier.featured .tier-cta {
+  background: var(--ink);
+  color: var(--cream);
+}
+.tier.featured .tier-cta:hover { background: var(--aster-deep); border-color: var(--aster-deep); }
+
+/* ========== Portal ========== */
+.portal {
+  background: var(--cream);
+  position: relative;
+  overflow: hidden;
+}
+.portal > .wrap { position: relative; z-index: 2; }
+.portal-petals {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+.portal-petals .dp { left: var(--x, 50%); }
+@media (prefers-reduced-motion: reduce) {
+  .portal-petals { display: none; }
+}
+.portal-intro {
+  text-align: center;
+  margin-bottom: 80px;
+}
+.portal-intro .eyebrow { margin-bottom: 24px; justify-content: center; }
+.portal-intro h2 { margin: 0 0 14px; }
+.portal-lede {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(18px, 1.9vw, 24px);
+  letter-spacing: -0.012em;
+  color: var(--aster-deep);
+  margin: 0;
+  line-height: 1.1;
+}
+.portal-grid {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  gap: 28px;
+  align-items: stretch;
+}
+@media (max-width: 900px) {
+  .portal-grid { grid-template-columns: 1fr; }
+}
+.portal-card {
+  background: var(--paper);
+  border: 1px solid var(--line-soft);
+  border-radius: 24px;
+  padding: clamp(32px, 4vw, 56px);
+  display: flex;
+  flex-direction: column;
+}
+.portal-card .h-md { margin: 0 0 10px; }
+.portal-card .lede { font-size: 15px; line-height: 1.55; margin: 0 0 32px; }
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+  position: relative;
+}
+.field label {
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.field label .hint {
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--ink-mute);
+  font-size: 11px;
+  opacity: 0.7;
+  font-style: italic;
+}
+.field input, .field textarea {
+  font-family: var(--sans);
+  font-size: 15px;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  padding: 12px 22px 12px 0;
+  outline: none;
+  transition: border-color 0.3s var(--ease), padding 0.3s var(--ease);
+  resize: vertical;
+}
+.field textarea {
+  min-height: 92px;
+  line-height: 1.5;
+}
+.field input::placeholder, .field textarea::placeholder { color: var(--ink-mute); opacity: 0.55; }
+.field input:focus, .field textarea:focus {
+  border-color: var(--aster-deep);
+  padding-left: 4px;
+}
+.field-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+@media (max-width: 540px) { .field-grid-2 { grid-template-columns: 1fr; gap: 6px; } }
+
+.portal-actions {
+  margin-top: auto;
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.btn-block {
+  width: 100%;
+  justify-content: center;
+  padding: 18px 22px;
+  font-size: 14px;
+}
+.btn-block.btn-ghost {
+  border-color: var(--line);
+  color: var(--ink-soft);
+}
+.btn-block.btn-ghost:hover { border-color: var(--ink); background: transparent; color: var(--ink); }
+
+.track-feedback {
+  margin-top: 18px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--aster-deep);
+  background: rgba(196, 165, 224, 0.25);
+  border: 1px solid var(--aster);
+  display: none;
+  align-items: center;
+  gap: 10px;
+}
+.track-feedback.show { display: flex; }
+
+.portal-divider {
+  margin: 22px 0;
+  text-align: center;
+  position: relative;
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+.portal-divider::before, .portal-divider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 36%;
+  height: 1px;
+  background: var(--line);
+}
+.portal-divider::before { left: 0; }
+.portal-divider::after { right: 0; }
+
+/* ========== Footer ========== */
+footer {
+  background: var(--ink);
+  color: var(--cream);
+  padding: 80px var(--pad-x) 40px;
+}
+.footer-inner {
+  max-width: var(--max);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  gap: 40px;
+}
+@media (max-width: 760px) { .footer-inner { grid-template-columns: 1fr 1fr; } }
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.footer-brand .brand-word { color: var(--cream); }
+.footer-brand .brand-sub { color: rgba(245, 237, 224, 0.5); }
+.footer-brand p {
+  color: rgba(245, 237, 224, 0.65);
+  max-width: 30ch;
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0;
+}
+.footer-col h5 {
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(245, 237, 224, 0.5);
+  margin: 0 0 18px;
+  font-weight: 500;
+}
+.footer-col a {
+  display: block;
+  padding: 5px 0;
+  color: var(--cream);
+  font-size: 14px;
+  transition: color 0.25s var(--ease), transform 0.3s var(--ease);
+}
+.footer-col a:hover { color: var(--aster); transform: translateX(3px); }
+.footer-bottom {
+  max-width: var(--max);
+  margin: 60px auto 0;
+  padding-top: 24px;
+  border-top: 1px solid rgba(245, 237, 224, 0.1);
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: rgba(245, 237, 224, 0.45);
+  font-family: var(--sans);
+  letter-spacing: 0.04em;
+}
+
+/* ========== Reveal animations ========== */
+.reveal {
+  opacity: 0;
+  transform: translateY(36px);
+  transition: opacity 1s var(--ease), transform 1s var(--ease);
+  will-change: transform, opacity;
+}
+.reveal.in {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-stagger > * {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
+}
+.reveal-stagger.in > * { opacity: 1; transform: translateY(0); }
+.reveal-stagger.in > *:nth-child(1) { transition-delay: 0.08s; }
+.reveal-stagger.in > *:nth-child(2) { transition-delay: 0.18s; }
+.reveal-stagger.in > *:nth-child(3) { transition-delay: 0.28s; }
+.reveal-stagger.in > *:nth-child(4) { transition-delay: 0.38s; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  .reveal, .reveal-stagger > * { opacity: 1 !important; transform: none !important; }
+  .hero-title .l > span { transform: translateY(0) !important; }
+}
+
+/* small phone tightening */
+@media (max-width: 480px) {
+  .hero { padding-top: 130px; }
+  .hero-meta { gap: 30px; margin-top: 60px; }
+}
+
+/* ============================================================
+   Motto (under hero title)
+   ============================================================ */
+.hero-motto {
+  font-family: var(--serif);
+  font-size: clamp(20px, 2vw, 28px);
+  line-height: 1.35;
+  letter-spacing: -0.005em;
+  color: var(--ink-soft);
+  font-weight: 400;
+  max-width: none;
+}
+.hero-motto em {
+  color: var(--aster-deep);
+  font-style: italic;
+}
+.hero-motto .motto-sep {
+  display: inline-block;
+  margin: 0 12px;
+  color: var(--aster-deep);
+  font-style: normal;
+  transform: translateY(-2px);
+  font-weight: 300;
+}
+
+/* ============================================================
+   Interactive step cards
+   ============================================================ */
+.step {
+  cursor: pointer;
+  outline: none;
+}
+.step:hover { border-left-color: var(--aster-deep); }
+.step:hover .step-title em,
+.step:focus-visible .step-title em { color: var(--aster-deep); }
+.step:focus-visible { box-shadow: 0 0 0 3px rgba(94, 61, 138, 0.35); border-radius: 2px; }
+.step-cue {
+  margin-top: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--aster-deep);
+  opacity: 0.7;
+  transition: opacity 0.3s var(--ease), transform 0.3s var(--ease);
+}
+.step:hover .step-cue,
+.step:focus-visible .step-cue { opacity: 1; transform: translateX(4px); }
+.step-cue svg { transition: transform 0.3s var(--ease); }
+.step:hover .step-cue svg { transform: translate(2px, -2px); }
+
+/* ============================================================
+   Pricing — asterisk + footnote + interactive button
+   ============================================================ */
+.tier-price .asterisk {
+  color: var(--aster-deep);
+  font-family: var(--serif);
+  font-size: 0.45em;
+  vertical-align: top;
+  margin-left: 2px;
+  font-weight: 400;
+}
+button.tier-cta,
+a.tier-cta {
+  font-family: var(--sans);
+  background: transparent;
+  width: 100%;
+  /* `<a>` is now used (navigates to pricing.html) instead of <button>.
+     Both selectors keep the full-width pill look across the three tiers. */
+}
+a.tier-cta { text-decoration: none; cursor: pointer; }
+.pricing-footnote {
+  margin-top: 48px;
+  text-align: center;
+  font-family: var(--sans);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--ink-mute);
+  font-style: italic;
+}
+
+/* ============================================================
+   Modal / Drawer system (shared)
+   ============================================================ */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(31, 29, 24, 0);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  pointer-events: none;
+  transition: background 0.4s var(--ease), backdrop-filter 0.4s var(--ease);
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+}
+.overlay.open {
+  pointer-events: auto;
+  background: rgba(31, 29, 24, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.drawer {
+  position: relative;
+  background: var(--cream-soft);
+  width: min(560px, 100%);
+  height: 100%;
+  padding: clamp(36px, 5vw, 64px);
+  overflow-y: auto;
+  transform: translateX(110%);
+  transition: transform 0.6s var(--ease);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  border-left: 1px solid var(--line);
+}
+.overlay.open .drawer { transform: translateX(0); }
+.drawer-close {
+  position: absolute;
+  top: 24px; right: 24px;
+  width: 40px; height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.25s, border-color 0.25s, transform 0.4s var(--ease);
+}
+.drawer-close:hover { background: var(--ink); color: var(--cream); border-color: var(--ink); transform: rotate(90deg); }
+.drawer-close::before, .drawer-close::after {
+  content: "";
+  position: absolute;
+  width: 14px; height: 1.5px;
+  background: currentColor;
+}
+.drawer-close::before { transform: rotate(45deg); }
+.drawer-close::after { transform: rotate(-45deg); }
+
+.drawer .eyebrow { margin-bottom: 4px; }
+.drawer h3 {
+  font-family: var(--serif);
+  font-size: clamp(34px, 4.4vw, 52px);
+  letter-spacing: -0.02em;
+  line-height: 1.0;
+  margin: 0;
+  font-weight: 400;
+}
+.drawer h3 em { color: var(--aster-deep); font-style: italic; }
+.drawer .lede { margin: 0; max-width: none; font-size: 16px; }
+
+.drawer-stat-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-top: 8px;
+}
+.drawer-stat {
+  background: var(--paper);
+  border: 1px solid var(--line-soft);
+  border-radius: 16px;
+  padding: 18px 20px;
+}
+.drawer-stat .v {
+  font-family: var(--serif);
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+.drawer-stat .k {
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin-top: 6px;
+}
+
+.drawer-section h5 {
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin: 0 0 14px;
+  font-weight: 500;
+}
+.drawer-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+.drawer-list li {
+  display: grid;
+  grid-template-columns: 14px 1fr;
+  gap: 12px;
+  align-items: flex-start;
+  font-size: 15px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+.drawer-list li::before {
+  content: "";
+  width: 8px; height: 8px;
+  margin-top: 8px;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2 L13.2 10.8 L22 12 L13.2 13.2 L12 22 L10.8 13.2 L2 12 L10.8 10.8 Z' fill='%235e3d8a'/></svg>") no-repeat center / contain;
+}
+
+.drawer-footnote {
+  font-size: 12px;
+  color: var(--ink-mute);
+  font-style: italic;
+  margin: 0;
+}
+
+.drawer .btn { align-self: flex-start; margin-top: auto; }
+
+/* ============================================================
+   Staff layer 2 input
+   ============================================================ */
+.staff-layer2 {
+  border: 1px solid var(--aster-deep);
+  background: rgba(196, 165, 224, 0.12);
+  padding: 14px 16px;
+  border-radius: 12px;
+  margin-top: 4px;
+  animation: staffSlide 0.45s var(--ease);
+}
+.staff-layer2 label {
+  color: var(--aster-deep);
+}
+.staff-layer2 input { border-bottom-color: var(--aster-deep); }
+@keyframes staffSlide {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   STAFF PANEL — full screen overlay
+   ============================================================ */
+.staff-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: #15140f;
+  color: #ede5cf;
+  display: none;
+  flex-direction: column;
+  font-family: var(--sans);
+}
+.staff-panel.open { display: flex; animation: staffPanelIn 0.5s var(--ease); }
+@keyframes staffPanelIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.staff-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px clamp(20px, 4vw, 40px);
+  background: #100f0a;
+  border-bottom: 1px solid #2a271e;
+}
+.staff-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.staff-bar-left svg { width: 28px; height: 28px; }
+.staff-bar-left .word {
+  font-family: var(--serif);
+  font-size: 18px;
+  letter-spacing: 0.02em;
+}
+.staff-bar-left .sub {
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #c4a5e0;
+  margin-left: 6px;
+}
+.staff-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.staff-status {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #c4a5e0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.staff-status .dot {
+  width: 7px; height: 7px;
+  border-radius: 999px;
+  background: #c4a5e0;
+  box-shadow: 0 0 8px #c4a5e0;
+  animation: dotPulse 1.8s ease-in-out infinite;
+}
+@keyframes dotPulse {
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+.staff-logout {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid #3a3528;
+  background: transparent;
+  color: #ede5cf;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.25s, border-color 0.25s;
+}
+.staff-logout:hover { background: #2a271e; border-color: #c4a5e0; }
+
+.staff-main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  overflow: hidden;
+}
+@media (max-width: 760px) {
+  .staff-main { grid-template-columns: 1fr; }
+  .staff-thread.empty { display: none; }
+}
+.staff-list {
+  border-right: 1px solid #2a271e;
+  overflow-y: auto;
+  background: #14130d;
+}
+.staff-list-head {
+  padding: 22px 24px 14px;
+  border-bottom: 1px solid #2a271e;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.staff-list-head .label {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #c4a5e0;
+}
+.staff-list-head .count {
+  font-family: var(--serif);
+  font-size: 22px;
+  color: #ede5cf;
+}
+.msg {
+  padding: 18px 24px;
+  border-bottom: 1px solid #1f1d15;
+  cursor: pointer;
+  transition: background 0.25s, padding-left 0.3s var(--ease);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.msg:hover { background: #1a1810; padding-left: 28px; }
+.msg.active { background: #1d1b12; border-left: 2px solid #c4a5e0; }
+.msg-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+.msg-name {
+  font-weight: 500;
+  color: #ede5cf;
+  letter-spacing: 0.01em;
+}
+.msg-time { color: #807961; }
+.msg-preview {
+  font-size: 13px;
+  color: #b3ad97;
+  line-height: 1.4;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.msg-meta {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #807961;
+}
+.msg-meta .pill {
+  padding: 3px 8px;
+  border: 1px solid #3a3528;
+  border-radius: 999px;
+  color: #c4a5e0;
+}
+.msg.unread .msg-name::after {
+  content: "•";
+  color: #c4a5e0;
+  margin-left: 8px;
+  font-size: 18px;
+  line-height: 0;
+}
+
+.staff-thread {
+  padding: 28px clamp(20px, 4vw, 48px) 28px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+.staff-thread.empty {
+  align-items: center;
+  justify-content: center;
+  color: #807961;
+  font-style: italic;
+}
+.thread-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #2a271e;
+  margin-bottom: 22px;
+}
+.thread-head h3 {
+  font-family: var(--serif);
+  font-size: clamp(24px, 2.4vw, 32px);
+  letter-spacing: -0.01em;
+  margin: 0 0 4px;
+  color: #ede5cf;
+  font-weight: 400;
+}
+.thread-head .sub {
+  font-size: 12px;
+  color: #807961;
+}
+.thread-head .pill {
+  padding: 4px 12px;
+  border: 1px solid #c4a5e0;
+  border-radius: 999px;
+  color: #c4a5e0;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.thread-body {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-right: 4px;
+}
+.bubble {
+  max-width: 70%;
+  padding: 14px 18px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  background: #1d1b12;
+  border: 1px solid #2a271e;
+}
+.bubble.in {
+  align-self: flex-start;
+  background: #1d1b12;
+  color: #ede5cf;
+}
+.bubble.out {
+  align-self: flex-end;
+  background: #c4a5e0;
+  color: #15140f;
+  border-color: #c4a5e0;
+}
+.bubble .time {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-top: 6px;
+  opacity: 0.7;
+}
+
+.thread-compose {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid #2a271e;
+  display: flex;
+  gap: 12px;
+}
+.thread-compose textarea {
+  flex: 1;
+  resize: none;
+  font-family: var(--sans);
+  font-size: 14px;
+  color: #ede5cf;
+  background: #14130d;
+  border: 1px solid #2a271e;
+  border-radius: 12px;
+  padding: 12px 14px;
+  outline: none;
+  transition: border-color 0.25s;
+  min-height: 56px;
+  max-height: 140px;
+}
+.thread-compose textarea:focus { border-color: #c4a5e0; }
+.thread-compose button {
+  align-self: flex-end;
+  padding: 14px 22px;
+  border-radius: 999px;
+  background: #c4a5e0;
+  color: #15140f;
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  border: 0;
+  transition: background 0.25s, transform 0.25s var(--ease);
+}
+.thread-compose button:hover { background: #d8c0eb; transform: translateY(-1px); }
+
+/* ============================================================
+   Process — pin compensation
+   ============================================================ */
+.process-stage { will-change: transform; }
+
+/* ============================================================
+   Override legacy tier bullets/accent (now using MTK pattern)
+   ============================================================ */
+.tier li::before { content: none !important; display: none !important; background: none !important; }
+
+/* ============================================================
+   MTK · Selected gardens (work showcase)
+   ============================================================ */
+.work {
+  padding-top: var(--pad-section);
+  padding-bottom: var(--pad-section);
+  position: relative;
+}
+.work .head {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  margin-bottom: clamp(40px, 5vw, 64px);
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.work .head h2 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(36px, 5vw, 64px);
+  line-height: 1;
+  letter-spacing: -0.022em;
+  margin: 16px 0 0;
+}
+.work .head h2 em { color: var(--aster-deep); font-style: italic; }
+.work-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(20px, 2.4vw, 28px);
+}
+@media (max-width: 880px) { .work-grid { grid-template-columns: 1fr; } }
+.case {
+  background: var(--paper);
+  border: 1px solid var(--line-soft);
+  border-radius: 22px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.5s var(--ease), box-shadow 0.5s, border-color 0.5s;
+}
+.case:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 30px 60px -30px rgba(31, 20, 36, 0.22);
+  border-color: var(--aster-light);
+}
+.case .preview {
+  aspect-ratio: 16 / 10;
+  position: relative;
+  overflow: hidden;
+}
+.case-a .preview { background: radial-gradient(circle at 30% 40%, #d6b8e8 0%, var(--aster) 50%, var(--aster-deep) 100%); }
+.case-b .preview { background: linear-gradient(160deg, #f5d5c5 0%, var(--bloom) 50%, var(--bloom-deep) 100%); }
+.case-c .preview { background: linear-gradient(135deg, #dfe9d4 0%, var(--sage-soft) 60%, var(--sage) 100%); }
+.case .preview svg.deco {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.4;
+  color: var(--paper);
+  transition: transform 1.2s var(--ease), opacity 0.5s;
+}
+.case:hover .preview svg.deco { transform: rotate(30deg) scale(1.15); opacity: 0.6; }
+.case .preview .label {
+  position: absolute;
+  top: 18px; left: 18px;
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(253, 249, 241, 0.92);
+  background: rgba(31, 20, 36, 0.28);
+  padding: 6px 12px;
+  border-radius: 999px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.case .body { padding: 26px 28px 28px; }
+.case .body h3 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin: 0 0 8px;
+}
+.case .body h3 em { color: var(--aster-deep); font-style: italic; }
+.case .body p {
+  color: var(--ink-mute);
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0 0 18px;
+}
+.case .body .row {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid var(--line-soft);
+  padding-top: 14px;
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+.case .body .row strong { color: var(--aster-deep); font-weight: 500; }
+
+/* ============================================================
+   MTK · Pricing tiers (italic serif, mini-blooms, dark featured)
+   ============================================================ */
+.tier-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  align-items: stretch;
+}
+@media (max-width: 900px) {
+  .tier-grid { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; }
+}
+.tier {
+  background: var(--paper);
+  border: 1px solid var(--line-soft);
+  border-radius: 24px;
+  padding: 36px 32px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.5s var(--ease), box-shadow 0.5s, border-color 0.5s;
+  isolation: isolate;
+}
+.tier::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
+  height: auto;
+  width: auto;
+  transform: none;
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%),
+    var(--tier-glow, var(--aster-mist)),
+    transparent 55%);
+  opacity: 0;
+  transition: opacity 0.5s;
+  z-index: -1;
+  border-radius: inherit;
+}
+.tier:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 30px 60px -30px rgba(94, 61, 138, 0.22);
+  border-color: var(--tier-accent, var(--aster-light));
+}
+.tier:hover::before { opacity: 1; transform: none; }
+
+.tier-flower {
+  width: 48px;
+  height: 48px;
+  color: var(--tier-accent, var(--aster));
+  margin-bottom: 22px;
+  transition: transform 0.6s var(--ease), color 0.4s;
+}
+.tier:hover .tier-flower,
+.tier:focus-visible .tier-flower { transform: rotate(45deg) scale(1.08); }
+.mini-bloom { animation: miniBreathe 5s ease-in-out infinite; transform-origin: 50% 50%; }
+@keyframes miniBreathe {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.06); }
+}
+
+.tier .tier-name {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-style: italic;
+  font-size: 30px;
+  line-height: 1;
+  color: var(--tier-accent, var(--aster-deep));
+  margin: 0 0 10px;
+  letter-spacing: -0.01em;
+}
+.tier .tier-blurb {
+  font-size: 14px;
+  color: var(--ink-soft);
+  line-height: 1.55;
+  margin: 0 0 24px;
+}
+.tier .tier-price {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 56px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.tier .tier-price small {
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--ink-mute);
+  margin-left: 6px;
+  letter-spacing: 0.04em;
+  font-weight: 400;
+}
+.tier .tier-price .asterisk {
+  font-family: var(--serif);
+  font-size: 28px;
+  color: var(--aster);
+  margin-left: 2px;
+  vertical-align: super;
+  line-height: 1;
+}
+.tier ul {
+  list-style: none;
+  margin: 24px 0 28px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+.tier li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  line-height: 1.5;
+}
+.tier li svg {
+  flex-shrink: 0;
+  color: var(--tier-accent, var(--aster));
+  margin-top: 2px;
+}
+.tier .tier-cta {
+  align-self: stretch;
+  justify-content: space-between;
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  padding: 14px 20px;
+  border-radius: 999px;
+  background: transparent;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.3s var(--ease), color 0.3s, border-color 0.3s, transform 0.3s var(--ease);
+}
+.tier .tier-cta:hover {
+  background: var(--ink);
+  color: var(--paper);
+  transform: translateY(-2px);
+}
+
+/* Per-tier accent tokens */
+.tier.t-seed    { --tier-accent: var(--sage);       --tier-glow: #dfe9d4; }
+.tier.t-bloom   { --tier-accent: var(--aster);      --tier-glow: var(--aster-mist); }
+/* Bloom tier — champagne-gold (psychological wealth/luxury cue) */
+.tier.t-blossom {
+  --tier-accent: #c9a961;
+  --tier-glow: #f0d896;
+  background: linear-gradient(180deg, #f9ecc8 0%, #fdf6e0 50%, #f5e0a8 100%);
+  border-color: #d8b96f;
+}
+.tier.t-blossom:hover {
+  border-color: #a8843c;
+  box-shadow: 0 30px 60px -26px rgba(168, 132, 60, 0.55);
+}
+.tier.t-blossom .tier-name { color: #6f4e15; }
+.tier.t-blossom .tier-price { color: #3d2e0e; }
+.tier.t-blossom .tier-price .asterisk { color: #c9a961; }
+.tier.t-blossom .tier-cta {
+  border-color: #6f4e15;
+  color: #3d2e0e;
+}
+.tier.t-blossom .tier-cta:hover {
+  background: linear-gradient(135deg, #d4b97a 0%, #a8843c 100%);
+  border-color: #6f4e15;
+  color: var(--paper);
+}
+
+/* The featured (middle) tier — dark, inverted */
+.tier.t-bloom.featured {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+  transform: scale(1.02);
+}
+.tier.t-bloom.featured:hover { transform: translateY(-6px) scale(1.02); }
+.tier.t-bloom.featured .tier-name { color: var(--aster-light); }
+.tier.t-bloom.featured .tier-blurb { color: #c8bdac; }
+.tier.t-bloom.featured .tier-price { color: var(--paper); }
+.tier.t-bloom.featured .tier-price small { color: #a5998a; }
+.tier.t-bloom.featured .tier-price .asterisk { color: var(--aster-light); }
+.tier.t-bloom.featured ul { color: #c8bdac; }
+.tier.t-bloom.featured li svg { color: var(--aster-light); }
+.tier.t-bloom.featured .tier-cta {
+  background: var(--aster);
+  color: var(--paper);
+  border-color: var(--aster);
+}
+.tier.t-bloom.featured .tier-cta:hover {
+  background: var(--aster-light);
+  color: var(--ink);
+  border-color: var(--aster-light);
+}
+
+/* "Most chosen" ribbon */
+.tier .ribbon {
+  position: absolute;
+  top: 22px;
+  right: -34px;
+  transform: rotate(45deg);
+  background: var(--bloom-deep);
+  color: var(--paper);
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 5px 38px;
+  z-index: 2;
+}
+
+/* ============================================================
+   Editorial callout — "Give us the seed. We'll make it bloom."
+   ============================================================ */
+.callout {
+  padding-top: var(--pad-section);
+  padding-bottom: var(--pad-section);
+  position: relative;
+  text-align: center;
+  background: var(--paper);
+  border-top: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+  overflow: hidden;
+}
+.callout::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 65% 55% at 50% 32%, var(--aster-mist), transparent 70%),
+    radial-gradient(ellipse 40% 30% at 50% 80%, rgba(232, 154, 124, 0.18), transparent 70%);
+  opacity: 0.85;
+  pointer-events: none;
+  z-index: 0;
+}
+.callout-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 var(--pad-x);
+}
+.callout-mark {
+  display: block;
+  width: 32px;
+  height: 32px;
+  margin: 0 auto clamp(22px, 3vw, 34px);
+  color: var(--aster);
+  opacity: 0.85;
+  animation: heroBreathe 5s ease-in-out infinite;
+  transform-origin: 50% 50%;
+}
+.callout-line {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(40px, 7vw, 104px);
+  line-height: 0.98;
+  letter-spacing: -0.025em;
+  margin: 0;
+  color: var(--ink);
+}
+.callout-line + .callout-line { margin-top: clamp(3px, 0.5vw, 8px); }
+.callout-line em {
+  font-style: italic;
+  color: var(--aster-deep);
+  font-weight: 400;
+}
+
+/* ============================================================
+   Cinematic bloom zoom — camera fills + dives into the ovule
+   ============================================================ */
+.bloom-zoom {
+  position: relative;
+  /* Long natural scroll runway — enough for the bloom-up, the dive,
+     and four phase reveals inside the ovule without any GSAP pin math.
+     CSS sticky on the stage handles the visual lock, scroll provides the time. */
+  height: 480vh;
+  background: linear-gradient(180deg, var(--cream) 0%, var(--cream-soft) 60%, var(--cream) 100%);
+  /* `clip` (not `hidden`) keeps the zoom contained without creating a
+     scroll context that would break the sticky child or swallow padding. */
+  overflow: clip;
+  isolation: isolate;
+  z-index: 2;
+}
+.bloom-zoom-stage {
+  /* CSS sticky pins the stage to the top of the viewport from the moment
+     the section's top reaches viewport top, until the section's bottom
+     scrolls past the viewport bottom — guaranteed layout, no GSAP pin
+     side-effects, no overlap with the next section. */
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.zoom-aura {
+  position: absolute;
+  width: 90vmin;
+  height: 90vmin;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(196, 165, 224, 0.32), transparent 65%);
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  will-change: opacity, transform;
+}
+.zoom-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* Softer tunneling — keeps the ovule bright at center, only darkens the
+     far edges so the warm core stays the clear focal point. */
+  background:
+    radial-gradient(circle at 50% 50%, transparent 48%, rgba(31, 29, 24, 0.22) 100%),
+    radial-gradient(circle at 50% 50%, rgba(255, 234, 210, 0.18) 0%, transparent 38%);
+  opacity: 0;
+  z-index: 3;
+  will-change: opacity;
+}
+.zoom-flower {
+  width: min(82vmin, 920px);
+  height: min(82vmin, 920px);
+  transform-origin: 50% 50%;
+  /* `will-change` is a hint — browser decides when to GPU-composite.
+     We intentionally do NOT force a dedicated layer with translateZ(0)
+     because that locks the SVG into a bitmap at its base size, then the
+     GPU stretches that bitmap during the dive → pixelation. Letting the
+     browser manage rasterization keeps the vector crisp at peak zoom. */
+  will-change: transform, opacity;
+  position: relative;
+  z-index: 1;
+}
+/* The petal rings get fade-only DoF — opacity is GPU-cheap and never
+   judders the way filter:blur() does under a scrubbed timeline. */
+.zoom-flower g[id^="zoomL"] { will-change: opacity; }
+.zoom-disc, #discFlorets, #stamens, .zoom-ovule { transform-origin: 0 0; }
+
+/* Each phase reveal emerges inside the ovule in sequence; GSAP owns the
+   transform so we use top/left only — xPercent/yPercent centers in JS.
+   A soft warm halo behind the text keeps it legible at any zoom depth. */
+.ovule-reveal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  text-align: center;
+  pointer-events: none;
+  z-index: 4;
+  opacity: 0;
+  max-width: min(640px, 90vw);
+  padding: clamp(28px, 3.4vw, 44px) clamp(28px, 3vw, 44px);
+  will-change: opacity, transform;
+  /* Warm, soft halo so the text reads clearly without obscuring the ovule */
+  background:
+    radial-gradient(ellipse at center, rgba(255, 248, 235, 0.78) 0%, rgba(255, 240, 220, 0.45) 55%, rgba(255, 240, 220, 0) 80%);
+  border-radius: 50%;
+}
+.ovule-label {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: clamp(12px, 1.1vw, 15px);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #4a2410;
+  margin-bottom: clamp(14px, 1.8vw, 22px);
+  display: block;
+  text-shadow: 0 1px 0 rgba(255, 248, 235, 0.7);
+}
+.ovule-title {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(34px, 5.2vw, 72px);
+  line-height: 1.0;
+  letter-spacing: -0.02em;
+  color: #1a0d05;
+  margin: 0 0 clamp(14px, 1.6vw, 22px);
+  text-shadow: 0 1px 2px rgba(255, 248, 235, 0.55);
+}
+.ovule-title em {
+  font-style: italic;
+  color: #7a3d18;
+}
+.ovule-body {
+  font-family: var(--sans);
+  font-size: clamp(15px, 1.4vw, 20px);
+  font-weight: 500;
+  color: #2a160a;
+  margin: 0;
+  line-height: 1.5;
+  opacity: 1;
+  text-shadow: 0 1px 0 rgba(255, 248, 235, 0.6);
+}
+/* ── Mobile tuning ──
+   Phones have less screen real-estate and slower GPU paint pipelines —
+   the cinematic dive feels just as good with a shorter scroll runway,
+   and the petal rings can drop a layer to avoid jank. */
+@media (max-width: 760px) {
+  .bloom-zoom { height: 340vh; }
+  .zoom-flower { width: min(86vmin, 560px); height: min(86vmin, 560px); }
+  .ovule-reveal { padding: clamp(20px, 5vw, 32px); max-width: 88vw; }
+}
+/* ── Reduced motion ──
+   Collapse the cinematic dive into a single static, readable state.
+   The growth metaphor is preserved by simply showing the final bloom. */
+@media (prefers-reduced-motion: reduce) {
+  .bloom-zoom { height: auto; padding: 80px 0; }
+  .bloom-zoom-stage { height: auto; min-height: 60vh; }
+  .zoom-flower, .zoom-flower * { transform: none !important; filter: none !important; opacity: 1 !important; }
+  .ovule-reveal { position: relative; opacity: 1 !important; transform: none !important; margin: 24px auto; }
+  .ovule-reveal[data-phase="2"], .ovule-reveal[data-phase="3"], .ovule-reveal[data-phase="4"] { display: none; }
+  .zoom-vignette, .zoom-aura { display: none; }
+}
+
+/* ============================================================
+   Persistent side rail (subtle, fixed, vertically centered)
+   ============================================================ */
+.side-rail {
+  position: fixed;
+  top: 50%;
+  right: clamp(18px, 2.2vw, 38px);
+  transform: translateY(-50%);
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s var(--ease);
+}
+.side-rail.visible {
+  opacity: 0.4;
+  pointer-events: auto;
+}
+.side-rail.visible:hover { opacity: 1; }
+.side-rail a {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  white-space: nowrap;
+  transition: color 0.35s var(--ease), transform 0.35s var(--ease);
+}
+.side-rail a::before {
+  content: "";
+  width: 16px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.7;
+  transition: width 0.4s var(--ease), opacity 0.35s, background 0.35s;
+}
+.side-rail a:hover,
+.side-rail a:focus-visible {
+  color: var(--aster-deep);
+  transform: translateX(-3px);
+  outline: none;
+}
+.side-rail a:hover::before,
+.side-rail a:focus-visible::before {
+  width: 26px;
+  opacity: 1;
+  background: var(--aster);
+}
+.side-rail a.active {
+  color: var(--aster-deep);
+}
+.side-rail a.active::before {
+  width: 22px;
+  opacity: 1;
+  background: var(--aster);
+}
+@media (max-width: 900px) { .side-rail { display: none; } }
+
+/* ============================================================
+   MTK · Marquee strip (cycling words)
+   ============================================================ */
+.strip {
+  width: 100%;
+  background: var(--paper);
+  border-top: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+  padding: clamp(22px, 3vw, 32px) 0;
+  overflow: hidden;
+  position: relative;
+  z-index: 2;
+}
+.strip-track {
+  display: flex;
+  align-items: center;
+  gap: clamp(28px, 4vw, 56px);
+  width: max-content;
+  animation: marqueeRoll 42s linear infinite;
+  white-space: nowrap;
+  will-change: transform;
+}
+.strip-track span {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(20px, 2.4vw, 28px);
+  color: var(--ink);
+  letter-spacing: -0.012em;
+  line-height: 1;
+}
+.strip-track span.sep {
+  font-style: normal;
+  color: var(--aster);
+  display: inline-block;
+  font-size: clamp(14px, 1.6vw, 18px);
+  animation: spinSlow 14s linear infinite;
+}
+@keyframes marqueeRoll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@keyframes spinSlow {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .strip-track, .strip-track span.sep { animation: none; }
+}
+
+/* ============================================================
+   MTK · Aurora parallax background
+   ============================================================ */
+.aurora {
+  position: fixed;
+  width: 60vmax;
+  height: 60vmax;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+  transition: transform 1.2s var(--ease);
+  will-change: transform;
+}
+.aurora.a1 {
+  top: -22vmax;
+  left: -16vmax;
+  background: radial-gradient(circle, rgba(196, 165, 224, 0.45), transparent 65%);
+}
+.aurora.a2 {
+  bottom: -22vmax;
+  right: -16vmax;
+  background: radial-gradient(circle, rgba(232, 154, 124, 0.35), transparent 65%);
+}
+@media (prefers-reduced-motion: reduce), (hover: none) {
+  .aurora { display: none; }
+}
+
+/* Lift content above aurora */
+.nav, .hero, .section, footer, .cta-section, .marquee-section,
+.overlay, .staff-panel { position: relative; z-index: 2; }
+
+/* ============================================================
+   MTK · Ambient drifting petals
+   ============================================================ */
+.ambient-petals {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+.dp {
+  position: absolute;
+  bottom: -40px;
+  left: var(--x, 50vw);
+  width: 14px;
+  height: 20px;
+  color: var(--hue, var(--aster));
+  opacity: 0;
+  animation: drift var(--dur, 28s) linear infinite;
+  animation-delay: var(--delay, 0s);
+  will-change: transform, opacity;
+}
+.dp ellipse { fill: currentColor; }
+@keyframes drift {
+  0%   { transform: translate(0, 0) rotate(0deg);          opacity: 0; }
+  8%   {                                                    opacity: 0.55; }
+  50%  { transform: translate(40px, -50vh) rotate(180deg); opacity: 0.45; }
+  92%  {                                                    opacity: 0.3; }
+  100% { transform: translate(-30px, -110vh) rotate(360deg); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ambient-petals { display: none; }
+}
+
+/* ============================================================
+   MTK · Radial mouse-follow glow on interactive elements
+   ============================================================ */
+.glow-track {
+  position: relative;
+  overflow: hidden;
+}
+.glow-track::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at var(--mx, 50%) var(--my, 50%),
+    rgba(139, 95, 191, 0.20),
+    transparent 50%
+  );
+  opacity: 0;
+  transition: opacity 0.35s var(--ease);
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+}
+.glow-track:hover::after,
+.glow-track:focus-visible::after { opacity: 1; }
+.glow-track.glow-warm::after {
+  background: radial-gradient(
+    circle at var(--mx, 50%) var(--my, 50%),
+    rgba(232, 154, 124, 0.32),
+    transparent 50%
+  );
+}
+.glow-track > *,
+.glow-track > svg { position: relative; z-index: 1; }
+
+/* ============================================================
+   MTK · Hover-rotate icons
+   ============================================================ */
+.tier-flower { transition: transform 0.6s var(--ease), color 0.4s; }
+.tier:hover .tier-flower,
+.tier:focus-visible .tier-flower { transform: rotate(45deg) scale(1.08); }
+
+.step-mark {
+  transition: transform 0.6s var(--ease), background 0.5s var(--ease),
+              border-color 0.5s, box-shadow 0.5s, color 0.5s;
+}
+.step:hover .step-mark,
+.step:focus-visible .step-mark { transform: rotate(45deg) scale(1.08); }
+
+.brand-mark { transition: transform 0.6s var(--ease); }
+.brand:hover .brand-mark,
+.nav-brand:hover .brand-mark { transform: rotate(45deg); }
+
+/* ============================================================
+   MTK · Form field-bud indicators
+   ============================================================ */
+.field-bud {
+  position: absolute;
+  top: 34px;
+  right: 2px;
+  width: 12px;
+  height: 12px;
+  color: var(--ink-mute);
+  pointer-events: none;
+  transition: transform 0.6s var(--ease), color 0.4s;
+  z-index: 2;
+}
+.field-bud circle {
+  fill: var(--paper);
+  stroke: currentColor;
+  stroke-width: 1.2;
+  transition: fill 0.4s, stroke 0.4s;
+}
+.field:focus-within .field-bud {
+  transform: rotate(45deg);
+  color: var(--aster);
+}
+.field:focus-within .field-bud circle {
+  fill: var(--aster-mist);
+  stroke: var(--aster);
+}
+
+/* ============================================================
+   MTK · Hero halo breathing
+   ============================================================ */
+@keyframes heroBreathe {
+  0%, 100% { transform: scale(1);    opacity: 0.7; }
+  50%      { transform: scale(1.08); opacity: 1; }
+}
+.hero-flower-halo {
+  animation: heroBreathe 6s ease-in-out infinite;
+  background: radial-gradient(circle, rgba(196, 165, 224, 0.40), transparent 65%);
+  will-change: transform, opacity;
+}
+</style>
+</head>
+<body>
+
+<!-- ============ ATMOSPHERIC BACKGROUND ============ -->
+<div class="aurora a1" aria-hidden="true"></div>
+<div class="aurora a2" aria-hidden="true"></div>
+
+<!-- ============ NAV ============ -->
+<nav class="nav" id="nav">
+  <a href="#" class="brand" aria-label="Aster Studio home">
+    <svg class="brand-mark" viewBox="0 0 60 60" aria-hidden="true">
+      <g transform="translate(30 30)">
+        <!-- Outer petals -->
+        <g id="brand-petals" fill="#c4a5e0">
+          <!-- Generated via JS-equivalent: 12 petals rotated -->
+        </g>
+        <circle r="5" fill="#b8714e"/>
+      </g>
+    </svg>
+    <span>
+      <span class="brand-word">Aster</span>
+      <span class="brand-sub">Studio</span>
+    </span>
+  </a>
+  <div class="nav-links">
+    <a href="#process">Process</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#connect">Connect</a>
+  </div>
+</nav>
+
+<!-- ============ PERSISTENT SIDE RAIL ============ -->
+<nav class="side-rail" aria-label="Section navigation">
+  <a href="#process" data-section="process">Process</a>
+  <a href="#pricing" data-section="pricing">Pricing</a>
+  <a href="#connect" data-section="connect">Connect</a>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero wrap">
+  <div class="hero-grid">
+    <div class="hero-headline">
+      <span class="eyebrow hero-eyebrow">Bespoke Design Studio · est. 2026</span>
+      <h1 class="display hero-title h-xl">
+        <span class="l"><span>Your identity,</span></span>
+        <span class="l"><span>purely <em class="italic">Aster.</em></span></span>
+      </h1>
+      <p class="lede hero-lede hero-motto">
+        Your digital presence <span class="motto-sep">|</span> <em>built to bloom</em>.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary glow-track glow-warm" href="#connect">
+          Begin a conversation
+          <svg class="ar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 18 L18 6 M9 6 H18 V15"/></svg>
+        </a>
+        <a class="btn btn-ghost glow-track" href="#process">See the bloom →</a>
+      </div>
+      <div class="hero-meta hero-meta--mixed">
+        <span class="hero-meta-line">Hand-built <em class="dot">·</em> hand-tended</span>
+        <div class="item">
+          <span>∞</span>
+          <small>Solely Aster</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-flower">
+      <div class="hero-flower-halo"></div>
+      <svg viewBox="0 0 400 400" aria-hidden="true" id="heroFlower">
+        <g transform="translate(200 200)">
+          <g id="heroOuter"></g>
+          <g id="heroInner"></g>
+          <circle r="22" fill="#b8714e"/>
+          <circle r="14" fill="#d97757"/>
+          <circle r="6" fill="#e89a7c"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+</header>
+
+<!-- ============ MARQUEE STRIP (cycling words) ============ -->
+<section class="strip" aria-hidden="true">
+  <div class="strip-track">
+    <span>Designed to bloom</span>
+    <span class="sep">✻</span>
+    <span>For weddings &amp; love stories</span>
+    <span class="sep">✻</span>
+    <span>For makers &amp; portfolios</span>
+    <span class="sep">✻</span>
+    <span>For brands with personality</span>
+    <span class="sep">✻</span>
+    <span>For events &amp; gatherings</span>
+    <span class="sep">✻</span>
+    <span>For ideas, not yet named</span>
+    <span class="sep">✻</span>
+    <!-- duplicate set keeps the loop seamless -->
+    <span>Designed to bloom</span>
+    <span class="sep">✻</span>
+    <span>For weddings &amp; love stories</span>
+    <span class="sep">✻</span>
+    <span>For makers &amp; portfolios</span>
+    <span class="sep">✻</span>
+    <span>For brands with personality</span>
+    <span class="sep">✻</span>
+    <span>For events &amp; gatherings</span>
+    <span class="sep">✻</span>
+    <span>For ideas, not yet named</span>
+    <span class="sep">✻</span>
+  </div>
+</section>
+
+<!-- ============ PROCESS ============ -->
+<section class="section process" id="process">
+  <div class="wrap">
+    <div class="process-intro process-intro--centered reveal">
+      <h2 class="h-lg">From <em class="italic">bulb</em> to full bloom.</h2>
+    </div>
+  </div>
+
+  <!-- ============ CINEMATIC BLOOM ZOOM (full-bleed) ============ -->
+  <div class="bloom-zoom" aria-label="Cinematic bloom into the seed of the process">
+    <div class="bloom-zoom-stage">
+      <div class="zoom-aura" aria-hidden="true"></div>
+      <svg class="zoom-flower" viewBox="-200 -200 400 400" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <defs>
+          <linearGradient id="petalSheenLight" x1="50%" y1="0%" x2="50%" y2="100%">
+            <stop offset="0%"  stop-color="#e6d7f1"/>
+            <stop offset="60%" stop-color="#c4a5e0"/>
+            <stop offset="100%" stop-color="#a78ace"/>
+          </linearGradient>
+          <linearGradient id="petalSheenMid" x1="50%" y1="0%" x2="50%" y2="100%">
+            <stop offset="0%"  stop-color="#c4a5e0"/>
+            <stop offset="60%" stop-color="#8b5fbf"/>
+            <stop offset="100%" stop-color="#6b4596"/>
+          </linearGradient>
+          <linearGradient id="petalSheenDeep" x1="50%" y1="0%" x2="50%" y2="100%">
+            <stop offset="0%"  stop-color="#8b5fbf"/>
+            <stop offset="60%" stop-color="#5e3d8a"/>
+            <stop offset="100%" stop-color="#3d2660"/>
+          </linearGradient>
+          <radialGradient id="zoomDiscGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%"   stop-color="#fbd9be"/>
+            <stop offset="22%"  stop-color="#e89a7c"/>
+            <stop offset="60%"  stop-color="#d97757"/>
+            <stop offset="100%" stop-color="#9a5232"/>
+          </radialGradient>
+          <radialGradient id="zoomOvuleGrad" cx="50%" cy="42%" r="58%">
+            <stop offset="0%"   stop-color="#ffffff"/>
+            <stop offset="30%"  stop-color="#fff1d6"/>
+            <stop offset="68%"  stop-color="#f6c89c"/>
+            <stop offset="100%" stop-color="#c97a52"/>
+          </radialGradient>
+          <radialGradient id="zoomOvuleCore" cx="50%" cy="38%" r="62%">
+            <stop offset="0%"   stop-color="#ffffff"/>
+            <stop offset="55%"  stop-color="#fffaef"/>
+            <stop offset="100%" stop-color="#f8d8b0"/>
+          </radialGradient>
+          <!-- Crisp rim around the ovule for definition at extreme zoom -->
+          <radialGradient id="zoomOvuleRim" cx="50%" cy="50%" r="50%">
+            <stop offset="92%" stop-color="rgba(122,69,48,0)"/>
+            <stop offset="98%" stop-color="rgba(122,69,48,0.55)"/>
+            <stop offset="100%" stop-color="rgba(122,69,48,0)"/>
+          </radialGradient>
+        </defs>
+
+        <g id="zoomL1"></g>
+        <g id="zoomL2"></g>
+        <g id="zoomL3"></g>
+        <g id="zoomL4"></g>
+
+        <g class="zoom-disc">
+          <circle r="58" fill="url(#zoomDiscGrad)"/>
+          <circle r="58" fill="none" stroke="#7a4530" stroke-width="0.7" stroke-dasharray="2 4" opacity="0.5"/>
+        </g>
+
+        <g id="discFlorets"></g>
+        <g id="stamens"></g>
+
+        <g class="zoom-ovule">
+          <!-- Outer body with crisp gradient -->
+          <circle r="24" fill="url(#zoomOvuleGrad)"/>
+          <!-- Defined rim ring — gives the ovule a polished edge at high zoom -->
+          <circle r="24" fill="url(#zoomOvuleRim)"/>
+          <circle r="24" fill="none" stroke="#9a5e3c" stroke-width="0.4" opacity="0.55"/>
+          <!-- Warm inner layer -->
+          <circle r="16" fill="url(#zoomOvuleCore)"/>
+          <!-- Bright milky core -->
+          <circle r="8"  fill="#fffaef"/>
+          <!-- Tight white highlight slightly offset (top-left) for dimensional feel -->
+          <circle cx="-1.6" cy="-2.2" r="3.2" fill="#ffffff" opacity="0.95"/>
+          <circle cx="-2.4" cy="-3"   r="1.2" fill="#ffffff"/>
+          <g id="ovuleTexture"></g>
+        </g>
+      </svg>
+
+      <!-- All four phase reveals emerge from the ovule, one by one. -->
+      <div class="ovule-reveal" data-phase="1" aria-hidden="true">
+        <span class="ovule-label">Phase 01 · Bulb</span>
+        <h3 class="ovule-title">Discovery <em>— the quiet seed.</em></h3>
+        <p class="ovule-body">Listen first. Map the terrain.</p>
+      </div>
+      <div class="ovule-reveal" data-phase="2" aria-hidden="true">
+        <span class="ovule-label">Phase 02 · Sprouting</span>
+        <h3 class="ovule-title">Blueprint <em>— roots take hold.</em></h3>
+        <p class="ovule-body">Architecture. Wireframes. Direction.</p>
+      </div>
+      <div class="ovule-reveal" data-phase="3" aria-hidden="true">
+        <span class="ovule-label">Phase 03 · Budding</span>
+        <h3 class="ovule-title">Craft <em>— the form emerges.</em></h3>
+        <p class="ovule-body">Pixel-perfect UI. Meticulous engineering.</p>
+      </div>
+      <div class="ovule-reveal" data-phase="4" aria-hidden="true">
+        <span class="ovule-label">Phase 04 · Full Bloom</span>
+        <h3 class="ovule-title">Launch <em>— your identity, alive.</em></h3>
+        <p class="ovule-body">Staged launch. Tuned. Handed over.</p>
+      </div>
+
+      <div class="zoom-vignette" aria-hidden="true"></div>
+    </div>
+  </div>
+
+  <!-- No afterglow buffer — the bloom-zoom flows directly into the
+       philosophy section so the bloom feels like it dissolves naturally
+       into the next breath of the page. -->
+</section>
+
+<!-- ============ PHILOSOPHY ============ -->
+<section class="section philosophy" id="philosophy">
+  <div class="wrap">
+    <div class="philosophy-grid">
+      <div class="philosophy-copy reveal">
+        <span class="eyebrow">A Cyclical Philosophy</span>
+        <h2>The bloom never ends. <em class="italic">It only deepens.</em></h2>
+        <p>Nothing borrowed. Nothing templated. Hand-shaped. Solely Aster.</p>
+        <div class="philosophy-tags">
+          <span class="tag glow-track">Handcrafted</span>
+          <span class="tag glow-track">Cyclical</span>
+          <span class="tag glow-track">Unrepeatable</span>
+          <span class="tag glow-track">Intimate</span>
+        </div>
+      </div>
+
+      <div class="cyclical-stage reveal" aria-hidden="true">
+        <svg viewBox="0 0 600 600">
+          <defs>
+            <!-- Outer rotating text path -->
+            <path id="ringPath" d="M 300 300 m -240 0 a 240 240 0 1 1 480 0 a 240 240 0 1 1 -480 0"/>
+            <path id="ringPathInner" d="M 300 300 m -160 0 a 160 160 0 1 1 320 0 a 160 160 0 1 1 -320 0"/>
+          </defs>
+
+          <!-- Decorative outer ring -->
+          <circle cx="300" cy="300" r="280" fill="none" stroke="#d8cfb8" stroke-width="0.8" stroke-dasharray="1 6"/>
+          <circle cx="300" cy="300" r="240" fill="none" stroke="#8b5fbf" stroke-width="0.6" opacity="0.5"/>
+
+          <!-- Rotating outer text -->
+          <g class="cyclical-ring">
+            <text font-family="Inter, sans-serif" font-size="13" letter-spacing="8" fill="#7e786c">
+              <textPath href="#ringPath" startOffset="0">
+                BESPOKE · HANDCRAFTED · INTIMATE · UNREPEATABLE · CYCLICAL · SOLELY ASTER · BESPOKE · HANDCRAFTED · INTIMATE · UNREPEATABLE · CYCLICAL · SOLELY ASTER ·
+              </textPath>
+            </text>
+          </g>
+
+          <!-- Arrows around inner ring -->
+          <g class="cyclical-ring-reverse">
+            <g transform="translate(300 60)">
+              <path d="M -8 0 L 8 0 M 4 -5 L 8 0 L 4 5" stroke="#8b5fbf" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+            <g transform="translate(540 300) rotate(90)">
+              <path d="M -8 0 L 8 0 M 4 -5 L 8 0 L 4 5" stroke="#8b5fbf" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+            <g transform="translate(300 540) rotate(180)">
+              <path d="M -8 0 L 8 0 M 4 -5 L 8 0 L 4 5" stroke="#8b5fbf" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+            <g transform="translate(60 300) rotate(270)">
+              <path d="M -8 0 L 8 0 M 4 -5 L 8 0 L 4 5" stroke="#8b5fbf" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+          </g>
+
+          <!-- Inner static decorative -->
+          <circle cx="300" cy="300" r="160" fill="none" stroke="#d8cfb8" stroke-width="0.8"/>
+          <circle cx="300" cy="300" r="140" fill="#faf5e9"/>
+
+          <!-- Inner aster icon -->
+          <g transform="translate(300 300)" id="philosophyFlower">
+            <g id="philOuter"></g>
+            <g id="philInner"></g>
+            <circle r="14" fill="#b8714e"/>
+            <circle r="8" fill="#d97757"/>
+            <circle r="3" fill="#e89a7c"/>
+          </g>
+        </svg>
+        <div class="cyclical-center">
+          <span class="micro">— Solely Aster —</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="fine-divide"></div>
+
+<!-- ============ WORK · SELECTED GARDENS ============ -->
+<section class="section work" id="work">
+  <div class="wrap">
+    <div class="head">
+      <div>
+        <span class="eyebrow reveal">Selected gardens</span>
+        <h2 class="reveal">Sites we've grown <em>this year.</em></h2>
+      </div>
+      <a href="#connect" class="btn btn-ghost reveal glow-track">See all 18 →</a>
+    </div>
+    <div class="work-grid reveal-stagger">
+      <article class="case case-b">
+        <div class="preview">
+          <svg class="deco" viewBox="-100 -100 200 200" fill="currentColor">
+            <g>
+              <ellipse cx="0" cy="-50" rx="8" ry="32"/>
+              <ellipse cx="0" cy="-50" rx="8" ry="32" transform="rotate(60)"/>
+              <ellipse cx="0" cy="-50" rx="8" ry="32" transform="rotate(120)"/>
+              <ellipse cx="0" cy="-50" rx="8" ry="32" transform="rotate(180)"/>
+              <ellipse cx="0" cy="-50" rx="8" ry="32" transform="rotate(240)"/>
+              <ellipse cx="0" cy="-50" rx="8" ry="32" transform="rotate(300)"/>
+            </g>
+          </svg>
+          <span class="label">Personal portfolio</span>
+        </div>
+        <div class="body">
+          <h3>Lila Okonkwo — <em>photographer</em></h3>
+          <p>A slow, image-led portfolio with three quiet chapters of work.</p>
+          <div class="row"><span>Lagos · 2026</span><strong>+4 commissions</strong></div>
+        </div>
+      </article>
+      <article class="case case-c">
+        <div class="preview">
+          <svg class="deco" viewBox="-100 -100 200 200" fill="currentColor">
+            <g>
+              <ellipse cx="0" cy="-45" rx="6" ry="28"/>
+              <ellipse cx="0" cy="-45" rx="6" ry="28" transform="rotate(72)"/>
+              <ellipse cx="0" cy="-45" rx="6" ry="28" transform="rotate(144)"/>
+              <ellipse cx="0" cy="-45" rx="6" ry="28" transform="rotate(216)"/>
+              <ellipse cx="0" cy="-45" rx="6" ry="28" transform="rotate(288)"/>
+            </g>
+          </svg>
+          <span class="label">Small brand &amp; web</span>
+        </div>
+        <div class="body">
+          <h3>Tiller Studio — <em>brand consultancy</em></h3>
+          <p>Quiet, slow-scroll editorial site for a three-person studio in Berlin.</p>
+          <div class="row"><span>Berlin · 2026</span><strong>4× avg. session</strong></div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<div class="fine-divide"></div>
+
+<!-- ============ PRICING ============ -->
+<section class="section pricing" id="pricing">
+  <div class="wrap">
+    <div class="pricing-intro reveal">
+      <span class="eyebrow">Tiers of the Bloom</span>
+      <h2 class="h-lg">Three quiet ways to begin.</h2>
+      <p class="lede">Choose your depth of bloom.</p>
+    </div>
+
+    <div class="tier-grid reveal-stagger">
+      <!-- ── Solo · Seed-tier styling ── -->
+      <article class="tier t-seed glow-track">
+        <div class="tier-flower">
+          <svg viewBox="-30 -30 60 60" fill="none" class="mini-bloom" aria-hidden="true">
+            <circle cx="0" cy="0" r="6" fill="currentColor"/>
+            <ellipse cx="0" cy="-12" rx="3" ry="8" fill="currentColor" opacity="0.55"/>
+          </svg>
+        </div>
+        <div class="tier-name">Seed</div>
+        <p class="tier-blurb">A single, tailored bloom. For campaigns, micro-launches, and brave small starts.</p>
+        <div class="tier-price">$300<span class="asterisk">*</span><small>/ project</small></div>
+        <ul>
+          <li><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><path d="M7 0L8.5 5.5L14 7L8.5 8.5L7 14L5.5 8.5L0 7L5.5 5.5L7 0z"/></svg> Single landing page</li>
+          <li><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><path d="M7 0L8.5 5.5L14 7L8.5 8.5L7 14L5.5 8.5L0 7L5.5 5.5L7 0z"/></svg> Key graphic assets</li>
+          <li><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><path d="M7 0L8.5 5.5L14 7L8.5 8.5L7 14L5.5 8.5L0 7L5.5 5.5L7 0z"/></svg> Fast, tailored execution</li>
+        </ul>
+        <a class="tier-cta" href="pricing.html#seed">
+          Plant the seed
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 11L11 3M11 3H5M11 3V9"/></svg>
+        </a>
+      </article>
+
+      <!-- ── Growth · Bloom-tier styling (FEATURED, dark) ── -->
+      <article class="tier t-bloom featured glow-track">
+        <div class="ribbon">Most chosen</div>
+        <div class="tier-flower" style="color: var(--aster-light);">
+          <svg viewBox="-30 -30 60 60" fill="none" class="mini-bloom" aria-hidden="true">
+            <g>
+              <ellipse cx="0" cy="-14" rx="4" ry="10" fill="currentColor"/>
+              <ellipse cx="0" cy="14"  rx="4" ry="10" fill="currentColor"/>
+              <ellipse cx="-14" cy="0" rx="10" ry="4" fill="currentColor"/>
+              <ellipse cx="14"  cy="0" rx="10" ry="4" fill="currentColor"/>
+              <ellipse cx="-10" cy="-10" rx="10" ry="4" transform="rotate(-45 -10 -10)" fill="currentColor" opacity="0.7"/>
+              <ellipse cx="10"  cy="10"  rx="10" ry="4" transform="rotate(-45 10 10)"   fill="currentColor" opacity="0.7"/>
+            </g>
+            <circle cx="0" cy="0" r="5" fill="var(--bloom)"/>
+          </svg>
+        </div>
+        <div class="tier-name">Blossom</div>
+        <p class="tier-blurb">A presence in full sway. Premium multi-page site with bespoke motion and a considered system.</p>
+        <div class="tier-price">~$1,000<span class="asterisk">*</span><small>/ project</small></div>
+        <ul>
+          <li><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><path d="M7 0L8.5 5.5L14 7L8.5 8.5L7 14L5.5 8.5L0 7L5.5 5.5L7 0z"/></svg> Premium multi-page site</li>
+          <li><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><path d="M7 0L8.5 5.5L14 7L8.5 8.5L7 14L5.5 8.5L0 7L5.5 5.5L7 0z"/></svg> Custom digital presence</li>
+          <li><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><path d="M7 0L8.5 5.5L14 7L8.5 8.5L7 14L5.5 8.5L0 7L5.5 5.5L7 0z"/></svg> Bespoke motion &amp; interaction</li>
+          <li><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><path d="M7 0L8.5 5.5L14 7L8.5 8.5L7 14L5.5 8.5L0 7L5.5 5.5L7 0z"/></svg> Performance tuning &amp; staged launch</li>
+        </ul>
+        <a class="tier-cta" href="pricing.html#blossom">
+          Begin to blossom
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 11L11 3M11 3H5M11 3V9"/></svg>
+        </a>
+      </article>
+
+      <!-- ── Identity · Blossom-tier styling ── -->
+      <article class="tier t-blossom glow-track">
+        <div class="tier-flower">
+          <svg viewBox="-30 -30 60 60" fill="none" class="mini-bloom" aria-hidden="true">
+            <g>
+              <ellipse cx="0" cy="-16" rx="4" ry="12" fill="currentColor" opacity="0.7"/>
+              <ellipse cx="0" cy="16"  rx="4" ry="12" fill="currentColor" opacity="0.7"/>
+              <ellipse cx="-16" cy="0" rx="12" ry="4" fill="currentColor" opacity="0.7"/>
+              <ellipse cx="16"  cy="0" rx="12" ry="4" fill="currentColor" opacity="0.7"/>
+              <ellipse cx="-11" cy="-11" rx="12" ry="4" transform="rotate(-45 -11 -11)" fill="currentColor"/>
+              <ellipse cx="11"  cy="11"  rx="12" ry="4" transform="rotate(-45 11 11)"   fill="currentColor"/>
+              <ellipse cx="11"  cy="-11" rx="12" ry="4" transform="rotate(45 11 -11)"   fill="currentColor"/>
+              <ellipse cx="-11" cy="11"  rx="12" ry="4" transform="rotate(45 -11 11)"   fill="currentColor"/>
+            </g>
+            <circle cx="0" cy="0" r="6" fill="var(--bloom)"/>
+          </svg>
+        </div>
+        <div class="tier-name">Bloom</div>
+        <p class="tier-blurb">A bespoke garden — fully tended. Complete brand system, library, and long-form handover.</p>
+        <div class="tier-price">~$2,000<span class="asterisk">*</span><small>/ project</small></div>
+        <ul>
+          <li><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><path d="M7 0L8.5 5.5L14 7L8.5 8.5L7 14L5.5 8.5L0 7L5.5 5.5L7 0z"/></svg> Complete bespoke identity</li>
+          <li><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><path d="M7 0L8.5 5.5L14 7L8.5 8.5L7 14L5.5 8.5L0 7L5.5 5.5L7 0z"/></svg> Full multi-page experience</li>
+          <li><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><path d="M7 0L8.5 5.5L14 7L8.5 8.5L7 14L5.5 8.5L0 7L5.5 5.5L7 0z"/></svg> Component library &amp; handover</li>
+          <li><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><path d="M7 0L8.5 5.5L14 7L8.5 8.5L7 14L5.5 8.5L0 7L5.5 5.5L7 0z"/></svg> Brand guidelines document</li>
+          <li><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><path d="M7 0L8.5 5.5L14 7L8.5 8.5L7 14L5.5 8.5L0 7L5.5 5.5L7 0z"/></svg> Long-form training &amp; onboarding</li>
+        </ul>
+        <a class="tier-cta" href="pricing.html#bloom">
+          Reach the bloom
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 11L11 3M11 3H5M11 3V9"/></svg>
+        </a>
+      </article>
+    </div>
+
+    <p class="pricing-footnote reveal">*Project pricings are subject to negotiation and requirements.</p>
+  </div>
+</section>
+
+<!-- ============ EDITORIAL CALLOUT ============ -->
+<section class="callout" aria-label="Aster promise">
+  <div class="callout-inner reveal">
+    <svg class="callout-mark" viewBox="-15 -15 30 30" fill="currentColor" aria-hidden="true">
+      <g>
+        <ellipse cx="0" cy="-10" rx="2.5" ry="8"/>
+        <ellipse cx="0" cy="-10" rx="2.5" ry="8" transform="rotate(60)"/>
+        <ellipse cx="0" cy="-10" rx="2.5" ry="8" transform="rotate(120)"/>
+        <ellipse cx="0" cy="-10" rx="2.5" ry="8" transform="rotate(180)"/>
+        <ellipse cx="0" cy="-10" rx="2.5" ry="8" transform="rotate(240)"/>
+        <ellipse cx="0" cy="-10" rx="2.5" ry="8" transform="rotate(300)"/>
+      </g>
+      <circle cx="0" cy="0" r="3.2" fill="var(--bloom)"/>
+    </svg>
+    <p class="callout-line">Give us the seed.</p>
+    <p class="callout-line">We'll make it <em>bloom.</em></p>
+  </div>
+</section>
+
+<!-- ============ PORTAL ============ -->
+<section class="section portal" id="connect">
+  <div class="portal-petals" aria-hidden="true">
+    <svg class="dp" style="--x: 6vw;  --delay: -1s;  --dur: 24s; --hue: var(--aster);"       viewBox="0 0 20 28"><ellipse cx="10" cy="14" rx="5" ry="13"/></svg>
+    <svg class="dp" style="--x: 18vw; --delay: -9s;  --dur: 30s; --hue: var(--aster-light);" viewBox="0 0 20 28"><ellipse cx="10" cy="14" rx="5" ry="13"/></svg>
+    <svg class="dp" style="--x: 32vw; --delay: -15s; --dur: 26s; --hue: var(--bloom);"       viewBox="0 0 20 28"><ellipse cx="10" cy="14" rx="5" ry="13"/></svg>
+    <svg class="dp" style="--x: 48vw; --delay: -5s;  --dur: 32s; --hue: var(--bloom-deep);"  viewBox="0 0 20 28"><ellipse cx="10" cy="14" rx="5" ry="13"/></svg>
+    <svg class="dp" style="--x: 62vw; --delay: -19s; --dur: 28s; --hue: var(--aster-deep);"  viewBox="0 0 20 28"><ellipse cx="10" cy="14" rx="5" ry="13"/></svg>
+    <svg class="dp" style="--x: 76vw; --delay: -12s; --dur: 22s; --hue: var(--sage);"        viewBox="0 0 20 28"><ellipse cx="10" cy="14" rx="5" ry="13"/></svg>
+    <svg class="dp" style="--x: 88vw; --delay: -3s;  --dur: 34s; --hue: var(--aster);"       viewBox="0 0 20 28"><ellipse cx="10" cy="14" rx="5" ry="13"/></svg>
+    <svg class="dp" style="--x: 12vw; --delay: -22s; --dur: 26s; --hue: var(--aster-light);" viewBox="0 0 20 28"><ellipse cx="10" cy="14" rx="5" ry="13"/></svg>
+  </div>
+  <div class="wrap">
+    <div class="portal-intro reveal">
+      <h2 class="h-lg">Begin — <em class="italic">or return.</em></h2>
+      <p class="portal-lede">Held in confidence.</p>
+    </div>
+
+    <div class="portal-grid">
+      <!-- Begin a Conversation -->
+      <form class="portal-card reveal" id="messageForm" novalidate>
+        <span class="eyebrow" style="margin-bottom:18px;">Begin a Conversation</span>
+        <h3 class="h-md">Tell us about your brand.</h3>
+        <p class="lede">We'll reach back within a day.</p>
+
+        <div class="field-grid-2">
+          <div class="field">
+            <label for="name">Name</label>
+            <input id="name" type="text" placeholder="Your full name" required />
+            <svg class="field-bud" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>
+          </div>
+          <div class="field">
+            <label for="email">Email</label>
+            <input id="email" type="email" placeholder="hello@yourbrand.com" required />
+            <svg class="field-bud" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="phone">
+            Phone
+            <span class="hint">— optional</span>
+          </label>
+          <input id="phone" type="tel" placeholder="+1 (555) 123-4567" autocomplete="tel" />
+          <svg class="field-bud" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>
+        </div>
+
+        <div class="field">
+          <label for="clue">
+            Clue
+            <span class="hint">— a personal keyword to retrieve your thread later</span>
+          </label>
+          <input id="clue" type="text" placeholder="e.g. lavender-october" required />
+          <svg class="field-bud" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>
+        </div>
+
+        <div class="field">
+          <label for="message">Message</label>
+          <textarea id="message" rows="4" placeholder="What season is your brand in right now?"></textarea>
+          <svg class="field-bud" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>
+        </div>
+
+        <div class="portal-actions">
+          <button type="submit" class="btn btn-primary btn-block" id="sendBtn">
+            Send Direct Message
+            <svg class="ar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 18 L18 6 M9 6 H18 V15"/></svg>
+          </button>
+          <div class="track-feedback" id="msgFeedback">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 L9 17 L4 12"/></svg>
+            <span></span>
+          </div>
+        </div>
+      </form>
+
+      <!-- Track / Retrieve -->
+      <div class="portal-card reveal" id="trackCard">
+        <span class="eyebrow" style="margin-bottom:18px;">Track Your Order</span>
+        <h3 class="h-md">Return to the bloom.</h3>
+        <p class="lede">Enter your code — or recover it below.</p>
+
+        <div class="field">
+          <label for="trackCode">Tracking Code</label>
+          <input id="trackCode" type="text" placeholder="ASTER-•••• • ••••" autocomplete="off" spellcheck="false" />
+          <svg class="field-bud" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>
+        </div>
+
+        <!-- Staff Layer 2 input — hidden by default, revealed only by Layer 1 secret -->
+        <div class="field staff-layer2" id="staffLayer2" hidden>
+          <label for="staffPass">Staff Authorisation</label>
+          <input id="staffPass" type="password" placeholder="Enter staff password" autocomplete="off" spellcheck="false" />
+        </div>
+
+        <div class="portal-actions">
+          <button class="btn btn-primary btn-block" id="checkBtn">
+            Check Status
+            <svg class="ar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 18 L18 6 M9 6 H18 V15"/></svg>
+          </button>
+        </div>
+
+        <div class="portal-divider">— Or recover your code —</div>
+
+        <div class="field-grid-2">
+          <div class="field">
+            <label for="recEmail">Email</label>
+            <input id="recEmail" type="email" placeholder="hello@yourbrand.com" />
+            <svg class="field-bud" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>
+          </div>
+          <div class="field">
+            <label for="recClue">Clue</label>
+            <input id="recClue" type="text" placeholder="lavender-october" />
+            <svg class="field-bud" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>
+          </div>
+        </div>
+
+        <div class="portal-actions">
+          <button class="btn btn-ghost btn-block" id="retrieveBtn">
+            Retrieve Your Code
+            <svg class="ar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 18 L18 6 M9 6 H18 V15"/></svg>
+          </button>
+          <div class="track-feedback" id="trackFeedback">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 L9 17 L4 12"/></svg>
+            <span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DRAWER OVERLAY (steps + tiers) ============ -->
+<div class="overlay" id="overlay" aria-hidden="true">
+  <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+    <button class="drawer-close" id="drawerClose" aria-label="Close"></button>
+    <span class="eyebrow" id="drawerEyebrow">Stage</span>
+    <h3 id="drawerTitle">—</h3>
+    <p class="lede" id="drawerLede">—</p>
+    <div class="drawer-stat-row" id="drawerStats"></div>
+    <div class="drawer-section">
+      <h5 id="drawerListLabel">Included</h5>
+      <ul class="drawer-list" id="drawerList"></ul>
+    </div>
+    <p class="drawer-footnote" id="drawerFootnote"></p>
+    <a class="btn btn-primary glow-track glow-warm" id="drawerCta" href="#connect">
+      <span id="drawerCtaLabel">Begin a conversation</span>
+      <svg class="ar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 18 L18 6 M9 6 H18 V15"/></svg>
+    </a>
+  </aside>
+</div>
+
+<!-- ============ STAFF PANEL (hidden until 2-layer auth passes) ============ -->
+<div class="staff-panel" id="staffPanel" aria-hidden="true">
+  <div class="staff-bar">
+    <div class="staff-bar-left">
+      <svg viewBox="0 0 60 60" aria-hidden="true">
+        <g transform="translate(30 30)">
+          <g id="staffPetals" fill="#c4a5e0"></g>
+          <circle r="5" fill="#15140f"/>
+        </g>
+      </svg>
+      <div>
+        <span class="word">Aster <span class="sub">Staff Console</span></span>
+      </div>
+    </div>
+    <div class="staff-bar-right">
+      <span class="staff-status"><span class="dot"></span> Secure session</span>
+      <button class="staff-logout" id="staffLogout">Sign out</button>
+    </div>
+  </div>
+  <div class="staff-main">
+    <aside class="staff-list" id="staffList">
+      <div class="staff-list-head">
+        <span class="label">Inbox</span>
+        <span class="count" id="msgCount">0</span>
+      </div>
+      <div id="msgList"></div>
+    </aside>
+    <section class="staff-thread empty" id="staffThread">
+      Select a message to begin.
+    </section>
+  </div>
+</div>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 60 60" aria-hidden="true">
+          <g transform="translate(30 30)">
+            <g id="footerPetals" fill="#c4a5e0"></g>
+            <circle r="5" fill="#b8714e"/>
+          </g>
+        </svg>
+        <span>
+          <span class="brand-word">Aster</span>
+          <span class="brand-sub">Studio</span>
+        </span>
+      </div>
+      <p>A bespoke design studio. Every project blooms — handcrafted, intimate, and solely Aster.</p>
+    </div>
+    <div class="footer-col">
+      <h5>Studio</h5>
+      <a href="#process">Process</a>
+      <a href="#philosophy">Philosophy</a>
+      <a href="#pricing">Pricing</a>
+    </div>
+    <div class="footer-col">
+      <h5>Connect</h5>
+      <a href="#connect">Begin a message</a>
+      <a href="#connect">Retrieve a code</a>
+      <a href="mailto:hello@aster.studio">hello@aster.studio</a>
+    </div>
+    <div class="footer-col">
+      <h5>Elsewhere</h5>
+      <a href="#">Read.cv</a>
+      <a href="#">Instagram</a>
+      <a href="#">LinkedIn</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Aster Studio</span>
+    <span>Handcrafted with care.</span>
+  </div>
+</footer>
+
+<!-- ============ AMBIENT DRIFTING PETALS ============ -->
+<div class="ambient-petals" aria-hidden="true">
+  <svg class="dp" style="--x: 8vw;  --delay: -2s;  --dur: 28s; --hue: var(--aster);"       viewBox="0 0 20 28"><ellipse cx="10" cy="14" rx="5" ry="13"/></svg>
+  <svg class="dp" style="--x: 22vw; --delay: -8s;  --dur: 32s; --hue: var(--aster-light);" viewBox="0 0 20 28"><ellipse cx="10" cy="14" rx="5" ry="13"/></svg>
+  <svg class="dp" style="--x: 38vw; --delay: -14s; --dur: 26s; --hue: var(--bloom);"       viewBox="0 0 20 28"><ellipse cx="10" cy="14" rx="5" ry="13"/></svg>
+  <svg class="dp" style="--x: 54vw; --delay: -4s;  --dur: 34s; --hue: var(--bloom-deep);"  viewBox="0 0 20 28"><ellipse cx="10" cy="14" rx="5" ry="13"/></svg>
+  <svg class="dp" style="--x: 68vw; --delay: -18s; --dur: 30s; --hue: var(--aster-deep);"  viewBox="0 0 20 28"><ellipse cx="10" cy="14" rx="5" ry="13"/></svg>
+  <svg class="dp" style="--x: 82vw; --delay: -11s; --dur: 24s; --hue: var(--sage);"        viewBox="0 0 20 28"><ellipse cx="10" cy="14" rx="5" ry="13"/></svg>
+  <svg class="dp" style="--x: 92vw; --delay: -6s;  --dur: 36s; --hue: var(--aster);"       viewBox="0 0 20 28"><ellipse cx="10" cy="14" rx="5" ry="13"/></svg>
+  <svg class="dp" style="--x: 14vw; --delay: -22s; --dur: 28s; --hue: var(--aster-light);" viewBox="0 0 20 28"><ellipse cx="10" cy="14" rx="5" ry="13"/></svg>
+</div>
+
+<!-- ============================================================
+     SCRIPT BLOCK A — VANILLA (no dependencies)
+     Runs no matter what. Reveals, petal-building, forms.
+     ============================================================ -->
+<script>
+(function () {
+  const ns = "http://www.w3.org/2000/svg";
+
+  function buildPetals(container, count, length, width, fill, offsetDeg) {
+    if (!container) return;
+    offsetDeg = offsetDeg || 0;
+    const frag = document.createDocumentFragment();
+    for (let i = 0; i < count; i++) {
+      const angle = offsetDeg + (360 / count) * i;
+      const g = document.createElementNS(ns, "g");
+      g.setAttribute("transform", "rotate(" + angle + ")");
+      g.classList.add("petal-rotator");
+      const inner = document.createElementNS(ns, "g");
+      inner.classList.add("petal");
+      const path = document.createElementNS(ns, "path");
+      path.setAttribute(
+        "d",
+        "M 0 0 Q " + (-width) + " " + (-length * 0.45) + " 0 " + (-length) +
+        " Q " + width + " " + (-length * 0.45) + " 0 0 Z"
+      );
+      path.setAttribute("fill", fill);
+      inner.appendChild(path);
+      g.appendChild(inner);
+      frag.appendChild(g);
+    }
+    container.appendChild(frag);
+  }
+
+  // Build all flowers
+  buildPetals(document.getElementById("brand-petals"), 12, 22, 4, "#c4a5e0");
+  buildPetals(document.getElementById("footerPetals"), 12, 22, 4, "#c4a5e0");
+  buildPetals(document.getElementById("heroOuter"), 14, 165, 12, "#c4a5e0");
+  buildPetals(document.getElementById("heroInner"), 12, 105, 9, "#8b5fbf", 15);
+  buildPetals(document.getElementById("petalsOuter"), 14, 155, 12, "#c4a5e0");
+  buildPetals(document.getElementById("petalsInner"), 12, 95, 9, "#8b5fbf", 15);
+  buildPetals(document.getElementById("philOuter"), 12, 95, 7, "#c4a5e0");
+  buildPetals(document.getElementById("philInner"), 10, 55, 5, "#c4a5e0", 18);
+
+  // ─── Cinematic zoom flower — 4 petal rings, fine center detail ───
+  // Builds the giant Aster used in the bloom-zoom scroll sequence.
+  // Each ring uses a graded fill so the flower reads with depth, not flat 2D.
+  buildPetals(document.getElementById("zoomL1"), 16, 175, 18, "url(#petalSheenLight)", 0);
+  buildPetals(document.getElementById("zoomL2"), 14, 145, 16, "url(#petalSheenLight)", 11);
+  buildPetals(document.getElementById("zoomL3"), 12, 115, 14, "url(#petalSheenMid)",   15);
+  buildPetals(document.getElementById("zoomL4"), 10, 88,  12, "url(#petalSheenDeep)",  18);
+
+  // Concentric dotted rings inside the disc — simulates real Aster disc florets
+  function buildDotRing(container, count, radius, dotSize, fill, offsetDeg) {
+    if (!container) return;
+    offsetDeg = offsetDeg || 0;
+    const frag = document.createDocumentFragment();
+    for (let i = 0; i < count; i++) {
+      const angle = (offsetDeg + (360 / count) * i) * Math.PI / 180;
+      const c = document.createElementNS(ns, "circle");
+      c.setAttribute("cx", Math.cos(angle) * radius);
+      c.setAttribute("cy", Math.sin(angle) * radius);
+      c.setAttribute("r", dotSize);
+      c.setAttribute("fill", fill);
+      frag.appendChild(c);
+    }
+    container.appendChild(frag);
+  }
+  buildDotRing(document.getElementById("discFlorets"), 32, 52, 1.9, "#7a4530");
+  buildDotRing(document.getElementById("discFlorets"), 26, 44, 1.7, "#8d4f2e", 6);
+  buildDotRing(document.getElementById("discFlorets"), 20, 35, 1.5, "#a5613a", 9);
+  buildDotRing(document.getElementById("stamens"),     14, 26, 1.3, "#5e3520");
+  buildDotRing(document.getElementById("stamens"),     10, 18, 1.1, "#3d2218", 12);
+  buildDotRing(document.getElementById("ovuleTexture"), 8,  5, 0.65, "#a85d3a", 7);
+
+  // Hero title load-in
+  requestAnimationFrame(function () {
+    document.body.classList.add("loaded");
+  });
+
+  // Reveal observer
+  const reveals = document.querySelectorAll(".reveal, .reveal-stagger");
+  if ("IntersectionObserver" in window) {
+    const io = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) {
+            e.target.classList.add("in");
+            io.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -6% 0px" }
+    );
+    reveals.forEach(function (el) { io.observe(el); });
+  } else {
+    reveals.forEach(function (el) { el.classList.add("in"); });
+  }
+
+  // SAFETY NET: if for any reason reveals haven't fired after 1.5s, force-show.
+  setTimeout(function () {
+    reveals.forEach(function (el) {
+      if (!el.classList.contains("in")) el.classList.add("in");
+    });
+  }, 1500);
+
+  // Nav scrolled state (vanilla)
+  const nav = document.getElementById("nav");
+  function onScroll() {
+    if (!nav) return;
+    if (window.scrollY > 60) nav.classList.add("scrolled");
+    else nav.classList.remove("scrolled");
+  }
+  window.addEventListener("scroll", onScroll, { passive: true });
+
+  // Step active-state highlighting (vanilla, replaces GSAP version)
+  const steps = document.querySelectorAll(".step");
+  if (steps.length && "IntersectionObserver" in window) {
+    const stepIO = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) e.target.classList.add("active");
+          else e.target.classList.remove("active");
+        });
+      },
+      { threshold: 0.5, rootMargin: "-20% 0px -20% 0px" }
+    );
+    steps.forEach(function (s) { stepIO.observe(s); });
+  }
+
+  // Smooth anchor scroll fallback (used if Lenis can't load)
+  document.querySelectorAll('a[href^="#"]').forEach(function (a) {
+    a.addEventListener("click", function (e) {
+      const id = a.getAttribute("href");
+      if (id.length > 1) {
+        const target = document.querySelector(id);
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
+    });
+  });
+
+  // ===== Drawer / overlay (shared by steps + tiers) =====
+  const overlay = document.getElementById("overlay");
+  const drawer = document.getElementById("drawer");
+  const drawerClose = document.getElementById("drawerClose");
+
+  function openDrawer(data) {
+    document.getElementById("drawerEyebrow").textContent = data.eyebrow;
+    document.getElementById("drawerTitle").innerHTML = data.title;
+    document.getElementById("drawerLede").textContent = data.lede;
+    document.getElementById("drawerListLabel").textContent = data.listLabel || "Included";
+    document.getElementById("drawerFootnote").textContent = data.footnote || "";
+    document.getElementById("drawerCtaLabel").textContent = data.ctaLabel || "Begin a conversation";
+
+    const statsEl = document.getElementById("drawerStats");
+    statsEl.innerHTML = "";
+    (data.stats || []).forEach(function (s) {
+      const el = document.createElement("div");
+      el.className = "drawer-stat";
+      el.innerHTML = '<div class="v">' + s.v + '</div><div class="k">' + s.k + '</div>';
+      statsEl.appendChild(el);
+    });
+
+    const listEl = document.getElementById("drawerList");
+    listEl.innerHTML = "";
+    (data.list || []).forEach(function (item) {
+      const li = document.createElement("li");
+      li.textContent = item;
+      listEl.appendChild(li);
+    });
+
+    overlay.classList.add("open");
+    overlay.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeDrawer() {
+    overlay.classList.remove("open");
+    overlay.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+  }
+
+  drawerClose.addEventListener("click", closeDrawer);
+  overlay.addEventListener("click", function (e) {
+    if (e.target === overlay) closeDrawer();
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && overlay.classList.contains("open")) closeDrawer();
+  });
+
+  // --- Step details data
+  const STEP_DATA = {
+    "1": {
+      eyebrow: "01 · Bulb",
+      title: "Discovery — <em>the quiet seed.</em>",
+      lede: "Listen first. Map the terrain. Nothing built until the shape is clear.",
+      stats: [
+        { v: "1–2 wks", k: "Phase length" },
+        { v: "2–4", k: "Working sessions" }
+      ],
+      listLabel: "Deliverables",
+      list: [
+        "Strategic positioning document",
+        "Brand audit & competitive landscape",
+        "Audience archetype mapping",
+        "Stakeholder alignment notes"
+      ],
+      ctaLabel: "Begin discovery"
+    },
+    "2": {
+      eyebrow: "02 · Sprouting",
+      title: "Blueprint — <em>roots take hold.</em>",
+      lede: "Architecture. Wireframes. Direction. Aligned before a single pixel is final.",
+      stats: [
+        { v: "1 wk", k: "Phase length" },
+        { v: "3 viewports", k: "Wireframed" }
+      ],
+      listLabel: "Deliverables",
+      list: [
+        "Information architecture",
+        "User flow diagrams",
+        "Wireframes — mobile, tablet, desktop",
+        "Visual direction & moodboard"
+      ],
+      ctaLabel: "See the blueprint"
+    },
+    "3": {
+      eyebrow: "03 · Budding",
+      title: "Craft — <em>the form emerges.</em>",
+      lede: "Pixel-perfect UI. Meticulous frontend engineering. Every interaction shaped by hand.",
+      stats: [
+        { v: "2–3 wks", k: "Phase length" },
+        { v: "&gt; 95", k: "Lighthouse target" }
+      ],
+      listLabel: "Deliverables",
+      list: [
+        "High-fidelity UI design",
+        "Custom motion & interaction system",
+        "Frontend build (semantic, accessible)",
+        "Component library"
+      ],
+      ctaLabel: "Begin the craft"
+    },
+    "4": {
+      eyebrow: "04 · Full Bloom",
+      title: "Launch — <em>your identity, alive.</em>",
+      lede: "Staged launch. Tuned. Handed over with care.",
+      stats: [
+        { v: "3–5 days", k: "Launch window" },
+        { v: "Full pkg", k: "Handover" }
+      ],
+      listLabel: "Deliverables",
+      list: [
+        "Staged deployment & DNS routing",
+        "Performance & accessibility tuning",
+        "Cross-browser QA pass",
+        "Handover package & training session"
+      ],
+      ctaLabel: "Plan a launch"
+    }
+  };
+
+  document.querySelectorAll(".step").forEach(function (step) {
+    function open() {
+      const id = step.getAttribute("data-step");
+      if (STEP_DATA[id]) openDrawer(STEP_DATA[id]);
+    }
+    step.addEventListener("click", open);
+    step.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        open();
+      }
+    });
+  });
+
+  // --- Tier details data
+  const TIER_DATA = {
+    "solo": {
+      eyebrow: "Seed Tier",
+      title: "Seed — <em>$300<sup>*</sup></em>",
+      lede: "A single, tailored bloom. Made fast and made well.",
+      stats: [
+        { v: "1", k: "Page" },
+        { v: "~7 days", k: "Delivery" }
+      ],
+      listLabel: "What's included",
+      list: [
+        "Single landing page, bespoke from scratch",
+        "Key graphic design assets",
+        "Brand-aligned type & color system",
+        "Mobile-first responsive build",
+        "Basic SEO setup",
+        "Performance pass"
+      ],
+      footnote: "*Project pricings are subject to negotiation and requirements.",
+      ctaLabel: "Begin a conversation"
+    },
+    "growth": {
+      eyebrow: "Blossom Tier",
+      title: "Blossom — <em>~$1,000<sup>*</sup></em>",
+      lede: "A presence in full sway. Multi-page experience with bespoke motion.",
+      stats: [
+        { v: "Up to 5", k: "Pages" },
+        { v: "~2 wks", k: "Delivery" }
+      ],
+      listLabel: "What's included",
+      list: [
+        "Premium multi-page website",
+        "Comprehensive digital presence",
+        "Bespoke motion & interaction layer",
+        "Performance tuning & staged launch",
+        "Analytics integration",
+        "Cross-browser QA"
+      ],
+      footnote: "*Project pricings are subject to negotiation and requirements.",
+      ctaLabel: "Begin the bloom"
+    },
+    "identity": {
+      eyebrow: "Full Bloom Tier",
+      title: "Full Bloom — <em>~$2,000<sup>*</sup></em>",
+      lede: "A complete, bespoke identity. Our deepest, most considered service.",
+      stats: [
+        { v: "Full", k: "Identity system" },
+        { v: "~3 wks", k: "Delivery" }
+      ],
+      listLabel: "What's included",
+      list: [
+        "Complete brand identity system",
+        "Logo, type & colour direction",
+        "Full multi-page experience",
+        "Component library & motion language",
+        "Brand guidelines document",
+        "Long-form training & handover"
+      ],
+      footnote: "*Project pricings are subject to negotiation and requirements.",
+      ctaLabel: "Reach full bloom"
+    }
+  };
+
+  document.querySelectorAll(".tier-cta[data-tier]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      const t = btn.getAttribute("data-tier");
+      if (TIER_DATA[t]) openDrawer(TIER_DATA[t]);
+    });
+  });
+
+  // ===== Portal forms (no deps) =====
+  const msgForm = document.getElementById("messageForm");
+  const msgFeedback = document.getElementById("msgFeedback");
+
+  function generateCode(seed) {
+    const a = (seed || "ASTER") + Date.now().toString(36).toUpperCase();
+    const hash = a.replace(/[^A-Z0-9]/g, "").slice(-8);
+    return "ASTER-" + hash.slice(0, 4) + "-" + hash.slice(4, 8);
+  }
+
+  if (msgForm) {
+    msgForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const phoneEl = document.getElementById("phone");
+      const phone = phoneEl ? phoneEl.value.trim() : "";
+      const clue = document.getElementById("clue").value.trim();
+      const messageEl = document.getElementById("message");
+      const message = messageEl ? messageEl.value.trim() : "";
+      if (!name || !email || !clue) {
+        msgFeedback.querySelector("span").textContent =
+          "Please add your name, email and a memorable clue.";
+        msgFeedback.classList.add("show");
+        msgFeedback.style.color = "#a14a3a";
+        msgFeedback.style.background = "rgba(161, 74, 58, 0.08)";
+        msgFeedback.style.borderColor = "#e1c2b8";
+        return;
+      }
+      const code = generateCode(clue);
+      try {
+        localStorage.setItem("aster:" + email + ":" + clue, code);
+        const payload = { name: name, email: email, phone: phone, clue: clue, message: message, code: code, time: Date.now() };
+        localStorage.setItem("aster-msg:" + code, JSON.stringify(payload));
+      } catch (_) {}
+      msgFeedback.querySelector("span").textContent =
+        "Sent. Your tracking code is " + code + " — we'll reach back within 24h.";
+      msgFeedback.classList.add("show");
+      msgFeedback.style.color = "";
+      msgFeedback.style.background = "";
+      msgFeedback.style.borderColor = "";
+      msgForm.reset();
+    });
+  }
+
+  const checkBtn = document.getElementById("checkBtn");
+  const retrieveBtn = document.getElementById("retrieveBtn");
+  const trackFeedback = document.getElementById("trackFeedback");
+
+  if (checkBtn) {
+    checkBtn.addEventListener("click", function () {
+      const code = document.getElementById("trackCode").value.trim();
+      if (!code) {
+        trackFeedback.querySelector("span").textContent =
+          "Enter your tracking code to check status.";
+      } else {
+        const seasons = [
+          "Bulb · Discovery",
+          "Sprouting · Blueprint",
+          "Budding · Craft",
+          "Full Bloom · Launch",
+        ];
+        const season = seasons[code.length % seasons.length];
+        trackFeedback.querySelector("span").textContent =
+          "Status — currently in " + season + ".";
+      }
+      trackFeedback.classList.add("show");
+    });
+  }
+
+  if (retrieveBtn) {
+    retrieveBtn.addEventListener("click", function () {
+      const email = document.getElementById("recEmail").value.trim();
+      const clue = document.getElementById("recClue").value.trim();
+      if (!email || !clue) {
+        trackFeedback.querySelector("span").textContent =
+          "Add the email and clue you used originally.";
+        trackFeedback.classList.add("show");
+        return;
+      }
+      let stored = null;
+      try { stored = localStorage.getItem("aster:" + email + ":" + clue); } catch (_) {}
+      if (stored) {
+        trackFeedback.querySelector("span").textContent =
+          "Your code is " + stored + ". We've also sent it to " + email + ".";
+      } else {
+        trackFeedback.querySelector("span").textContent =
+          "We've sent a recovery link to " + email + ". Look for the aster.";
+      }
+      trackFeedback.classList.add("show");
+    });
+  }
+
+  // ============================================================
+  // Persistent side rail — visibility gate + active-section
+  // ============================================================
+  (function setupSideRail() {
+    const rail = document.querySelector(".side-rail");
+    if (!rail || !("IntersectionObserver" in window)) return;
+
+    // ── Show only after the user has scrolled past the hero ──
+    function updateRailVisibility() {
+      const threshold = window.innerHeight * 0.85;
+      if (window.scrollY > threshold) rail.classList.add("visible");
+      else rail.classList.remove("visible");
+    }
+    updateRailVisibility();
+    window.addEventListener("scroll", updateRailVisibility, { passive: true });
+    window.addEventListener("resize", updateRailVisibility, { passive: true });
+
+    // ── Active-section highlighting ──
+    const railLinks = rail.querySelectorAll("a[data-section]");
+    const sections = {};
+    railLinks.forEach(function (a) {
+      const id = a.getAttribute("data-section");
+      const el = document.getElementById(id);
+      if (el) sections[id] = { el: el, link: a };
+    });
+    const railIO = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        const id = e.target.id;
+        if (!sections[id]) return;
+        if (e.isIntersecting) {
+          railLinks.forEach(function (l) { l.classList.remove("active"); });
+          sections[id].link.classList.add("active");
+        }
+      });
+    }, { threshold: 0.3, rootMargin: "-30% 0px -40% 0px" });
+    Object.values(sections).forEach(function (s) { railIO.observe(s.el); });
+  })();
+
+  // ============================================================
+  // MTK · Radial mouse-follow glow
+  // ============================================================
+  document.addEventListener("pointermove", function (e) {
+    const target = e.target.closest(".glow-track");
+    if (!target) return;
+    const r = target.getBoundingClientRect();
+    target.style.setProperty("--mx", ((e.clientX - r.left) / r.width) * 100 + "%");
+    target.style.setProperty("--my", ((e.clientY - r.top) / r.height) * 100 + "%");
+  }, { passive: true });
+
+  // ============================================================
+  // MTK · Aurora parallax background
+  // ============================================================
+  (function setupAurora() {
+    if (!window.matchMedia("(hover: fine)").matches) return;
+    const a1 = document.querySelector(".aurora.a1");
+    const a2 = document.querySelector(".aurora.a2");
+    if (!a1 || !a2) return;
+    document.addEventListener("pointermove", function (e) {
+      const px = (e.clientX / window.innerWidth)  - 0.5;
+      const py = (e.clientY / window.innerHeight) - 0.5;
+      a1.style.transform = "translate(" + (px *  40) + "px, " + (py *  40) + "px)";
+      a2.style.transform = "translate(" + (px * -50) + "px, " + (py * -50) + "px)";
+    }, { passive: true });
+  })();
+
+  // ============================================================
+  // HIDDEN STAFF COMMAND — two-layer authentication
+  // Layer 1: typing `halalballpsg2026` into the tracking code input
+  //          reveals a second-layer staff password field.
+  // Layer 2: typing `arsenalbottlejobs` into that field opens
+  //          the secret Staff Panel.
+  // ============================================================
+  const LAYER_1 = "halalballpsg2026";
+  const LAYER_2 = "arsenalbottlejobs";
+
+  const trackInput = document.getElementById("trackCode");
+  const staffLayer2 = document.getElementById("staffLayer2");
+  const staffPassInput = document.getElementById("staffPass");
+  const staffPanel = document.getElementById("staffPanel");
+
+  function revealStaffLayer2() {
+    if (staffLayer2.hidden) {
+      staffLayer2.hidden = false;
+      // Quietly clear the track input so the secret doesn't linger
+      trackInput.value = "";
+      trackInput.blur();
+      setTimeout(function () { staffPassInput.focus(); }, 350);
+    }
+  }
+
+  if (trackInput) {
+    // Detect on input so paste also works; case-insensitive trim
+    trackInput.addEventListener("input", function () {
+      const v = (trackInput.value || "").toLowerCase().replace(/\s+/g, "");
+      if (v === LAYER_1) {
+        revealStaffLayer2();
+      }
+    });
+    // Also catch the Enter key after pasting
+    trackInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        const v = (trackInput.value || "").toLowerCase().replace(/\s+/g, "");
+        if (v === LAYER_1) {
+          e.preventDefault();
+          revealStaffLayer2();
+        }
+      }
+    });
+  }
+
+  function openStaffPanel() {
+    staffPanel.classList.add("open");
+    staffPanel.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    staffPassInput.value = "";
+    staffLayer2.hidden = true;
+    renderStaffInbox();
+  }
+
+  function closeStaffPanel() {
+    staffPanel.classList.remove("open");
+    staffPanel.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+  }
+
+  if (staffPassInput) {
+    staffPassInput.addEventListener("input", function () {
+      const v = (staffPassInput.value || "").toLowerCase();
+      if (v === LAYER_2) {
+        openStaffPanel();
+      }
+    });
+    staffPassInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        const v = (staffPassInput.value || "").toLowerCase();
+        if (v === LAYER_2) {
+          e.preventDefault();
+          openStaffPanel();
+        } else {
+          staffPassInput.style.borderBottomColor = "#a14a3a";
+          setTimeout(function () { staffPassInput.style.borderBottomColor = ""; }, 800);
+        }
+      }
+    });
+  }
+
+  document.getElementById("staffLogout").addEventListener("click", closeStaffPanel);
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && staffPanel.classList.contains("open")) closeStaffPanel();
+  });
+
+  // ===== Staff panel: mock inbox + thread =====
+  // Build the staff logo petals
+  (function () {
+    const sp = document.getElementById("staffPetals");
+    if (!sp) return;
+    for (let i = 0; i < 12; i++) {
+      const angle = (360 / 12) * i;
+      const g = document.createElementNS(ns, "g");
+      g.setAttribute("transform", "rotate(" + angle + ")");
+      const path = document.createElementNS(ns, "path");
+      path.setAttribute("d", "M 0 0 Q -4 -10 0 -22 Q 4 -10 0 0 Z");
+      path.setAttribute("fill", "#c4a5e0");
+      g.appendChild(path);
+      sp.appendChild(g);
+    }
+  })();
+
+  // Seed inbox (fictional, evocative)
+  const SEED_INBOX = [
+    {
+      id: "m1",
+      name: "Mira Halverson",
+      email: "mira@halverson-co.com",
+      clue: "lavender-october",
+      code: "ASTER-MH4T-7K2D",
+      stage: "Bulb · Discovery",
+      time: "2 hrs ago",
+      unread: true,
+      thread: [
+        { dir: "in", time: "2 hrs ago", text: "We're a boutique architecture practice rebuilding our identity ahead of a New York office launch. The current site feels academic — we want something quieter, more confident. Are you available in October?" }
+      ]
+    },
+    {
+      id: "m2",
+      name: "Daniyal Rashid",
+      email: "d@rashid-capital.co",
+      clue: "linden-tree",
+      code: "ASTER-DR9X-1M8P",
+      stage: "Sprouting · Blueprint",
+      time: "Yesterday",
+      unread: true,
+      thread: [
+        { dir: "in", time: "Tuesday", text: "Brief is attached. Quick turnaround needed — pitch deck is next month and the site has to support that narrative." },
+        { dir: "out", time: "Wednesday", text: "Received. Pulling architecture together — first wireframe pass by Friday." },
+        { dir: "in", time: "Yesterday", text: "Perfect. One question — can we phase the case studies in over two releases?" }
+      ]
+    },
+    {
+      id: "m3",
+      name: "Eun-Ji Park",
+      email: "ej.park@studio-saen.kr",
+      clue: "white-camellia",
+      code: "ASTER-EJ2H-5R7B",
+      stage: "Budding · Craft",
+      time: "3 days ago",
+      unread: false,
+      thread: [
+        { dir: "in", time: "Last week", text: "Loving the latest design pass. The reading rhythm in the case study templates feels exactly right." },
+        { dir: "out", time: "3 days ago", text: "Thank you — pushing the motion layer tomorrow. Expect a preview by EOD Thursday." }
+      ]
+    }
+  ];
+
+  // Pull any client-submitted messages from localStorage
+  function loadInbox() {
+    const fromStorage = [];
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.indexOf("aster:") === 0) {
+          const parts = k.split(":");
+          const email = parts[1];
+          const clue = parts[2];
+          const code = localStorage.getItem(k);
+          fromStorage.push({
+            id: "s_" + i,
+            name: email.split("@")[0].replace(/[._-]/g, " "),
+            email: email,
+            clue: clue,
+            code: code,
+            stage: "Bulb · Discovery",
+            time: "Just now",
+            unread: true,
+            thread: [{ dir: "in", time: "Just now", text: "(Sent via the public client portal.)" }]
+          });
+        }
+      }
+    } catch (_) {}
+    return fromStorage.concat(SEED_INBOX);
+  }
+
+  let inbox = [];
+  let activeMsgId = null;
+
+  function renderStaffInbox() {
+    inbox = loadInbox();
+    const listEl = document.getElementById("msgList");
+    const countEl = document.getElementById("msgCount");
+    listEl.innerHTML = "";
+    countEl.textContent = String(inbox.length).padStart(2, "0");
+
+    inbox.forEach(function (m) {
+      const item = document.createElement("div");
+      item.className = "msg" + (m.unread ? " unread" : "");
+      item.setAttribute("data-id", m.id);
+      const preview = m.thread[m.thread.length - 1].text;
+      item.innerHTML =
+        '<div class="msg-top"><span class="msg-name">' + m.name + '</span><span class="msg-time">' + m.time + '</span></div>' +
+        '<div class="msg-preview">' + preview + '</div>' +
+        '<div class="msg-meta"><span class="pill">' + m.stage + '</span><span>' + m.code + '</span></div>';
+      item.addEventListener("click", function () { openThread(m.id); });
+      listEl.appendChild(item);
+    });
+
+    if (!activeMsgId && inbox.length) openThread(inbox[0].id);
+    else if (activeMsgId) openThread(activeMsgId);
+  }
+
+  function openThread(id) {
+    activeMsgId = id;
+    const msg = inbox.find(function (m) { return m.id === id; });
+    document.querySelectorAll(".msg").forEach(function (el) {
+      el.classList.toggle("active", el.getAttribute("data-id") === id);
+      if (el.getAttribute("data-id") === id) el.classList.remove("unread");
+    });
+    if (msg) msg.unread = false;
+
+    const thread = document.getElementById("staffThread");
+    thread.classList.remove("empty");
+    if (!msg) {
+      thread.innerHTML = "Select a message to begin.";
+      thread.classList.add("empty");
+      return;
+    }
+    thread.innerHTML =
+      '<div class="thread-head">' +
+        '<div><h3>' + msg.name + '</h3><div class="sub">' + msg.email + ' · clue: ' + msg.clue + ' · ' + msg.code + '</div></div>' +
+        '<span class="pill">' + msg.stage + '</span>' +
+      '</div>' +
+      '<div class="thread-body" id="threadBody"></div>' +
+      '<div class="thread-compose">' +
+        '<textarea id="composeBox" placeholder="Write a reply…"></textarea>' +
+        '<button id="sendReply">Send</button>' +
+      '</div>';
+
+    const bodyEl = document.getElementById("threadBody");
+    msg.thread.forEach(function (b) {
+      const bub = document.createElement("div");
+      bub.className = "bubble " + b.dir;
+      bub.innerHTML = b.text + '<span class="time">' + b.time + '</span>';
+      bodyEl.appendChild(bub);
+    });
+    bodyEl.scrollTop = bodyEl.scrollHeight;
+
+    document.getElementById("sendReply").addEventListener("click", function () {
+      const box = document.getElementById("composeBox");
+      const txt = (box.value || "").trim();
+      if (!txt) return;
+      msg.thread.push({ dir: "out", time: "Just now", text: txt });
+      box.value = "";
+      openThread(id);
+    });
+  }
+})();
+</script>
+
+<!-- ============================================================
+     SCRIPT BLOCK B — GSAP / Lenis enhancement (optional)
+     If CDNs are blocked, the page still works fully.
+     ============================================================ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://unpkg.com/lenis@1.0.42/dist/lenis.min.js"></script>
+
+<script>
+(function () {
+  if (typeof window.gsap === "undefined") {
+    // GSAP not available — site already fully functional. Just exit.
+    return;
+  }
+  try {
+    if (window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
+
+    // Lenis (optional enhancement on top of GSAP)
+    if (typeof window.Lenis !== "undefined") {
+      const lenis = new Lenis({
+        duration: 1.2,
+        easing: function (t) { return Math.min(1, 1.001 - Math.pow(2, -10 * t)); },
+        smoothWheel: true,
+        smoothTouch: false,
+      });
+      if (window.ScrollTrigger) lenis.on("scroll", ScrollTrigger.update);
+      gsap.ticker.add(function (time) { lenis.raf(time * 1000); });
+      gsap.ticker.lagSmoothing(0);
+    }
+
+    // ===== MTK-style hero opening animation =====
+    // Overshoot petal-bloom + slow continuous rotation + breathing halo
+    const heroOuter = document.querySelectorAll("#heroOuter .petal");
+    const heroInner = document.querySelectorAll("#heroInner .petal");
+    if (heroOuter.length && heroInner.length) {
+      gsap.set(heroOuter, { scale: 0, transformOrigin: "0px 0px" });
+      gsap.set(heroInner, { scale: 0, transformOrigin: "0px 0px" });
+      gsap.set("#heroFlower circle", { scale: 0, transformOrigin: "200px 200px" });
+
+      // MTK's signature overshoot bloom ease
+      const heroBloomEase = "cubic-bezier(0.34, 1.32, 0.64, 1)";
+
+      gsap.timeline({ delay: 0.48 })
+        .to(heroInner, { scale: 1, duration: 1.1, stagger: 0.06, ease: heroBloomEase })
+        .to(heroOuter, { scale: 1, duration: 1.3, stagger: 0.05, ease: heroBloomEase }, "-=0.95")
+        .to("#heroFlower circle", { scale: 1, duration: 0.6, stagger: 0.08, ease: heroBloomEase }, "-=1.05");
+
+      // Slow continuous rotation (replaces the prior sway)
+      gsap.to("#heroFlower", {
+        rotation: "+=360",
+        duration: 60,
+        ease: "none",
+        repeat: -1,
+        transformOrigin: "200px 200px",
+        delay: 1.4,
+      });
+    }
+
+    // ===== PROCESS flower bloom timeline (scroll-coupled) =====
+    // Guarded: the old stem-growth flower + .step cards were removed so all
+    // four phases live inside the bloom-zoom ovule. If the targets aren't
+    // present we skip this entire block — no console errors, no orphan tweens.
+    if (window.ScrollTrigger && document.getElementById("processFlower") && document.querySelectorAll(".step").length) {
+      const outerPetals = document.querySelectorAll("#petalsOuter .petal");
+      const innerPetals = document.querySelectorAll("#petalsInner .petal");
+
+      // --- Initial states: tightly held, slightly curled ---
+      // Each petal begins at scale 0 with a small inward tilt, so it can
+      // unfurl into its open position rather than just popping outward.
+      // ────────── INITIAL STATES ──────────
+      // Phase 1 begins with everything hidden EXCEPT the seed, which
+      // fades in during the first beat. The plant then grows upward
+      // through Phases 2–4.
+      gsap.set(outerPetals, {
+        scale: 0, rotation: -6,
+        transformOrigin: "0px 0px",
+      });
+      gsap.set(innerPetals, {
+        scale: 0, rotation: -5,
+        transformOrigin: "0px 0px",
+      });
+      gsap.set("#bud", {
+        x: 200, y: 316,            // spawn at the stem tip's end-of-Phase-3 location
+        opacity: 0, scale: 0,
+        transformOrigin: "0 0",    // pivot at the bud's local center after translate
+      });
+      gsap.set("#centerDisc", {
+        scale: 0, opacity: 0,
+        transformOrigin: "0px 0px",
+      });
+      gsap.set("#leafL", {
+        scale: 0, rotation: -10,
+        transformOrigin: "200px 440px",
+      });
+      gsap.set("#leafR", {
+        scale: 0, rotation: 10,
+        transformOrigin: "200px 370px",
+      });
+      gsap.set("#stem", { strokeDashoffset: 100 });
+      gsap.set("#stemTip", { opacity: 0, attr: { cy: 540 } });
+      gsap.set("#seed", {
+        opacity: 0, scale: 0,
+        transformOrigin: "200px 545px",
+      });
+      gsap.set("#cotyledons", {
+        opacity: 0, scale: 0,
+        transformOrigin: "200px 530px",
+      });
+
+      // Whole-plant subtle grow — runs across all four phases
+      gsap.set("#processFlower", {
+        scale: 0.94,
+        transformOrigin: "200px 540px",
+      });
+
+      // Trigger spans from "step 1 entering" to "step 4 centered" so the
+      // bloom resolves exactly when the user lands on Full Bloom.
+      const steps = document.querySelectorAll(".step");
+      const lastStep = steps[steps.length - 1];
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: steps[0],
+          start: "top 78%",
+          endTrigger: lastStep,
+          end: "center center",
+          scrub: 1.1,            // buttery lag — silken with Lenis
+          invalidateOnRefresh: true,
+        },
+      });
+
+      // ═══════════════════════════════════════════════════════════
+      //  ONE CONTINUOUS GROWTH TIMELINE — 4 phases, 4 milestones.
+      //  The timeline is divided into 4 units of "scroll time", one
+      //  per step. Growth milestones land cleanly at each boundary:
+      //
+      //     Unit 0 → 1   PHASE 1 · SEED       (   0% growth )
+      //     Unit 1 → 2   PHASE 2 · SPROUT     (  35% growth )
+      //     Unit 2 → 3   PHASE 3 · BUD        (  70% growth )
+      //     Unit 3 → 4   PHASE 4 · FULL BLOOM ( 100% growth )
+      // ═══════════════════════════════════════════════════════════
+
+      // ───── PHASE 1 · SEED (units 0 → 1) · 0% growth ─────
+      // The plant exists only as an idea — a single, quiet seed.
+      // No stem, no leaves, no bud. Just presence.
+      tl.to("#seed", {
+        opacity: 1, scale: 1,
+        ease: "power2.out", duration: 0.55,
+      }, 0.10);
+
+      // ───── PHASE 2 · SPROUT (units 1 → 2) · 0% → 35% growth ─────
+      // Cotyledons emerge from the seed. The stem begins its climb
+      // upward, drawing linearly so its growth is felt at every scroll
+      // pixel. The first true leaf unfurls when the stem reaches it.
+      tl.to("#cotyledons", {
+        opacity: 1, scale: 1,
+        ease: "power2.out", duration: 0.5,
+      }, 1.0);
+
+      tl.to("#stem", {
+        strokeDashoffset: 65,     // 100 → 65  (35% drawn)
+        ease: "none", duration: 1,
+      }, 1.0);
+
+      // The tip glow rises with the stem's leading edge
+      tl.to("#stemTip", { opacity: 1, duration: 0.25 }, 1.0);
+      tl.to("#stemTip", {
+        attr: { cy: 428 },        // y at 35% growth: 540 − 320 × 0.35
+        ease: "none", duration: 1,
+      }, 1.0);
+
+      // Whole-plant subtle scale-up runs from sprout through bloom
+      tl.to("#processFlower", {
+        scale: 1, ease: "power1.inOut", duration: 3,
+      }, 1.0);
+
+      // leafL (y=440) emerges when the stem touches it (~31% growth → unit 1.88)
+      tl.to("#leafL", {
+        scale: 1, rotation: 0,
+        ease: "power3.out", duration: 0.55,
+      }, 1.88);
+
+      // ───── PHASE 3 · BUD (units 2 → 3) · 35% → 70% growth ─────
+      // The stem matures further. The second leaf unfurls. A closed
+      // bud forms at the top — promise, not yet bloom.
+      tl.to("#stem", {
+        strokeDashoffset: 30,     // 65 → 30  (70% drawn)
+        ease: "none", duration: 1,
+      }, 2.0);
+      tl.to("#stemTip", {
+        attr: { cy: 316 },        // y at 70% growth: 540 − 320 × 0.70
+        ease: "none", duration: 1,
+      }, 2.0);
+
+      // leafR (y=370) emerges when the stem reaches it (~53% growth → unit 2.51)
+      tl.to("#leafR", {
+        scale: 1, rotation: 0,
+        ease: "power3.out", duration: 0.55,
+      }, 2.50);
+
+      // Cotyledons soften — they belong to the early stage
+      tl.to("#cotyledons", {
+        opacity: 0.4,
+        ease: "power1.inOut", duration: 0.6,
+      }, 2.5);
+
+      // Bud forms quietly at the top in late phase 3
+      tl.to("#bud", {
+        opacity: 1, scale: 1,
+        ease: "power2.out", duration: 0.5,
+      }, 2.75);
+
+      // ───── PHASE 4 · FULL BLOOM (units 3 → 4) · 70% → 100% growth ─────
+      // The stem completes its climb in the first beat of phase 4.
+      // The bud holds, swells, then dissolves as the Aster unfurls —
+      // inner petals first, center disc, outer petals.
+      tl.to("#stem", {
+        strokeDashoffset: 0,      // 30 → 0   (100% drawn)
+        ease: "none", duration: 0.35,
+      }, 3.0);
+      tl.to("#stemTip", {
+        attr: { cy: 220 },        // arrives at the flower head
+        ease: "none", duration: 0.35,
+      }, 3.0);
+      tl.to("#stemTip", { opacity: 0, duration: 0.3 }, 3.30);
+
+      // Bud rides the stem tip from y=316 up to y=220 as the stem completes —
+      // keeping the bud visually at the apex of the growing stem.
+      tl.to("#bud", {
+        y: 220,
+        ease: "none", duration: 0.35,
+      }, 3.0);
+
+      // Once it has arrived at the flower-head position, the bud breathes,
+      // then dissolves so the petals can unfurl in its place.
+      tl.to("#bud", {
+        scale: 1.1,
+        ease: "sine.inOut", duration: 0.2,
+      }, 3.35);
+      tl.to("#bud", {
+        scale: 0, opacity: 0,
+        ease: "power2.in", duration: 0.3,
+      }, 3.50);
+
+      // Inner petals unfurl — a soft sequential ripple, beginning as
+      // the bud dissolves so the petals seem to emerge from within.
+      tl.to(innerPetals, {
+        scale: 1, rotation: 0,
+        stagger: { each: 0.035, from: "start" },
+        ease: "power3.out", duration: 0.8,
+      }, 3.55);
+
+      // Center disc emerges as the inner ring opens
+      tl.to("#centerDisc", {
+        scale: 0.55, opacity: 1,
+        ease: "power2.out", duration: 0.45,
+      }, 3.68);
+
+      // Outer petals unfurl — the final reach
+      tl.to(outerPetals, {
+        scale: 1, rotation: 0,
+        stagger: { each: 0.04, from: "start" },
+        ease: "power3.out", duration: 0.95,
+      }, 3.68);
+
+      // Center disc resolves
+      tl.to("#centerDisc", {
+        scale: 1,
+        ease: "power2.out", duration: 0.4,
+      }, 3.95);
+
+      // Seed & cotyledons gracefully recede to let the bloom hold focus
+      tl.to("#seed", {
+        opacity: 0.5,
+        ease: "power1.inOut", duration: 0.5,
+      }, 3.5);
+      tl.to("#cotyledons", {
+        opacity: 0.22,
+        ease: "power1.inOut", duration: 0.5,
+      }, 3.5);
+
+      // ───── Final breath ─────
+      // A hold at full bloom so the final state lingers as the user
+      // settles on Step 4 — the moment feels intentional, not rushed.
+      tl.to({}, { duration: 0.5 }, 4.0);
+
+      // Gentle decorative sway — only rotation, so it composes cleanly
+      // with the scroll-tied scale on #processFlower.
+      gsap.to("#processFlower", {
+        rotation: 1.2, yoyo: true, repeat: -1,
+        duration: 5.5, ease: "sine.inOut",
+        transformOrigin: "200px 540px",
+      });
+
+      window.addEventListener("load", function () { ScrollTrigger.refresh(); });
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  CINEMATIC BLOOM ZOOM — one continuous scroll-linked journey
+    //  ─────────────────────────────────────────────────────────────────
+    //  Treats the scroll as a camera dolly: bloom enters → fills the
+    //  viewport with a gentle scroll-driven spin → breathes → dives into
+    //  the ovule with controlled exponential acceleration → four phase
+    //  reveals crossfade through the warm core → soft drift handoff.
+    //
+    //  All transforms run on the GPU. No filter:blur (was the main jank
+    //  source). All easing is calibrated for a luxury, Apple-cinematic
+    //  feel — no bounce, no overshoot, no pop.
+    // ═══════════════════════════════════════════════════════════════════
+    const zoomSection = document.querySelector(".bloom-zoom");
+    if (zoomSection && window.ScrollTrigger) {
+      const zoomFlower = document.querySelector(".zoom-flower");
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      // ── Initial states ──
+      // Flower already visible the moment the section enters, slightly
+      // turned counter-clockwise so the early scroll "unwinds" it to true.
+      gsap.set(zoomFlower, {
+        scale: 0.82,
+        opacity: 1,
+        rotation: -12,
+        transformOrigin: "50% 50%",
+        force3D: true,
+      });
+      gsap.set(".zoom-aura", {
+        opacity: 0.45,
+        scale: 0.88,
+        transformOrigin: "50% 50%",
+        force3D: true,
+      });
+      gsap.set(".zoom-vignette", { opacity: 0 });
+      // Petal rings: start at full opacity. DoF is opacity-only now —
+      // smoother than filter:blur(), zero jank under scrub.
+      gsap.set(["#zoomL1", "#zoomL2", "#zoomL3", "#zoomL4"], { opacity: 1 });
+      // Phase reveals: centered via xPercent/yPercent so y-tweens compose
+      // cleanly with centering; start tucked just below their resting
+      // position with a tiny scale-down so they bloom upward into view.
+      gsap.set(".ovule-reveal", {
+        xPercent: -50, yPercent: -50,
+        opacity: 0, y: 24, scale: 0.96,
+        force3D: true,
+      });
+
+      if (reduced) return; // Static state is enough — bail before binding scroll work.
+
+      // Timeline is built paused — we drive its progress manually via the
+      // ScrollTrigger below so we can freeze it on reverse scroll.
+      const zoomTl = gsap.timeline({
+        paused: true,
+        defaults: { force3D: true },
+      });
+
+      // ─────────────────────────────────────────────────────────────────
+      //  TIMELINE STRUCTURE — flower keeps GROWING (diving) while phases
+      //  surface one by one inside it. The dive runs across the whole
+      //  back half of the timeline, so each phase appears against a
+      //  visibly larger, more zoomed-in flower than the one before it.
+      //  ─────────────────────────────────────────────────────────────────
+      //    0.00 → 0.32   BLOOM-UP    flower scales 0.82 → 1.0
+      //    0.00 → 0.62   SCROLL-SPIN rotation -12° → 0°
+      //    0.32 → 0.40   BREATH      scale 1.03
+      //    0.40 → 1.00   DIVE        scale 1.03 → 9.0  (continuous growth
+      //                              through ALL phases — flower is still
+      //                              visibly zooming in as phases appear)
+      //    0.62 → 0.96   FOUR PHASES surface inside the still-growing ovule
+      //    0.96 → 1.00   FINAL DRIFT soft handoff to next section
+      // ─────────────────────────────────────────────────────────────────
+
+      // ── PHASE A · BLOOM-UP (0.00 → 0.32) ──
+      // Flower scales from 0.82 → 1.0 with a soft outward ease.
+      zoomTl
+        .to(zoomFlower, { scale: 1.0, ease: "power2.out", duration: 0.32 }, 0)
+        .to(".zoom-aura", { scale: 1.0, opacity: 0.9, ease: "power2.out", duration: 0.32 }, 0);
+
+      // ── SCROLL-SPIN (0.00 → 0.62) ──
+      // Continuous rotation unwinds from -12° to 0° just as Phase 01
+      // surfaces. `sine.out` feels organic without being dead-linear.
+      zoomTl.to(zoomFlower, {
+        rotation: 0,
+        ease: "sine.out",
+        duration: 0.62,
+      }, 0);
+
+      // ── PHASE B · BREATH (0.32 → 0.40) ──
+      // Barely perceptible swell — the flower is alive before the dive.
+      zoomTl.to(zoomFlower, {
+        scale: 1.03,
+        ease: "sine.inOut",
+        duration: 0.08,
+      }, 0.32);
+
+      // ── PHASE C · CINEMATIC DIVE (0.40 → 1.00) ──
+      // ONE continuous tween from breath-end (1.03) straight through to
+      // peak zoom (9.0). The previous two-stage version had a velocity
+      // discontinuity at the 0.62 boundary (stage 1 ended fast, stage 2
+      // started slow → momentary deceleration mid-dive). A single tween
+      // gives perfectly continuous velocity from start to finish — no
+      // perceptible inflection point, no "settle then snap" feel.
+      //
+      // `power2.in` keeps the dive accelerating across the whole 0.60s
+      // of timeline, so each phase reveal lands against a visibly more
+      // zoomed-in flower than the last:
+      //   Phase 01 (0.62) — scale ≈ 2.1   (early dive, flower fills viewport)
+      //   Phase 02 (0.71) — scale ≈ 2.9   (dive accelerates)
+      //   Phase 03 (0.80) — scale ≈ 4.4   (mid plunge)
+      //   Phase 04 (0.89) — scale ≈ 6.7   (deep in the ovule)
+      //   End      (1.00) — scale = 9.0   (peak zoom, ovule fills screen)
+      zoomTl.to(zoomFlower, {
+        scale: 9.0,
+        ease: "power2.in",
+        duration: 0.60,
+      }, 0.40);
+
+      // ── DEPTH OF FIELD (0.46 → 0.92) ──
+      // Pure opacity fade across the whole dive — outer rings drop out
+      // progressively as the camera plunges past them. Inner rings stay
+      // present longer so the bloom remains visible behind each phase.
+      // No `filter:blur` anywhere — pure opacity = zero scrub jitter.
+      zoomTl
+        .to("#zoomL1", { opacity: 0.15, ease: "power2.in", duration: 0.36 }, 0.46)
+        .to("#zoomL2", { opacity: 0.30, ease: "power2.in", duration: 0.34 }, 0.52)
+        .to("#zoomL3", { opacity: 0.50, ease: "power2.in", duration: 0.32 }, 0.58)
+        .to("#zoomL4", { opacity: 0.70, ease: "power2.in", duration: 0.30 }, 0.64);
+
+      // ── AURA & VIGNETTE (0.40 → 1.00) ──
+      // Both ramp gradually across the dive with `power2.inOut` — eased
+      // in AND out, no sudden darkening, no abrupt cap.
+      zoomTl
+        .to(".zoom-aura", {
+          scale: 1.5, opacity: 1.0,
+          ease: "power2.inOut", duration: 0.60,
+        }, 0.40)
+        .to(".zoom-vignette", {
+          opacity: 0.7,
+          ease: "power2.inOut", duration: 0.60,
+        }, 0.40);
+
+      // ─────────────────────────────────────────────────────────────────
+      //  FOUR PHASE REVEALS (timeline 0.62 → 0.96)
+      //  Phases surface sequentially INSIDE the ovule WHILE the dive
+      //  is still in progress. Each phase emerges against a larger,
+      //  more zoomed-in flower than the one before it — that's the
+      //  visual unity you liked: growth and revelation are the SAME
+      //  scroll moment, not separate acts.
+      //
+      //  Spacing: 0.085 of timeline between phase entries — enough
+      //  read time for each phase while keeping the rhythm flowing.
+      //  Exits fade in place (no y-translate) with a 0.02 overlap so
+      //  there is never a dead empty moment inside the ovule.
+      // ─────────────────────────────────────────────────────────────────
+      const phasePositions = [
+        { sel: '.ovule-reveal[data-phase="1"]', start: 0.62 },
+        { sel: '.ovule-reveal[data-phase="2"]', start: 0.71 },
+        { sel: '.ovule-reveal[data-phase="3"]', start: 0.80 },
+        { sel: '.ovule-reveal[data-phase="4"]', start: 0.89 },
+      ];
+
+      phasePositions.forEach((p, i) => {
+        const isLast = i === phasePositions.length - 1;
+
+        // Enter: float up + fade + subtle scale settle. `power3.out`
+        // lands softly without overshoot — luxury motion, no bounce.
+        zoomTl.to(p.sel, {
+          opacity: 1, y: 0, scale: 1,
+          ease: "power3.out", duration: 0.07,
+        }, p.start);
+
+        // Exit: fade in place with barely-there scale-down. The only
+        // motion during a transition is the next phase rising up —
+        // the leaving phase just softens out underneath it.
+        if (!isLast) {
+          const next = phasePositions[i + 1];
+          const exitStart = next.start - 0.03;
+          zoomTl.to(p.sel, {
+            opacity: 0,
+            scale: 0.985,
+            ease: "power2.in", duration: 0.05,
+          }, exitStart);
+        }
+      });
+
+      // ─────────────────────────────────────────────────────────────────
+      //  FINAL DRIFT (timeline 0.96 → 1.00)
+      //  Subtle downward drift on the held-final scene. Small amplitude
+      //  so the handoff to the cream afterglow feels soft, not like the
+      //  animation is sliding off the screen.
+      // ─────────────────────────────────────────────────────────────────
+      zoomTl
+        .to('.ovule-reveal[data-phase="4"]', {
+          y: 22, ease: "sine.in", duration: 0.04,
+        }, 0.96)
+        .to(zoomFlower, {
+          y: 28, ease: "sine.in", duration: 0.04,
+        }, 0.96)
+        .to(".zoom-aura", {
+          y: 24, opacity: 0.85,
+          ease: "sine.in", duration: 0.04,
+        }, 0.96);
+
+      // ═════════════════════════════════════════════════════════════════
+      //  DIRECTIONAL SCROLL DRIVER
+      //  ─────────────────────────────────────────────────────────────────
+      //  Scroll DOWN  → animation plays normally (scrubs to current
+      //                 scroll position, same smooth feel as scrub: 1.1).
+      //  Scroll UP    → animation RESETS to its initial state (the
+      //                 starting flower, no phases, no dive) and stays
+      //                 there. The page just scrolls normally past the
+      //                 section — no reverse animation, no rewind.
+      //
+      //  We watch `self.direction` on each scroll tick:
+      //     direction =  1  → moving down → advance to current progress
+      //     direction = -1  → moving up   → snap back to progress 0
+      //  ─────────────────────────────────────────────────────────────────
+      let smoothTween = null;
+
+      ScrollTrigger.create({
+        trigger: ".bloom-zoom",
+        start: "top 80%",
+        end: "bottom bottom",
+        invalidateOnRefresh: true,
+        onUpdate: (self) => {
+          if (self.direction === -1) {
+            // Scrolling UP — reset to start, do not animate in reverse.
+            // Only kick off a reset tween if we're not already near 0,
+            // so we don't waste cycles tweening 0 → 0.
+            if (zoomTl.progress() > 0.001) {
+              if (smoothTween) smoothTween.kill();
+              smoothTween = gsap.to(zoomTl, {
+                progress: 0,
+                duration: 0.35,
+                ease: "power2.out",
+                overwrite: true,
+              });
+            }
+            return;
+          }
+          // Scrolling DOWN — smoothly advance to current scroll position.
+          // Same buttery cinematic feel the previous scrub: 1.1 gave us.
+          const p = self.progress;
+          if (smoothTween) smoothTween.kill();
+          smoothTween = gsap.to(zoomTl, {
+            progress: p,
+            duration: 0.55,
+            ease: "power2.out",
+            overwrite: true,
+          });
+        },
+      });
+    }
+  } catch (err) {
+    // Any GSAP error: silently degrade. The page still works without it.
+    console.warn("Aster motion layer skipped:", err);
+  }
+})();
+</script>
+
+</body>
+</html>

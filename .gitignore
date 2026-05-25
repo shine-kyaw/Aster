@@ -1,0 +1,27 @@
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Node (in case you add tooling later)
+node_modules/
+.env
+.env.local
+
+# Build outputs (none for now — single-file static site)
+dist/
+build/
+
+# Claude / agent scratch
+.claude/
+.babel-tmp/
