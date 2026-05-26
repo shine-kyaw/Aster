@@ -2014,6 +2014,65 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
   will-change: transform, opacity;
   position: relative;
   z-index: 1;
+  outline: none;
+  /* Subtle filter transition for the replay-ready glow */
+  transition: filter 0.8s var(--ease);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   REPLAY-READY STATE
+   When the timeline completes, the flower becomes a subtle,
+   premium clickable surface. Cursor change is the primary cue;
+   a barely-perceptible warm glow appears on hover. No bouncy
+   scale, no flashy effect — restrained, luxury-brand feel.
+   ───────────────────────────────────────────────────────────── */
+.zoom-flower--replay {
+  cursor: pointer;
+}
+.zoom-flower--replay:hover {
+  filter: brightness(1.03) saturate(1.05);
+}
+/* A small, fine-type "Replay" hint appears below the bloom when
+   replay is ready. Low contrast, soft fade-in — does not compete
+   with the final phase text above it. */
+.bloom-zoom-stage::after {
+  content: "↻  Click to replay";
+  position: absolute;
+  left: 50%;
+  bottom: clamp(28px, 5vh, 56px);
+  transform: translateX(-50%);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(31, 29, 24, 0.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.9s var(--ease) 0.2s;
+  z-index: 5;
+  white-space: nowrap;
+}
+.bloom-zoom-stage:has(.zoom-flower--replay)::after {
+  opacity: 1;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   AMBIENT DIMMING — body.in-bloom-zoom
+   While the user is reading inside the bloom-zoom, surrounding
+   motion (aurora orbs + drifting petals) softens so the
+   cinematic content is the focal point. Transitions are slow
+   (1.4s) so the dimming itself reads as elegant, not abrupt.
+   ───────────────────────────────────────────────────────────── */
+body.in-bloom-zoom .aurora {
+  opacity: 0.35;
+  transition: opacity 1.4s var(--ease);
+}
+body.in-bloom-zoom .ambient-petals {
+  opacity: 0.25;
+  transition: opacity 1.4s var(--ease);
+}
+.aurora, .ambient-petals {
+  transition: opacity 1.4s var(--ease);
 }
 /* The petal rings get fade-only DoF — opacity is GPU-cheap and never
    judders the way filter:blur() does under a scrubbed timeline. */
@@ -4014,6 +4073,8 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
     if (window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
 
     // Lenis (optional enhancement on top of GSAP)
+    // Exposed on `window.__asterLenis` so the bloom-zoom replay can
+    // initiate a smooth scroll-to back to the start of the section.
     if (typeof window.Lenis !== "undefined") {
       const lenis = new Lenis({
         duration: 1.2,
@@ -4021,6 +4082,7 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
         smoothWheel: true,
         smoothTouch: false,
       });
+      window.__asterLenis = lenis;
       if (window.ScrollTrigger) lenis.on("scroll", ScrollTrigger.update);
       gsap.ticker.add(function (time) { lenis.raf(time * 1000); });
       gsap.ticker.lagSmoothing(0);
@@ -4364,189 +4426,273 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
       //    0.96 → 1.00   FINAL DRIFT soft handoff to next section
       // ─────────────────────────────────────────────────────────────────
 
-      // ── PHASE A · BLOOM-UP (0.00 → 0.32) ──
-      // Flower scales from 0.82 → 1.0 with a soft outward ease.
-      zoomTl
-        .to(zoomFlower, { scale: 1.0, ease: "power2.out", duration: 0.32 }, 0)
-        .to(".zoom-aura", { scale: 1.0, opacity: 0.9, ease: "power2.out", duration: 0.32 }, 0);
+      // ─────────────────────────────────────────────────────────────────
+      //  APPLE-PHILOSOPHY TIMELINE — slower, calmer, content-first
+      //  ─────────────────────────────────────────────────────────────────
+      //    0.00 → 0.40   BLOOM-UP    scale 0.82 → 1.0   (slow opening)
+      //    0.00 → 0.55   SCROLL-SPIN rotation -8° → 0°  (subtle)
+      //    0.40 → 0.46   BREATH      scale 1.03         (held inhale)
+      //    0.46 → 1.00   DIVE        scale 1.03 → 6.5   (lower peak,
+      //                              less extreme, more refined)
+      //    0.52 → 0.92   FOUR PHASES surface with longer enters + holds
+      //    0.92 → 0.98   FINAL HOLD  flower + Phase 04 settle
+      //    0.98 → 1.00   SOFT DRIFT  minimal handoff
+      //
+      //  Key changes vs prior version:
+      //    • Peak scale reduced (9.0 → 6.5) — sharper SVG, calmer feel
+      //    • Bloom-up extended for a more leisurely opening
+      //    • Dive begins later, leaving breath room
+      //    • Each phase gets ~0.10 of timeline (was ~0.085) — more
+      //      reading time, more deliberate cadence
+      //    • Rotation softened (-12 → -8) — subtler scroll cue
+      // ─────────────────────────────────────────────────────────────────
 
-      // ── SCROLL-SPIN (0.00 → 0.62) ──
-      // Continuous rotation unwinds from -12° to 0° just as Phase 01
-      // surfaces. `sine.out` feels organic without being dead-linear.
+      // ── PHASE A · BLOOM-UP (0.00 → 0.40) ── slower, more leisurely
+      zoomTl
+        .to(zoomFlower, { scale: 1.0, ease: "power2.out", duration: 0.40 }, 0)
+        .to(".zoom-aura", { scale: 1.0, opacity: 0.9, ease: "power2.out", duration: 0.40 }, 0);
+
+      // ── SCROLL-SPIN (0.00 → 0.55) ── subtler unwinding
       zoomTl.to(zoomFlower, {
         rotation: 0,
         ease: "sine.out",
-        duration: 0.62,
+        duration: 0.55,
       }, 0);
 
-      // ── PHASE B · BREATH (0.32 → 0.40) ──
-      // Barely perceptible swell — the flower is alive before the dive.
+      // ── PHASE B · BREATH (0.40 → 0.46) ── slight inhale
       zoomTl.to(zoomFlower, {
         scale: 1.03,
         ease: "sine.inOut",
-        duration: 0.08,
-      }, 0.32);
-
-      // ── PHASE C · CINEMATIC DIVE (0.40 → 1.00) ──
-      // ONE continuous tween from breath-end (1.03) straight through to
-      // peak zoom (9.0). The previous two-stage version had a velocity
-      // discontinuity at the 0.62 boundary (stage 1 ended fast, stage 2
-      // started slow → momentary deceleration mid-dive). A single tween
-      // gives perfectly continuous velocity from start to finish — no
-      // perceptible inflection point, no "settle then snap" feel.
-      //
-      // `power2.in` keeps the dive accelerating across the whole 0.60s
-      // of timeline, so each phase reveal lands against a visibly more
-      // zoomed-in flower than the last:
-      //   Phase 01 (0.62) — scale ≈ 2.1   (early dive, flower fills viewport)
-      //   Phase 02 (0.71) — scale ≈ 2.9   (dive accelerates)
-      //   Phase 03 (0.80) — scale ≈ 4.4   (mid plunge)
-      //   Phase 04 (0.89) — scale ≈ 6.7   (deep in the ovule)
-      //   End      (1.00) — scale = 9.0   (peak zoom, ovule fills screen)
-      zoomTl.to(zoomFlower, {
-        scale: 9.0,
-        ease: "power2.in",
-        duration: 0.60,
+        duration: 0.06,
       }, 0.40);
 
-      // ── DEPTH OF FIELD (0.46 → 0.92) ──
-      // Pure opacity fade across the whole dive — outer rings drop out
-      // progressively as the camera plunges past them. Inner rings stay
-      // present longer so the bloom remains visible behind each phase.
-      // No `filter:blur` anywhere — pure opacity = zero scrub jitter.
-      zoomTl
-        .to("#zoomL1", { opacity: 0.15, ease: "power2.in", duration: 0.36 }, 0.46)
-        .to("#zoomL2", { opacity: 0.30, ease: "power2.in", duration: 0.34 }, 0.52)
-        .to("#zoomL3", { opacity: 0.50, ease: "power2.in", duration: 0.32 }, 0.58)
-        .to("#zoomL4", { opacity: 0.70, ease: "power2.in", duration: 0.30 }, 0.64);
+      // ── PHASE C · CINEMATIC DIVE (0.46 → 1.00) ── slower, lower peak
+      // Peak scale 6.5 (was 9.0) — meaningfully less extreme. The SVG
+      // stays crisp at every step, and the dive reads as a controlled
+      // dolly rather than a rush. `power2.in` gives a smooth continuous
+      // acceleration across the whole 0.54 timeline window.
+      //
+      //   Phase 01 (0.52) — scale ≈ 1.12  (very early dive, content focus)
+      //   Phase 02 (0.62) — scale ≈ 1.62  (calm growth)
+      //   Phase 03 (0.72) — scale ≈ 2.35  (mid plunge)
+      //   Phase 04 (0.82) — scale ≈ 3.50  (committed dive)
+      //   End      (1.00) — scale = 6.5   (peak — ovule fills screen)
+      zoomTl.to(zoomFlower, {
+        scale: 6.5,
+        ease: "power2.in",
+        duration: 0.54,
+      }, 0.46);
 
-      // ── AURA & VIGNETTE (0.40 → 1.00) ──
-      // Both ramp gradually across the dive with `power2.inOut` — eased
-      // in AND out, no sudden darkening, no abrupt cap.
+      // ── DEPTH OF FIELD (0.50 → 0.95) ── softer, more gradual
+      // Outer rings fade gently. Reduced fade depth so the bloom
+      // remains visibly present behind every phase reveal — phases
+      // read as appearing INSIDE the flower, not replacing it.
+      zoomTl
+        .to("#zoomL1", { opacity: 0.30, ease: "power1.in", duration: 0.45 }, 0.50)
+        .to("#zoomL2", { opacity: 0.45, ease: "power1.in", duration: 0.42 }, 0.55)
+        .to("#zoomL3", { opacity: 0.60, ease: "power1.in", duration: 0.40 }, 0.60)
+        .to("#zoomL4", { opacity: 0.78, ease: "power1.in", duration: 0.38 }, 0.65);
+
+      // ── AURA & VIGNETTE (0.46 → 1.00) ── eased in and out, very soft
       zoomTl
         .to(".zoom-aura", {
-          scale: 1.5, opacity: 1.0,
-          ease: "power2.inOut", duration: 0.60,
-        }, 0.40)
+          scale: 1.4, opacity: 1.0,
+          ease: "power2.inOut", duration: 0.54,
+        }, 0.46)
         .to(".zoom-vignette", {
-          opacity: 0.7,
-          ease: "power2.inOut", duration: 0.60,
-        }, 0.40);
+          opacity: 0.55, // softer cap (was 0.7) — content stays bright
+          ease: "power2.inOut", duration: 0.54,
+        }, 0.46);
 
       // ─────────────────────────────────────────────────────────────────
-      //  FOUR PHASE REVEALS (timeline 0.62 → 0.96)
-      //  Phases surface sequentially INSIDE the ovule WHILE the dive
-      //  is still in progress. Each phase emerges against a larger,
-      //  more zoomed-in flower than the one before it — that's the
-      //  visual unity you liked: growth and revelation are the SAME
-      //  scroll moment, not separate acts.
+      //  FOUR PHASE REVEALS — Apple-style "read first, motion second"
+      //  ─────────────────────────────────────────────────────────────────
+      //  Each phase surfaces gracefully and HOLDS for a meaningful
+      //  window before the next one arrives. Enter durations doubled
+      //  (0.07 → 0.12) so text doesn't pop — it arrives.
       //
-      //  Spacing: 0.085 of timeline between phase entries — enough
-      //  read time for each phase while keeping the rhythm flowing.
-      //  Exits fade in place (no y-translate) with a 0.02 overlap so
-      //  there is never a dead empty moment inside the ovule.
+      //  Spacing 0.10 of timeline between entries, with each phase
+      //  exiting just before the next one begins. Phase 04 holds
+      //  through the rest of the timeline so the final message
+      //  lingers as the dive completes.
       // ─────────────────────────────────────────────────────────────────
       const phasePositions = [
-        { sel: '.ovule-reveal[data-phase="1"]', start: 0.62 },
-        { sel: '.ovule-reveal[data-phase="2"]', start: 0.71 },
-        { sel: '.ovule-reveal[data-phase="3"]', start: 0.80 },
-        { sel: '.ovule-reveal[data-phase="4"]', start: 0.89 },
+        { sel: '.ovule-reveal[data-phase="1"]', start: 0.52 },
+        { sel: '.ovule-reveal[data-phase="2"]', start: 0.62 },
+        { sel: '.ovule-reveal[data-phase="3"]', start: 0.72 },
+        { sel: '.ovule-reveal[data-phase="4"]', start: 0.82 },
       ];
 
       phasePositions.forEach((p, i) => {
         const isLast = i === phasePositions.length - 1;
 
-        // Enter: float up + fade + subtle scale settle. `power3.out`
-        // lands softly without overshoot — luxury motion, no bounce.
+        // Enter: graceful, slow, no overshoot. `power3.out` over
+        // 0.12 of timeline — text arrives with intention, not pop.
         zoomTl.to(p.sel, {
           opacity: 1, y: 0, scale: 1,
-          ease: "power3.out", duration: 0.07,
+          ease: "power3.out", duration: 0.12,
         }, p.start);
 
-        // Exit: fade in place with barely-there scale-down. The only
-        // motion during a transition is the next phase rising up —
-        // the leaving phase just softens out underneath it.
+        // Exit: fade in place, slightly slower than before. The
+        // leaving phase yields gracefully to the incoming one.
         if (!isLast) {
           const next = phasePositions[i + 1];
-          const exitStart = next.start - 0.03;
+          // 0.02 timeline overlap with next phase entry — there is
+          // ALWAYS a phase visible, never an empty ovule.
+          const exitStart = next.start - 0.04;
           zoomTl.to(p.sel, {
             opacity: 0,
             scale: 0.985,
-            ease: "power2.in", duration: 0.05,
+            ease: "power2.in", duration: 0.08,
           }, exitStart);
         }
       });
 
       // ─────────────────────────────────────────────────────────────────
-      //  FINAL DRIFT (timeline 0.96 → 1.00)
-      //  Subtle downward drift on the held-final scene. Small amplitude
-      //  so the handoff to the cream afterglow feels soft, not like the
-      //  animation is sliding off the screen.
+      //  FINAL HOLD + SOFT DRIFT (0.94 → 1.00)
+      //  Phase 04 lingers, then the whole scene drifts down a fraction.
       // ─────────────────────────────────────────────────────────────────
       zoomTl
         .to('.ovule-reveal[data-phase="4"]', {
-          y: 22, ease: "sine.in", duration: 0.04,
-        }, 0.96)
+          y: 18, ease: "sine.in", duration: 0.06,
+        }, 0.94)
         .to(zoomFlower, {
-          y: 28, ease: "sine.in", duration: 0.04,
-        }, 0.96)
+          y: 22, ease: "sine.in", duration: 0.06,
+        }, 0.94)
         .to(".zoom-aura", {
-          y: 24, opacity: 0.85,
-          ease: "sine.in", duration: 0.04,
-        }, 0.96);
+          y: 20, opacity: 0.85,
+          ease: "sine.in", duration: 0.06,
+        }, 0.94);
 
       // ═════════════════════════════════════════════════════════════════
-      //  DIRECTIONAL SCROLL DRIVER  (quickTo-based, conflict-free)
+      //  SCROLL DRIVER — fully decoupled from scroll velocity
       //  ─────────────────────────────────────────────────────────────────
-      //  Scroll DOWN  → animation tracks scroll position (smooth glide).
-      //  Scroll UP    → animation snaps back to its initial state.
+      //  Per the Apple-philosophy revision: scroll determines a TARGET
+      //  state. The animation independently glides toward that target
+      //  with a 1.0-second smoothing window. Fast scrolling does NOT
+      //  produce fast animation — the timeline lags meaningfully so
+      //  motion always feels cinematic.
       //
-      //  Implementation: a single `gsap.quickTo` perpetual tween that
-      //  smoothly drives `zoomTl.progress` toward whatever destination
-      //  we hand it on each scroll tick. Unlike the previous version
-      //  (which created + killed a new tween on every update), quickTo
-      //  reuses ONE tween across all calls — no overlapping in-flight
-      //  tweens, no accumulated state, no direction-flip bugs.
+      //  Scroll DOWN  → glide toward current scroll position
+      //  Scroll UP    → glide back to start (no reverse playback)
       //
-      //  We also track the previous scroll progress so we can derive
-      //  direction from actual scroll change rather than relying on
-      //  ScrollTrigger's `self.direction`, which can flicker under
-      //  Lenis smooth-scroll deceleration.
+      //  Smoothing: gsap.quickTo with 1.0s duration + power3.out gives
+      //  the "interpolate toward target" feel the spec asks for. The
+      //  same perpetual tween reused across all calls — no conflicts.
       // ─────────────────────────────────────────────────────────────────
       const setProgress = gsap.quickTo(zoomTl, "progress", {
-        duration: 0.45,
-        ease: "power2.out",
+        duration: 1.0,            // calm, cinematic lag (was 0.45)
+        ease: "power3.out",       // soft settle (was power2.out)
       });
 
       let lastProgress = 0;
+      let isComplete = false;
 
-      ScrollTrigger.create({
+      // Threshold for the "replay" interaction state — when the
+      // timeline has effectively reached its end, the flower
+      // becomes a subtle, clickable replay surface.
+      const COMPLETE_THRESHOLD = 0.96;
+
+      const bloomZoomTrigger = ScrollTrigger.create({
         trigger: ".bloom-zoom",
         start: "top 80%",
         end: "bottom bottom",
         invalidateOnRefresh: true,
         onRefresh: () => {
-          // On layout invalidation (resize / refresh), re-sync our state
-          // tracker so we don't think we're "reversing" just because the
-          // new layout produced a different progress value.
           lastProgress = 0;
+          isComplete = false;
+          zoomFlower.classList.remove("zoom-flower--replay");
           zoomTl.progress(0);
         },
         onUpdate: (self) => {
           const p = self.progress;
-          // Derive direction from actual scroll change — more reliable
-          // than self.direction under smooth-scroll deceleration.
           const isReversing = p < lastProgress - 0.0005;
           lastProgress = p;
-          // Forward → target current scroll. Reverse → target 0.
           setProgress(isReversing ? 0 : p);
+
+          // Replay-ready state: once the user has reached the end of
+          // the section AND the timeline has caught up, mark the
+          // flower as interactive. Use both raw scroll progress AND
+          // the timeline's actual progress so we don't promise
+          // replay before the visual state has fully arrived.
+          const visuallyAtEnd =
+            p >= COMPLETE_THRESHOLD && zoomTl.progress() >= 0.92;
+          if (visuallyAtEnd && !isComplete) {
+            isComplete = true;
+            zoomFlower.classList.add("zoom-flower--replay");
+          } else if (!visuallyAtEnd && isComplete) {
+            isComplete = false;
+            zoomFlower.classList.remove("zoom-flower--replay");
+          }
         },
         onLeaveBack: () => {
-          // Fully scrolled past the section start — hard-reset state so
-          // the next entry plays cleanly from the beginning.
           lastProgress = 0;
+          isComplete = false;
+          zoomFlower.classList.remove("zoom-flower--replay");
           setProgress(0);
         },
+      });
+
+      // ─────────────────────────────────────────────────────────────────
+      //  REPLAY — click the bloomed flower to re-experience the journey
+      //  ─────────────────────────────────────────────────────────────────
+      //  When the timeline is complete, the flower is clickable. A
+      //  click smoothly scrolls the page back to the section start
+      //  via Lenis (or native smooth scroll), so the bloom + dive +
+      //  phases all replay naturally as the user re-scrolls forward.
+      //
+      //  No abrupt snap — Lenis does a 1.6s cubic-ease scroll that
+      //  feels like a deliberate cinematic re-cue.
+      // ─────────────────────────────────────────────────────────────────
+      zoomFlower.style.cursor = ""; // ensure no stale inline cursor
+      zoomFlower.setAttribute("role", "button");
+      zoomFlower.setAttribute("aria-label", "Replay the bloom — click to start over");
+      zoomFlower.setAttribute("tabindex", "-1");
+
+      const startReplay = () => {
+        if (!isComplete) return;
+        // Compute the scroll position that puts us at the section's
+        // trigger start (where the animation begins). The trigger's
+        // .start property is the absolute scroll position in pixels.
+        const target = Math.max(0, bloomZoomTrigger.start - 20);
+        if (window.__asterLenis) {
+          window.__asterLenis.scrollTo(target, {
+            duration: 1.6,
+            easing: (t) => 1 - Math.pow(1 - t, 3),
+          });
+        } else {
+          window.scrollTo({ top: target, behavior: "smooth" });
+        }
+      };
+
+      zoomFlower.addEventListener("click", startReplay);
+      // Subtle keyboard support — Enter / Space when the element
+      // happens to be focused (it can be focused programmatically
+      // by assistive tech).
+      zoomFlower.addEventListener("keydown", (e) => {
+        if ((e.key === "Enter" || e.key === " ") && isComplete) {
+          e.preventDefault();
+          startReplay();
+        }
+      });
+
+      // ─────────────────────────────────────────────────────────────────
+      //  AMBIENT DIMMING — quiet the surrounding motion
+      //  ─────────────────────────────────────────────────────────────────
+      //  Per the spec's "less but better" principle: while the user
+      //  is reading inside the bloom-zoom, the aurora + drifting
+      //  petals dim so the cinematic moment isn't fighting other
+      //  motion for attention. A body class is added when the
+      //  section is in view, removed when it isn't.
+      // ─────────────────────────────────────────────────────────────────
+      ScrollTrigger.create({
+        trigger: ".bloom-zoom",
+        start: "top 60%",
+        end: "bottom 40%",
+        onEnter:    () => document.body.classList.add("in-bloom-zoom"),
+        onLeave:    () => document.body.classList.remove("in-bloom-zoom"),
+        onEnterBack:() => document.body.classList.add("in-bloom-zoom"),
+        onLeaveBack:() => document.body.classList.remove("in-bloom-zoom"),
       });
     }
   } catch (err) {
