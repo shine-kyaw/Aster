@@ -4427,118 +4427,120 @@ body.in-bloom-zoom .ambient-petals {
       // ─────────────────────────────────────────────────────────────────
 
       // ─────────────────────────────────────────────────────────────────
-      //  APPLE-PHILOSOPHY TIMELINE — slower, calmer, content-first
+      //  BALANCED TIMELINE — overture short, phases long
       //  ─────────────────────────────────────────────────────────────────
-      //    0.00 → 0.40   BLOOM-UP    scale 0.82 → 1.0   (slow opening)
-      //    0.00 → 0.55   SCROLL-SPIN rotation -8° → 0°  (subtle)
-      //    0.40 → 0.46   BREATH      scale 1.03         (held inhale)
-      //    0.46 → 1.00   DIVE        scale 1.03 → 6.5   (lower peak,
-      //                              less extreme, more refined)
-      //    0.52 → 0.92   FOUR PHASES surface with longer enters + holds
-      //    0.92 → 0.98   FINAL HOLD  flower + Phase 04 settle
-      //    0.98 → 1.00   SOFT DRIFT  minimal handoff
+      //  Earlier version: spinning flower part ate 55% of the timeline,
+      //  all four phases shared only 40%. Inverted. This version puts
+      //  the spotlight where the storytelling is — the four phases.
       //
-      //  Key changes vs prior version:
-      //    • Peak scale reduced (9.0 → 6.5) — sharper SVG, calmer feel
-      //    • Bloom-up extended for a more leisurely opening
-      //    • Dive begins later, leaving breath room
-      //    • Each phase gets ~0.10 of timeline (was ~0.085) — more
-      //      reading time, more deliberate cadence
-      //    • Rotation softened (-12 → -8) — subtler scroll cue
+      //    0.00 → 0.22   BLOOM-UP    flower scales 0.82 → 1.0
+      //    0.00 → 0.30   SCROLL-SPIN rotation -8° → 0°
+      //    0.22 → 0.28   BREATH      scale 1.03
+      //    0.28 → 1.00   DIVE        scale 1.03 → 6.5
+      //
+      //    0.32 → 0.46   PHASE 01    enter + hold
+      //    0.48 → 0.62   PHASE 02    enter + hold
+      //    0.64 → 0.78   PHASE 03    enter + hold
+      //    0.80 → 0.94   PHASE 04    enter + extended hold
+      //
+      //    0.94 → 1.00   FINAL DRIFT soft handoff
+      //
+      //  Balance ratio:
+      //    Overture (bloom-up + spin + breath): ~28% of timeline
+      //    Phase content:                       ~62% of timeline
+      //    Final drift:                          ~6% of timeline
+      //
+      //  Each individual phase now gets 0.16 of timeline (was 0.10) —
+      //  meaningfully more reading time.
       // ─────────────────────────────────────────────────────────────────
 
-      // ── PHASE A · BLOOM-UP (0.00 → 0.40) ── slower, more leisurely
+      // ── BLOOM-UP (0.00 → 0.22) ── shorter overture
       zoomTl
-        .to(zoomFlower, { scale: 1.0, ease: "power2.out", duration: 0.40 }, 0)
-        .to(".zoom-aura", { scale: 1.0, opacity: 0.9, ease: "power2.out", duration: 0.40 }, 0);
+        .to(zoomFlower, { scale: 1.0, ease: "power2.out", duration: 0.22 }, 0)
+        .to(".zoom-aura", { scale: 1.0, opacity: 0.9, ease: "power2.out", duration: 0.22 }, 0);
 
-      // ── SCROLL-SPIN (0.00 → 0.55) ── subtler unwinding
+      // ── SCROLL-SPIN (0.00 → 0.30) ── completes before phases begin
       zoomTl.to(zoomFlower, {
         rotation: 0,
         ease: "sine.out",
-        duration: 0.55,
+        duration: 0.30,
       }, 0);
 
-      // ── PHASE B · BREATH (0.40 → 0.46) ── slight inhale
+      // ── BREATH (0.22 → 0.28) ── brief held inhale
       zoomTl.to(zoomFlower, {
         scale: 1.03,
         ease: "sine.inOut",
         duration: 0.06,
-      }, 0.40);
+      }, 0.22);
 
-      // ── PHASE C · CINEMATIC DIVE (0.46 → 1.00) ── slower, lower peak
-      // Peak scale 6.5 (was 9.0) — meaningfully less extreme. The SVG
-      // stays crisp at every step, and the dive reads as a controlled
-      // dolly rather than a rush. `power2.in` gives a smooth continuous
-      // acceleration across the whole 0.54 timeline window.
+      // ── CINEMATIC DIVE (0.28 → 1.00) ── runs through the phases
+      // Single continuous power2.in over 0.72 of timeline. The dive
+      // OVERLAPS with all four phase reveals — each phase appears
+      // against a more zoomed-in flower than the last.
       //
-      //   Phase 01 (0.52) — scale ≈ 1.12  (very early dive, content focus)
-      //   Phase 02 (0.62) — scale ≈ 1.62  (calm growth)
-      //   Phase 03 (0.72) — scale ≈ 2.35  (mid plunge)
-      //   Phase 04 (0.82) — scale ≈ 3.50  (committed dive)
-      //   End      (1.00) — scale = 6.5   (peak — ovule fills screen)
+      //   Phase 01 (0.32) — scale ≈ 1.06   (just after breath)
+      //   Phase 02 (0.48) — scale ≈ 1.36   (early dive)
+      //   Phase 03 (0.64) — scale ≈ 1.95   (mid dive)
+      //   Phase 04 (0.80) — scale ≈ 3.15   (committed plunge)
+      //   End      (1.00) — scale = 6.5    (peak — ovule fills screen)
       zoomTl.to(zoomFlower, {
         scale: 6.5,
         ease: "power2.in",
-        duration: 0.54,
-      }, 0.46);
+        duration: 0.72,
+      }, 0.28);
 
-      // ── DEPTH OF FIELD (0.50 → 0.95) ── softer, more gradual
-      // Outer rings fade gently. Reduced fade depth so the bloom
-      // remains visibly present behind every phase reveal — phases
-      // read as appearing INSIDE the flower, not replacing it.
+      // ── DEPTH OF FIELD (0.36 → 0.96) ── stretched across phases
+      // Outer rings fade gradually as the camera plunges past them.
+      // Slower fades than before so the bloom stays present.
       zoomTl
-        .to("#zoomL1", { opacity: 0.30, ease: "power1.in", duration: 0.45 }, 0.50)
-        .to("#zoomL2", { opacity: 0.45, ease: "power1.in", duration: 0.42 }, 0.55)
-        .to("#zoomL3", { opacity: 0.60, ease: "power1.in", duration: 0.40 }, 0.60)
-        .to("#zoomL4", { opacity: 0.78, ease: "power1.in", duration: 0.38 }, 0.65);
+        .to("#zoomL1", { opacity: 0.30, ease: "power1.in", duration: 0.55 }, 0.36)
+        .to("#zoomL2", { opacity: 0.45, ease: "power1.in", duration: 0.52 }, 0.42)
+        .to("#zoomL3", { opacity: 0.60, ease: "power1.in", duration: 0.48 }, 0.50)
+        .to("#zoomL4", { opacity: 0.78, ease: "power1.in", duration: 0.44 }, 0.58);
 
-      // ── AURA & VIGNETTE (0.46 → 1.00) ── eased in and out, very soft
+      // ── AURA & VIGNETTE (0.28 → 1.00) ──
       zoomTl
         .to(".zoom-aura", {
           scale: 1.4, opacity: 1.0,
-          ease: "power2.inOut", duration: 0.54,
-        }, 0.46)
+          ease: "power2.inOut", duration: 0.72,
+        }, 0.28)
         .to(".zoom-vignette", {
-          opacity: 0.55, // softer cap (was 0.7) — content stays bright
-          ease: "power2.inOut", duration: 0.54,
-        }, 0.46);
+          opacity: 0.55, // softer cap so content stays bright
+          ease: "power2.inOut", duration: 0.72,
+        }, 0.28);
 
       // ─────────────────────────────────────────────────────────────────
-      //  FOUR PHASE REVEALS — Apple-style "read first, motion second"
+      //  FOUR PHASE REVEALS — generously paced for readability
       //  ─────────────────────────────────────────────────────────────────
-      //  Each phase surfaces gracefully and HOLDS for a meaningful
-      //  window before the next one arrives. Enter durations doubled
-      //  (0.07 → 0.12) so text doesn't pop — it arrives.
+      //  Spacing 0.16 of timeline between entries (was 0.10). Each
+      //  phase has a real holding moment before crossfading to the
+      //  next. Phase 04 holds the longest — through to the drift.
       //
-      //  Spacing 0.10 of timeline between entries, with each phase
-      //  exiting just before the next one begins. Phase 04 holds
-      //  through the rest of the timeline so the final message
-      //  lingers as the dive completes.
+      //    Phase 01: enter 0.32 → 0.44 (duration 0.12), exit 0.44 → 0.52
+      //    Phase 02: enter 0.48 → 0.60 (duration 0.12), exit 0.60 → 0.68
+      //    Phase 03: enter 0.64 → 0.76 (duration 0.12), exit 0.76 → 0.84
+      //    Phase 04: enter 0.80 → 0.92 (duration 0.12), holds to 0.94
       // ─────────────────────────────────────────────────────────────────
       const phasePositions = [
-        { sel: '.ovule-reveal[data-phase="1"]', start: 0.52 },
-        { sel: '.ovule-reveal[data-phase="2"]', start: 0.62 },
-        { sel: '.ovule-reveal[data-phase="3"]', start: 0.72 },
-        { sel: '.ovule-reveal[data-phase="4"]', start: 0.82 },
+        { sel: '.ovule-reveal[data-phase="1"]', start: 0.32 },
+        { sel: '.ovule-reveal[data-phase="2"]', start: 0.48 },
+        { sel: '.ovule-reveal[data-phase="3"]', start: 0.64 },
+        { sel: '.ovule-reveal[data-phase="4"]', start: 0.80 },
       ];
 
       phasePositions.forEach((p, i) => {
         const isLast = i === phasePositions.length - 1;
 
-        // Enter: graceful, slow, no overshoot. `power3.out` over
-        // 0.12 of timeline — text arrives with intention, not pop.
+        // Enter: graceful, no overshoot. 0.12 of timeline — arrival, not pop.
         zoomTl.to(p.sel, {
           opacity: 1, y: 0, scale: 1,
           ease: "power3.out", duration: 0.12,
         }, p.start);
 
-        // Exit: fade in place, slightly slower than before. The
-        // leaving phase yields gracefully to the incoming one.
+        // Exit: fade in place. 0.04 overlap with next phase entry —
+        // there is ALWAYS a phase visible, never an empty ovule.
         if (!isLast) {
           const next = phasePositions[i + 1];
-          // 0.02 timeline overlap with next phase entry — there is
-          // ALWAYS a phase visible, never an empty ovule.
           const exitStart = next.start - 0.04;
           zoomTl.to(p.sel, {
             opacity: 0,
@@ -4550,7 +4552,7 @@ body.in-bloom-zoom .ambient-petals {
 
       // ─────────────────────────────────────────────────────────────────
       //  FINAL HOLD + SOFT DRIFT (0.94 → 1.00)
-      //  Phase 04 lingers, then the whole scene drifts down a fraction.
+      //  Phase 04 lingers, then the whole scene drifts a fraction.
       // ─────────────────────────────────────────────────────────────────
       zoomTl
         .to('.ovule-reveal[data-phase="4"]', {
