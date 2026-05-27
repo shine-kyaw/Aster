@@ -2836,11 +2836,12 @@ body.in-bloom-zoom .ambient-petals {
         </div>
       </div>
 
-      <!-- The previous SVG cyclical ring (rotating "BESPOKE · HANDCRAFTED…"
-           text + decorative arrows + flat aster icon) has been replaced
-           by the interactive Three.js 3D aster from the Claude Design
-           handoff bundle. Click + drag to rotate; idle bob + sway. -->
-      <div class="cyclical-stage reveal" aria-label="Interactive 3D aster — click and drag to rotate">
+      <!-- Interactive Three.js 3D aster — replaces the prior rotating
+           text ring + flat aster icon. Sits in the right column of
+           "The bloom never ends. It only deepens." section.
+           No .reveal class so the canvas is always visible — Three.js
+           renders into a stable, non-transforming parent. -->
+      <div class="cyclical-stage" aria-label="Interactive 3D aster — click and drag to rotate">
         <div id="philosophyAster3D" class="philosophy-aster-3d"></div>
       </div>
     </div>
