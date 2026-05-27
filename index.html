@@ -309,20 +309,23 @@ img, svg { display: block; max-width: 100%; }
   align-items: center;
   justify-content: center;
   position: relative;
-}
-.hero-flower svg {
+  /* Square, capped — Three.js fills the box edge-to-edge */
   width: 100%;
-  max-width: 520px;
-  height: auto;
+  max-width: 560px;
+  aspect-ratio: 1;
+  margin: 0 auto;
 }
-.hero-flower-halo {
+/* The 3D mount point — Three.js renderer appends its <canvas> here. */
+.hero-aster-3d {
   position: absolute;
-  width: 110%;
-  height: 110%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(196, 165, 224, 0.35), transparent 65%);
-  filter: blur(20px);
-  pointer-events: none;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.hero-aster-3d canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
 }
 
 /* ========== Section divider ========== */
@@ -2414,18 +2417,9 @@ body.in-bloom-zoom .ambient-petals {
   stroke: var(--aster);
 }
 
-/* ============================================================
-   MTK · Hero halo breathing
-   ============================================================ */
-@keyframes heroBreathe {
-  0%, 100% { transform: scale(1);    opacity: 0.7; }
-  50%      { transform: scale(1.08); opacity: 1; }
-}
-.hero-flower-halo {
-  animation: heroBreathe 6s ease-in-out infinite;
-  background: radial-gradient(circle, rgba(196, 165, 224, 0.40), transparent 65%);
-  will-change: transform, opacity;
-}
+/* The .hero-flower-halo (CSS breathing aura) was removed when the
+   SVG hero flower was replaced by the Three.js 3D aster — the 3D
+   scene has its own soft ground shadow + key/fill/rim lighting. */
 
 /* ============================================================
    MOBILE TUNING — comprehensive responsiveness pass
@@ -2474,8 +2468,8 @@ body.in-bloom-zoom .ambient-petals {
   .hero-meta .item span { font-size: 18px; }
   .hero-meta--line, .hero-meta--mixed { gap: 14px; }
 
-  /* Hero flower: cap size so it doesn't dominate on small viewports */
-  .hero-flower svg { max-width: 360px; margin: 0 auto; }
+  /* 3D Aster: cap size so it doesn't dominate on small viewports */
+  .hero-flower { max-width: 360px; }
 
   /* Section padding tighter on phones */
   .section { padding-top: clamp(60px, 10vw, 90px); padding-bottom: clamp(60px, 10vw, 90px); }
@@ -2556,8 +2550,8 @@ body.in-bloom-zoom .ambient-petals {
   .tier-name { font-size: 28px; }
   .tier-price { font-size: 28px; }
 
-  /* Hero flower: smaller still */
-  .hero-flower svg { max-width: 280px; }
+  /* 3D Aster: smaller still on tiny phones */
+  .hero-flower { max-width: 280px; }
 
   /* Hero meta line (italic byline) — keep punchy but readable */
   .hero-meta-line { font-size: 14px; }
@@ -2639,24 +2633,13 @@ body.in-bloom-zoom .ambient-petals {
       </div>
       <div class="hero-meta hero-meta--mixed">
         <span class="hero-meta-line">Hand-built <em class="dot">·</em> hand-tended</span>
-        <div class="item">
-          <span>∞</span>
-          <small>Solely Aster</small>
-        </div>
       </div>
     </div>
 
+    <!-- Three.js 3D Aster — interactive, click-and-drag to rotate.
+         Replaces the previous SVG #heroFlower and "Solely Aster" stat. -->
     <div class="hero-flower">
-      <div class="hero-flower-halo"></div>
-      <svg viewBox="0 0 400 400" aria-hidden="true" id="heroFlower">
-        <g transform="translate(200 200)">
-          <g id="heroOuter"></g>
-          <g id="heroInner"></g>
-          <circle r="22" fill="#b8714e"/>
-          <circle r="14" fill="#d97757"/>
-          <circle r="6" fill="#e89a7c"/>
-        </g>
-      </svg>
+      <div id="heroAster3D" class="hero-aster-3d" aria-label="Interactive 3D aster — click and drag to rotate"></div>
     </div>
   </div>
 </header>
@@ -4062,6 +4045,27 @@ body.in-bloom-zoom .ambient-petals {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="https://unpkg.com/lenis@1.0.42/dist/lenis.min.js"></script>
+
+<!-- Three.js — used only for the interactive 3D aster in the hero. -->
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script src="aster-3d.js"></script>
+<script>
+  // Mount the 3D aster as soon as Three.js + the module are ready.
+  // Falls back silently if Three.js fails to load (the hero container
+  // just stays empty — the rest of the page is unaffected).
+  (function () {
+    function mountAster3D() {
+      const stage = document.getElementById('heroAster3D');
+      if (!stage || !window.AsterFlower3D || !window.THREE) return;
+      window.AsterFlower3D.mount(stage);
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', mountAster3D);
+    } else {
+      mountAster3D();
+    }
+  })();
+</script>
 
 <script>
 (function () {
