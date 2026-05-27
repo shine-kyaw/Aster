@@ -309,23 +309,20 @@ img, svg { display: block; max-width: 100%; }
   align-items: center;
   justify-content: center;
   position: relative;
-  /* Square, capped — Three.js fills the box edge-to-edge */
-  width: 100%;
-  max-width: 560px;
-  aspect-ratio: 1;
-  margin: 0 auto;
 }
-/* The 3D mount point — Three.js renderer appends its <canvas> here. */
-.hero-aster-3d {
+.hero-flower svg {
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+}
+.hero-flower-halo {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-.hero-aster-3d canvas {
-  display: block;
-  width: 100% !important;
-  height: 100% !important;
+  width: 110%;
+  height: 110%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(196, 165, 224, 0.35), transparent 65%);
+  filter: blur(20px);
+  pointer-events: none;
 }
 
 /* ========== Section divider ========== */
@@ -588,6 +585,19 @@ img, svg { display: block; max-width: 100%; }
   margin: 0 auto;
 }
 .cyclical-stage svg { width: 100%; height: 100%; overflow: visible; }
+/* 3D aster mount inside the cyclical philosophy stage — Three.js
+   renderer appends its <canvas> here and fills the square container. */
+.philosophy-aster-3d {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.philosophy-aster-3d canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
 .cyclical-ring {
   animation: spinSlow 40s linear infinite;
   transform-origin: 50% 50%;
@@ -2417,9 +2427,18 @@ body.in-bloom-zoom .ambient-petals {
   stroke: var(--aster);
 }
 
-/* The .hero-flower-halo (CSS breathing aura) was removed when the
-   SVG hero flower was replaced by the Three.js 3D aster — the 3D
-   scene has its own soft ground shadow + key/fill/rim lighting. */
+/* ============================================================
+   MTK · Hero halo breathing
+   ============================================================ */
+@keyframes heroBreathe {
+  0%, 100% { transform: scale(1);    opacity: 0.7; }
+  50%      { transform: scale(1.08); opacity: 1; }
+}
+.hero-flower-halo {
+  animation: heroBreathe 6s ease-in-out infinite;
+  background: radial-gradient(circle, rgba(196, 165, 224, 0.40), transparent 65%);
+  will-change: transform, opacity;
+}
 
 /* ============================================================
    MOBILE TUNING — comprehensive responsiveness pass
@@ -2468,8 +2487,8 @@ body.in-bloom-zoom .ambient-petals {
   .hero-meta .item span { font-size: 18px; }
   .hero-meta--line, .hero-meta--mixed { gap: 14px; }
 
-  /* 3D Aster: cap size so it doesn't dominate on small viewports */
-  .hero-flower { max-width: 360px; }
+  /* Hero flower: cap size so it doesn't dominate on small viewports */
+  .hero-flower svg { max-width: 360px; margin: 0 auto; }
 
   /* Section padding tighter on phones */
   .section { padding-top: clamp(60px, 10vw, 90px); padding-bottom: clamp(60px, 10vw, 90px); }
@@ -2550,8 +2569,8 @@ body.in-bloom-zoom .ambient-petals {
   .tier-name { font-size: 28px; }
   .tier-price { font-size: 28px; }
 
-  /* 3D Aster: smaller still on tiny phones */
-  .hero-flower { max-width: 280px; }
+  /* Hero flower: smaller still */
+  .hero-flower svg { max-width: 280px; }
 
   /* Hero meta line (italic byline) — keep punchy but readable */
   .hero-meta-line { font-size: 14px; }
@@ -2633,13 +2652,24 @@ body.in-bloom-zoom .ambient-petals {
       </div>
       <div class="hero-meta hero-meta--mixed">
         <span class="hero-meta-line">Hand-built <em class="dot">·</em> hand-tended</span>
+        <div class="item">
+          <span>∞</span>
+          <small>Solely Aster</small>
+        </div>
       </div>
     </div>
 
-    <!-- Three.js 3D Aster — interactive, click-and-drag to rotate.
-         Replaces the previous SVG #heroFlower and "Solely Aster" stat. -->
     <div class="hero-flower">
-      <div id="heroAster3D" class="hero-aster-3d" aria-label="Interactive 3D aster — click and drag to rotate"></div>
+      <div class="hero-flower-halo"></div>
+      <svg viewBox="0 0 400 400" aria-hidden="true" id="heroFlower">
+        <g transform="translate(200 200)">
+          <g id="heroOuter"></g>
+          <g id="heroInner"></g>
+          <circle r="22" fill="#b8714e"/>
+          <circle r="14" fill="#d97757"/>
+          <circle r="6" fill="#e89a7c"/>
+        </g>
+      </svg>
     </div>
   </div>
 </header>
@@ -2806,59 +2836,12 @@ body.in-bloom-zoom .ambient-petals {
         </div>
       </div>
 
-      <div class="cyclical-stage reveal" aria-hidden="true">
-        <svg viewBox="0 0 600 600">
-          <defs>
-            <!-- Outer rotating text path -->
-            <path id="ringPath" d="M 300 300 m -240 0 a 240 240 0 1 1 480 0 a 240 240 0 1 1 -480 0"/>
-            <path id="ringPathInner" d="M 300 300 m -160 0 a 160 160 0 1 1 320 0 a 160 160 0 1 1 -320 0"/>
-          </defs>
-
-          <!-- Decorative outer ring -->
-          <circle cx="300" cy="300" r="280" fill="none" stroke="#d8cfb8" stroke-width="0.8" stroke-dasharray="1 6"/>
-          <circle cx="300" cy="300" r="240" fill="none" stroke="#8b5fbf" stroke-width="0.6" opacity="0.5"/>
-
-          <!-- Rotating outer text -->
-          <g class="cyclical-ring">
-            <text font-family="Inter, sans-serif" font-size="13" letter-spacing="8" fill="#7e786c">
-              <textPath href="#ringPath" startOffset="0">
-                BESPOKE · HANDCRAFTED · INTIMATE · UNREPEATABLE · CYCLICAL · SOLELY ASTER · BESPOKE · HANDCRAFTED · INTIMATE · UNREPEATABLE · CYCLICAL · SOLELY ASTER ·
-              </textPath>
-            </text>
-          </g>
-
-          <!-- Arrows around inner ring -->
-          <g class="cyclical-ring-reverse">
-            <g transform="translate(300 60)">
-              <path d="M -8 0 L 8 0 M 4 -5 L 8 0 L 4 5" stroke="#8b5fbf" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-            </g>
-            <g transform="translate(540 300) rotate(90)">
-              <path d="M -8 0 L 8 0 M 4 -5 L 8 0 L 4 5" stroke="#8b5fbf" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-            </g>
-            <g transform="translate(300 540) rotate(180)">
-              <path d="M -8 0 L 8 0 M 4 -5 L 8 0 L 4 5" stroke="#8b5fbf" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-            </g>
-            <g transform="translate(60 300) rotate(270)">
-              <path d="M -8 0 L 8 0 M 4 -5 L 8 0 L 4 5" stroke="#8b5fbf" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-            </g>
-          </g>
-
-          <!-- Inner static decorative -->
-          <circle cx="300" cy="300" r="160" fill="none" stroke="#d8cfb8" stroke-width="0.8"/>
-          <circle cx="300" cy="300" r="140" fill="#faf5e9"/>
-
-          <!-- Inner aster icon -->
-          <g transform="translate(300 300)" id="philosophyFlower">
-            <g id="philOuter"></g>
-            <g id="philInner"></g>
-            <circle r="14" fill="#b8714e"/>
-            <circle r="8" fill="#d97757"/>
-            <circle r="3" fill="#e89a7c"/>
-          </g>
-        </svg>
-        <div class="cyclical-center">
-          <span class="micro">— Solely Aster —</span>
-        </div>
+      <!-- The previous SVG cyclical ring (rotating "BESPOKE · HANDCRAFTED…"
+           text + decorative arrows + flat aster icon) has been replaced
+           by the interactive Three.js 3D aster from the Claude Design
+           handoff bundle. Click + drag to rotate; idle bob + sway. -->
+      <div class="cyclical-stage reveal" aria-label="Interactive 3D aster — click and drag to rotate">
+        <div id="philosophyAster3D" class="philosophy-aster-3d"></div>
       </div>
     </div>
   </div>
@@ -4046,16 +4029,17 @@ body.in-bloom-zoom .ambient-petals {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="https://unpkg.com/lenis@1.0.42/dist/lenis.min.js"></script>
 
-<!-- Three.js — used only for the interactive 3D aster in the hero. -->
+<!-- Three.js — used only for the interactive 3D aster that replaces
+     the cyclical philosophy ring. -->
 <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
 <script src="aster-3d.js"></script>
 <script>
-  // Mount the 3D aster as soon as Three.js + the module are ready.
-  // Falls back silently if Three.js fails to load (the hero container
-  // just stays empty — the rest of the page is unaffected).
+  // Mount the 3D aster inside the philosophy section's cyclical stage.
+  // Falls back silently if Three.js fails to load (the container just
+  // stays empty — the rest of the page is unaffected).
   (function () {
     function mountAster3D() {
-      const stage = document.getElementById('heroAster3D');
+      const stage = document.getElementById('philosophyAster3D');
       if (!stage || !window.AsterFlower3D || !window.THREE) return;
       window.AsterFlower3D.mount(stage);
     }
