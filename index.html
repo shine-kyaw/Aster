@@ -620,33 +620,6 @@ img, svg { display: block; max-width: 100%; }
   width: 100% !important;
   height: 100% !important;
 }
-/* Interaction affordance — quiet, editorial, fades on first grab.
-   Mono micro-type with a tracked uppercase label (principle 2:
-   widely-tracked small uppercase) + custom hairline arrow icon. */
-.aster-hint {
-  position: absolute;
-  left: 50%;
-  bottom: 4px;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-family: var(--mono);
-  font-size: 10.5px;
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
-  white-space: nowrap;
-  opacity: 0.72;
-  transition: opacity 0.7s var(--ease);
-  pointer-events: none;
-  z-index: 2;
-}
-.aster-hint svg { display: block; opacity: 0.8; }
-.aster-hint.faded { opacity: 0; }
-@media (prefers-reduced-motion: reduce) {
-  .aster-hint { transition: none; }
-}
 .cyclical-ring {
   animation: spinSlow 40s linear infinite;
   transform-origin: 50% 50%;
@@ -2891,14 +2864,6 @@ body.in-bloom-zoom .ambient-petals {
            renders into a stable, non-transforming parent. -->
       <div class="cyclical-stage" aria-label="Interactive 3D aster — click and drag to rotate">
         <div id="philosophyAster3D" class="philosophy-aster-3d"></div>
-        <!-- Subtle interaction affordance — fades on first grab. -->
-        <div id="asterHint" class="aster-hint" aria-hidden="true">
-          <svg width="20" height="13" viewBox="0 0 22 14" fill="none">
-            <path d="M2 7 H20 M2 7 L7 2 M2 7 L7 12 M20 7 L15 2 M20 7 L15 12"
-                  stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span>Drag to turn</span>
-        </div>
       </div>
     </div>
   </div>
@@ -4099,22 +4064,6 @@ body.in-bloom-zoom .ambient-petals {
       const stage = document.getElementById('philosophyAster3D');
       if (!stage || !window.AsterFlower3D || !window.THREE) return;
       window.AsterFlower3D.mount(stage);
-
-      // Fade the "Drag to turn" hint once the user actually grabs the
-      // bloom — a quiet, one-time affordance (principle: motion guides,
-      // never nags). After 7s of no interaction, dim it part-way so it
-      // never lingers at full strength.
-      const hint = document.getElementById('asterHint');
-      if (hint) {
-        let faded = false;
-        const fade = () => {
-          if (faded) return;
-          faded = true;
-          hint.classList.add('faded');
-        };
-        stage.addEventListener('pointerdown', fade, { once: true });
-        setTimeout(() => { if (!faded) hint.style.opacity = '0.4'; }, 7000);
-      }
     }
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', mountAster3D);
