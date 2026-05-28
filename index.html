@@ -1689,8 +1689,11 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
 }
 .case .body h3 em { color: var(--aster-deep); font-style: italic; }
 .case .body p {
-  color: var(--ink-mute);
-  font-size: 14px;
+  /* `--ink-soft` instead of `--ink-mute` — the muted tone fell below
+     WCAG AA (~3.8:1); ink-soft lifts the case descriptions to a clearly
+     legible contrast, especially on mobile in bright light. */
+  color: var(--ink-soft);
+  font-size: 14.5px;
   line-height: 1.55;
   margin: 0 0 18px;
 }
@@ -2189,13 +2192,18 @@ body.in-bloom-zoom .ambient-petals {
   text-shadow: 0 1px 0 rgba(255, 248, 235, 0.6);
 }
 /* ── Mobile tuning ──
-   Phones have less screen real-estate and slower GPU paint pipelines —
-   the cinematic dive feels just as good with a shorter scroll runway,
-   and the petal rings can drop a layer to avoid jank. */
+   Taller scroll runway (480vh) so the now tightly-coupled animation
+   has room to play the full bloom → dive → four phases across a few
+   finger-flicks — each phase gets real dwell time instead of being
+   blown past. The flower fills more of the small viewport, and the
+   ovule phase text is sized up for legibility. */
 @media (max-width: 760px) {
-  .bloom-zoom { height: 340vh; }
-  .zoom-flower { width: min(86vmin, 560px); height: min(86vmin, 560px); }
-  .ovule-reveal { padding: clamp(20px, 5vw, 32px); max-width: 88vw; }
+  .bloom-zoom { height: 480vh; }
+  .zoom-flower { width: min(92vmin, 560px); height: min(92vmin, 560px); }
+  .ovule-reveal { padding: clamp(20px, 5vw, 32px); max-width: 90vw; }
+  .ovule-title { font-size: clamp(30px, 9vw, 44px); }
+  .ovule-body  { font-size: 16px; }
+  .ovule-label { font-size: 12px; }
 }
 /* ── Reduced motion ──
    Collapse the cinematic dive into a single static, readable state.
@@ -4620,10 +4628,22 @@ body.in-bloom-zoom .ambient-petals {
       //  the "interpolate toward target" feel the spec asks for. The
       //  same perpetual tween reused across all calls — no conflicts.
       // ─────────────────────────────────────────────────────────────────
+      // Touch devices scroll with fast native momentum flicks. The calm
+      // 1.0s smoothing that feels cinematic on a desktop smooth-wheel lags
+      // SO far behind a mobile flick that the bloom never finishes before
+      // you've scrolled past the whole section — "the whole thing is not
+      // visible." So: tight coupling on touch (the flower tracks the
+      // finger and you actually see the bloom + dive + phases as you
+      // scroll), calm cinematic lag preserved on desktop.
+      const isTouch = window.matchMedia("(hover: none), (max-width: 760px)").matches;
       const setProgress = gsap.quickTo(zoomTl, "progress", {
-        duration: 1.0,            // calm, cinematic lag (was 0.45)
-        ease: "power3.out",       // soft settle (was power2.out)
+        duration: isTouch ? 0.25 : 1.0,
+        ease: isTouch ? "power2.out" : "power3.out",
       });
+      // Momentum scrolling produces tiny backward jitters between frames;
+      // a wider deadband on touch stops those from falsely tripping the
+      // "scrolling up" reset and snapping the animation back to 0 mid-flick.
+      const reverseDeadband = isTouch ? 0.03 : 0.0005;
 
       let lastProgress = 0;
       let isComplete = false;
@@ -4646,7 +4666,7 @@ body.in-bloom-zoom .ambient-petals {
         },
         onUpdate: (self) => {
           const p = self.progress;
-          const isReversing = p < lastProgress - 0.0005;
+          const isReversing = p < lastProgress - reverseDeadband;
           lastProgress = p;
           setProgress(isReversing ? 0 : p);
 
