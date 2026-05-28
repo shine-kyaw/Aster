@@ -22,9 +22,12 @@
     const pos = geo.attributes.position;
     const colors = new Float32Array(pos.count * 3);
 
-    const cBase = new T.Color(0x7c6488);  // deeper lavender shadow at the base
-    const cMid  = new T.Color(0xb59ec3);  // mid pale lavender
-    const cTip  = new T.Color(0xeadfe8);  // near-white blush at the tip
+    // Lighter, airier palette to match the brand asters (aster-light →
+    // aster-mist). The base keeps just enough depth to read 3D form;
+    // the tip lifts to a near-white lavender mist for a luminous edge.
+    const cBase = new T.Color(0xb79ed8);  // soft lavender — gentle base shadow
+    const cMid  = new T.Color(0xceb4e8);  // aster-light, airy
+    const cTip  = new T.Color(0xf6f1fc);  // near-white lavender mist
 
     for (let i = 0; i < pos.count; i++) {
       const u = pos.getX(i) + 0.5;     // 0..1 along length
@@ -94,14 +97,14 @@
     const petalMat = new T.MeshPhysicalMaterial({
       color: 0xffffff,
       vertexColors: true,
-      roughness: 0.72,
+      roughness: 0.58,                       // silkier satin (was 0.72)
       metalness: 0.0,
       side: T.DoubleSide,
-      sheen: 0.7,
-      sheenColor: new T.Color(0xfff2e8),
-      sheenRoughness: 0.6,
-      clearcoat: 0.08,
-      clearcoatRoughness: 0.7,
+      sheen: 0.95,                           // luminous petal sheen (was 0.7)
+      sheenColor: new T.Color(0xfff0f4),     // delicate warm-pink sheen edge
+      sheenRoughness: 0.5,
+      clearcoat: 0.16,                       // subtle refined glow (was 0.08)
+      clearcoatRoughness: 0.55,
     });
 
     // ── Petals — two rings, deliberately understated counts.
@@ -133,27 +136,40 @@
       }
     }
 
-    // Back ring — longer, leans back a touch
+    // Three layered rings give the bloom a lush, full aster silhouette
+    // (real asters have many fine rays). Counts kept tasteful so it reads
+    // refined, not busy.
+    // Back ring — longest, leans back a touch
     addRing({
-      count: 20, length: 1.95, width: 0.16, cup: 0.16, tipLift: 0.14,
-      tiltBack: 0.32, angleOffset: 0,
+      count: 24, length: 2.0, width: 0.155, cup: 0.16, tipLift: 0.14,
+      tiltBack: 0.34, angleOffset: 0,
       baseRadius: 0.30, jitterSeed: 11,
     });
-    // Front ring — shorter, half-offset, near flat
+    // Mid ring — medium, half-offset
     addRing({
-      count: 16, length: 1.65, width: 0.15, cup: 0.20, tipLift: 0.22,
-      tiltBack: -0.04, angleOffset: Math.PI / 16,
+      count: 20, length: 1.66, width: 0.145, cup: 0.19, tipLift: 0.20,
+      tiltBack: 0.05, angleOffset: Math.PI / 20,
       baseRadius: 0.24, jitterSeed: 37,
     });
+    // Inner ring — short rays cupping inward toward the center, the
+    // detail that makes it read as a real, full bloom rather than a
+    // simple two-ring daisy.
+    addRing({
+      count: 16, length: 1.18, width: 0.115, cup: 0.24, tipLift: 0.30,
+      tiltBack: -0.20, angleOffset: Math.PI / 12,
+      baseRadius: 0.15, jitterSeed: 53,
+    });
 
-    // ── Center — a single small honey dome. Restrained, not busy.
-    const centerGeo = new T.SphereGeometry(0.28, 36, 22, 0, Math.PI * 2, 0, Math.PI / 2.1);
+    // ── Center — a warm coral dome, matching the brand asters (hero /
+    // process flowers all use a coral center, deepening outward:
+    // #d97757 → #e89a7c). Replaces the prior honey-gold for cohesion.
+    const centerGeo = new T.SphereGeometry(0.26, 36, 22, 0, Math.PI * 2, 0, Math.PI / 2.1);
     const centerMat = new T.MeshStandardMaterial({
-      color: 0xc9913a,
-      roughness: 0.62,
+      color: 0xd97757,        // bloom-deep coral (outer dome)
+      roughness: 0.55,
       metalness: 0.0,
-      emissive: 0x4a2c08,
-      emissiveIntensity: 0.22,
+      emissive: 0x6e2f18,     // soft warm glow from within
+      emissiveIntensity: 0.24,
     });
     const center = new T.Mesh(centerGeo, centerMat);
     center.rotation.x = -Math.PI / 2;
@@ -161,20 +177,20 @@
     center.position.z = 0.04;
     bloomGroup.add(center);
 
-    // A whisper of a deeper inner ring inside the dome, giving it depth
-    // without resorting to dense floret meshes.
-    const innerGeo = new T.SphereGeometry(0.18, 28, 18, 0, Math.PI * 2, 0, Math.PI / 2.1);
+    // Brighter coral pip at the very center — lifts the focal point and
+    // gives the disc dimensional depth without dense floret meshes.
+    const innerGeo = new T.SphereGeometry(0.15, 28, 18, 0, Math.PI * 2, 0, Math.PI / 2.1);
     const innerMat = new T.MeshStandardMaterial({
-      color: 0xb78534,
-      roughness: 0.65,
+      color: 0xe89a7c,        // bloom coral (lighter, the lit center)
+      roughness: 0.5,
       metalness: 0.0,
-      emissive: 0x2c1804,
-      emissiveIntensity: 0.20,
+      emissive: 0x7a3a22,
+      emissiveIntensity: 0.28,
     });
     const inner = new T.Mesh(innerGeo, innerMat);
     inner.rotation.x = -Math.PI / 2;
-    inner.scale.set(1.0, 0.45, 1.0);
-    inner.position.z = 0.045;
+    inner.scale.set(1.0, 0.5, 1.0);
+    inner.position.z = 0.055;
     bloomGroup.add(inner);
 
     return bloomGroup;
@@ -203,7 +219,7 @@
     renderer.setSize(width, height);
     renderer.outputColorSpace = T.SRGBColorSpace;
     renderer.toneMapping = T.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.05;
+    renderer.toneMappingExposure = 1.12;   // a touch brighter — luminous petals
     container.appendChild(renderer.domElement);
     renderer.domElement.style.display = 'block';
     renderer.domElement.style.touchAction = 'none';
@@ -211,20 +227,20 @@
 
     // ── Lights — three-point, soft but with enough rim/key contrast that
     // the petals read against the pale ground.
-    const hemi = new T.HemisphereLight(0xfff4ec, 0x5a4860, 0.55);
+    const hemi = new T.HemisphereLight(0xfff6f2, 0x6a5878, 0.62);
     scene.add(hemi);
 
     const key = new T.DirectionalLight(0xfff6ec, 1.55);
     key.position.set(-2.5, 4.5, 4.0);
     scene.add(key);
 
-    const fill = new T.DirectionalLight(0xc8b8d0, 0.55);
+    const fill = new T.DirectionalLight(0xd8c8e4, 0.60);   // soft lavender fill
     fill.position.set(3.5, 1.2, 2.5);
     scene.add(fill);
 
     // Rim — the most important light. Soft warm backlight lifts every petal
-    // edge against the cream background.
-    const rim = new T.DirectionalLight(0xfde0d6, 1.25);
+    // edge into a luminous halo against the cream background.
+    const rim = new T.DirectionalLight(0xffe6dc, 1.5);     // brighter (was 1.25)
     rim.position.set(-0.8, 1.2, -4.0);
     scene.add(rim);
 
