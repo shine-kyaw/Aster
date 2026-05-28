@@ -581,6 +581,11 @@ img, svg { display: block; max-width: 100%; }
 .cyclical-stage {
   position: relative;
   aspect-ratio: 1;
+  /* `width: 100%` is essential — the only child is now an absolutely
+     positioned 3D canvas (zero intrinsic width), so without an explicit
+     width the grid item shrink-wraps to 0 and the canvas collapses.
+     Filling the column + aspect-ratio:1 gives a proper square stage. */
+  width: 100%;
   max-width: 560px;
   margin: 0 auto;
 }
