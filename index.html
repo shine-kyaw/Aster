@@ -1707,6 +1707,26 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
 }
 .case .body .row strong { color: var(--aster-deep); font-weight: 500; }
 
+/* Closing line that leads from the sites grid into the full Atelier */
+.work-atelier-line {
+  margin: clamp(36px, 4.5vw, 56px) 0 0;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(18px, 1.8vw, 24px);
+  line-height: 1.5;
+  color: var(--ink-soft);
+  max-width: 60ch;
+}
+.work-atelier-line a {
+  font-style: normal;
+  color: var(--aster-deep);
+  border-bottom: 1px solid var(--aster-light);
+  padding-bottom: 1px;
+  transition: color 0.3s var(--ease), border-color 0.3s var(--ease);
+  white-space: nowrap;
+}
+.work-atelier-line a:hover { color: var(--aster); border-color: var(--aster); }
+
 /* ============================================================
    MTK · Pricing tiers (italic serif, mini-blooms, dark featured)
    ============================================================ */
@@ -2641,6 +2661,7 @@ body.in-bloom-zoom .ambient-petals {
   </a>
   <div class="nav-links">
     <a href="#process">Process</a>
+    <a href="atelier.html">Atelier</a>
     <a href="#pricing">Pricing</a>
     <a href="#connect">Connect</a>
   </div>
@@ -2879,6 +2900,7 @@ body.in-bloom-zoom .ambient-petals {
         <span class="eyebrow reveal">Selected gardens</span>
         <h2 class="reveal">Sites we've grown <em>this year.</em></h2>
       </div>
+      <a href="atelier.html" class="btn btn-ghost reveal glow-track">Enter the Atelier →</a>
     </div>
     <div class="work-grid reveal-stagger">
       <article class="case case-b">
@@ -2921,6 +2943,13 @@ body.in-bloom-zoom .ambient-petals {
         </div>
       </article>
     </div>
+
+    <!-- Closing line into the full Atelier — the studio's products,
+         process, and the complete set of sites we've created. -->
+    <p class="work-atelier-line reveal">
+      See what else we make, how we work, and every garden we've grown —
+      <a href="atelier.html">step inside the Atelier →</a>
+    </p>
   </div>
 </section>
 

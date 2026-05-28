@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Atelier — Aster Studio</title>
+<meta name="description" content="Inside the Aster atelier — what we make, how we work, and the sites we've grown by hand." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
+
+<style>
+/* ========== Design tokens — mirrored from index.html ========== */
+:root {
+  --cream: #f5ede0;
+  --cream-deep: #ece2cc;
+  --cream-soft: #faf5e9;
+  --paper: #fbf6ea;
+  --ink: #1f1d18;
+  --ink-soft: #4a4640;
+  --ink-mute: #7e786c;
+  --line: #d8cfb8;
+  --line-soft: #e3dac3;
+
+  --aster:        #8b5fbf;
+  --aster-deep:   #5e3d8a;
+  --aster-light:  #c4a5e0;
+  --aster-mist:   #ebdef5;
+  --bloom:        #e89a7c;
+  --bloom-deep:   #d97757;
+  --leaf:         #6b8e63;
+  --leaf-soft:    #a7c09a;
+  --sage:         #6b8e63;
+  --sage-soft:    #a7c09a;
+
+  --serif: "Playfair Display", serif;
+  --sans: "Inter", sans-serif;
+  --mono: "JetBrains Mono", monospace;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --max: 1180px;
+  --pad-x: clamp(20px, 4vw, 56px);
+  --pad-section: clamp(80px, 9vw, 140px);
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-weight: 400;
+  line-height: 1.6;
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+::selection { background: var(--aster); color: var(--paper); }
+a { color: inherit; text-decoration: none; }
+img, svg { display: block; max-width: 100%; }
+.wrap { max-width: var(--max); margin: 0 auto; padding-left: var(--pad-x); padding-right: var(--pad-x); }
+
+/* ========== NAV ========== */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(245, 237, 224, 0.78);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.4s var(--ease);
+}
+.nav.scrolled { border-bottom-color: var(--line-soft); }
+.nav-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 0;
+  max-width: var(--max);
+  margin: 0 auto;
+  padding-left: var(--pad-x);
+  padding-right: var(--pad-x);
+}
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.brand-mark {
+  width: 28px; height: 28px;
+  color: var(--aster);
+  transition: transform 0.6s var(--ease);
+}
+.nav-brand:hover .brand-mark { transform: rotate(45deg); }
+.nav-links {
+  display: flex;
+  gap: clamp(20px, 3vw, 40px);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--ink-soft);
+  align-items: center;
+}
+.nav-links a { transition: color 0.3s var(--ease); }
+.nav-links a:hover, .nav-links a.active { color: var(--ink); }
+.nav-cta {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 11px 20px;
+  border-radius: 999px;
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  transition: background 0.3s var(--ease), color 0.3s var(--ease);
+}
+.nav-cta:hover { background: var(--aster-deep); color: var(--paper); }
+@media (max-width: 700px) {
+  .nav-links .nav-link-text { display: none; }
+}
+
+/* ========== HERO ========== */
+.hero {
+  padding: clamp(80px, 12vw, 150px) 0 clamp(50px, 7vw, 90px);
+  text-align: center;
+}
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.eyebrow::before {
+  content: "";
+  width: 6px; height: 6px;
+  background: var(--aster-deep);
+  border-radius: 50%;
+}
+.hero h1 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(46px, 7vw, 92px);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  margin: clamp(20px, 2.5vw, 30px) 0 clamp(20px, 2vw, 26px);
+  color: var(--ink);
+  max-width: 16ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+.hero h1 em { font-style: italic; color: var(--aster-deep); }
+.hero p.lede {
+  font-size: clamp(16px, 1.4vw, 19px);
+  color: var(--ink-soft);
+  max-width: 56ch;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ========== Section scaffolding ========== */
+.section { padding: clamp(60px, 8vw, 110px) 0; }
+.section-head { margin-bottom: clamp(40px, 5vw, 64px); }
+.section-head .eyebrow { margin-bottom: 18px; }
+.section-head h2 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(32px, 4.4vw, 56px);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  margin: 0;
+  max-width: 20ch;
+}
+.section-head h2 em { font-style: italic; color: var(--aster-deep); }
+
+/* ========== What we make — product cards ========== */
+.make { background: var(--cream-soft); border-top: 1px solid var(--line-soft); }
+.make-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(20px, 2.4vw, 28px);
+}
+@media (max-width: 860px) { .make-grid { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; } }
+.make-card {
+  background: var(--paper);
+  border: 1px solid var(--line-soft);
+  border-radius: 18px;
+  padding: clamp(28px, 3vw, 38px);
+  transition: transform 0.5s var(--ease), box-shadow 0.6s var(--ease), border-color 0.5s var(--ease);
+}
+.make-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--aster-light);
+  box-shadow: 0 26px 54px -30px rgba(139, 95, 191, 0.20);
+}
+.make-card .mk-flower {
+  width: 40px; height: 40px;
+  color: var(--aster);
+  margin-bottom: 22px;
+  transition: transform 0.6s var(--ease);
+}
+.make-card:hover .mk-flower { transform: rotate(45deg) scale(1.08); }
+.make-card h3 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(22px, 2vw, 27px);
+  margin: 0 0 10px;
+  letter-spacing: -0.01em;
+}
+.make-card h3 em { font-style: italic; color: var(--aster-deep); }
+.make-card p { color: var(--ink-soft); font-size: 15px; margin: 0 0 18px; line-height: 1.6; }
+.make-card .mk-meta {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+/* ========== How we work — process steps ========== */
+.process-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(20px, 2.4vw, 30px);
+  counter-reset: step;
+}
+@media (max-width: 860px) { .process-steps { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 520px) { .process-steps { grid-template-columns: 1fr; } }
+.p-step {
+  border-top: 1px solid var(--line);
+  padding-top: 22px;
+}
+.p-step .p-phase {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--aster-deep);
+  display: block;
+  margin-bottom: 16px;
+}
+.p-step h4 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(20px, 1.8vw, 26px);
+  margin: 0 0 10px;
+  letter-spacing: -0.01em;
+}
+.p-step h4 em { font-style: italic; color: var(--aster-deep); }
+.p-step p { color: var(--ink-soft); font-size: 14px; margin: 0; line-height: 1.55; }
+
+/* ========== Sites created — portfolio grid ========== */
+.sites { background: var(--cream-soft); border-top: 1px solid var(--line-soft); }
+.sites-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(20px, 2.4vw, 28px);
+}
+@media (max-width: 860px) { .sites-grid { grid-template-columns: 1fr; } }
+.case {
+  background: var(--paper);
+  border: 1px solid var(--line-soft);
+  border-radius: 22px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.5s var(--ease), box-shadow 0.5s, border-color 0.5s;
+}
+.case:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 30px 60px -30px rgba(31, 20, 36, 0.22);
+  border-color: var(--aster-light);
+}
+.case .preview { aspect-ratio: 16 / 10; position: relative; overflow: hidden; }
+.case-a .preview { background: radial-gradient(circle at 30% 40%, #d6b8e8 0%, var(--aster) 50%, var(--aster-deep) 100%); }
+.case-b .preview { background: linear-gradient(160deg, #f5d5c5 0%, var(--bloom) 50%, var(--bloom-deep) 100%); }
+.case-c .preview { background: linear-gradient(135deg, #dfe9d4 0%, var(--sage-soft) 60%, var(--sage) 100%); }
+.case-d .preview { background: linear-gradient(150deg, #e6d7f1 0%, var(--aster-light) 55%, var(--aster) 100%); }
+.case .preview svg.deco {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  opacity: 0.4; color: var(--paper);
+  transition: transform 1.2s var(--ease), opacity 0.5s;
+}
+.case:hover .preview svg.deco { transform: rotate(30deg) scale(1.15); opacity: 0.6; }
+.case .preview .label {
+  position: absolute; top: 18px; left: 18px;
+  font-family: var(--sans); font-weight: 500;
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: rgba(253, 249, 241, 0.92);
+  background: rgba(31, 20, 36, 0.28);
+  padding: 6px 12px; border-radius: 999px;
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.case .body { padding: 26px 28px 28px; }
+.case .body h3 {
+  font-family: var(--serif); font-weight: 400;
+  font-size: 24px; line-height: 1.15; letter-spacing: -0.01em;
+  margin: 0 0 10px;
+}
+.case .body h3 em { font-style: italic; color: var(--aster-deep); }
+.case .body p { color: var(--ink-soft); font-size: 14.5px; margin: 0 0 18px; line-height: 1.55; }
+.case .body .row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 12px; color: var(--ink-mute);
+  border-top: 1px solid var(--line-soft); padding-top: 14px;
+  font-family: var(--mono); letter-spacing: 0.04em;
+}
+.case .body .row strong { color: var(--aster-deep); font-weight: 500; }
+
+/* ========== Final CTA ========== */
+.final-cta-section {
+  background: var(--ink);
+  color: var(--paper);
+  padding: clamp(80px, 10vw, 130px) 0;
+  text-align: center;
+}
+.final-cta-section h2 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(40px, 5.5vw, 68px);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  margin: 0 0 24px;
+  max-width: 18ch;
+  margin-left: auto; margin-right: auto;
+}
+.final-cta-section h2 em { font-style: italic; color: var(--aster-light); }
+.final-cta-section p {
+  color: rgba(251, 246, 234, 0.7);
+  max-width: 48ch; margin: 0 auto 40px; font-size: 17px;
+}
+.final-cta-btn {
+  display: inline-flex; align-items: center; gap: 12px;
+  background: var(--paper); color: var(--ink);
+  padding: 16px 32px; border-radius: 999px;
+  font-weight: 500; font-size: 15px; letter-spacing: 0.02em;
+  transition: background 0.3s var(--ease), color 0.3s var(--ease);
+}
+.final-cta-btn:hover { background: var(--aster); color: var(--paper); }
+
+/* ========== Footer ========== */
+.footer {
+  padding: 50px 0;
+  border-top: 1px solid var(--line-soft);
+  font-size: 13px; color: var(--ink-mute);
+  text-align: center;
+}
+
+/* ========== Mobile ========== */
+@media (max-width: 760px) {
+  html, body { max-width: 100vw; }
+  .nav-inner { padding: 14px 0; }
+  .nav-brand { font-size: 18px; gap: 8px; }
+  .brand-mark { width: 24px; height: 24px; }
+  .nav-links { gap: 16px; font-size: 13px; }
+  .nav-cta { padding: 10px 16px; font-size: 12px; }
+  .hero { padding: 80px 0 50px; }
+  .hero h1 { font-size: clamp(36px, 11vw, 56px); }
+  .section-head h2 { font-size: clamp(28px, 8vw, 40px); }
+  .final-cta-section h2 { font-size: clamp(32px, 9vw, 48px); }
+  .final-cta-btn { min-height: 48px; }
+}
+@media (hover: none) {
+  .make-card:hover, .case:hover { transform: none; box-shadow: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand" aria-label="Aster Studio — back to home">
+      <svg class="brand-mark" viewBox="-30 -30 60 60" fill="currentColor" aria-hidden="true">
+        <g>
+          <ellipse cx="0" cy="-18" rx="5" ry="14"/>
+          <ellipse cx="0" cy="-18" rx="5" ry="14" transform="rotate(60)"/>
+          <ellipse cx="0" cy="-18" rx="5" ry="14" transform="rotate(120)"/>
+          <ellipse cx="0" cy="-18" rx="5" ry="14" transform="rotate(180)"/>
+          <ellipse cx="0" cy="-18" rx="5" ry="14" transform="rotate(240)"/>
+          <ellipse cx="0" cy="-18" rx="5" ry="14" transform="rotate(300)"/>
+        </g>
+        <circle cx="0" cy="0" r="6" fill="var(--bloom)"/>
+      </svg>
+      Aster
+    </a>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link-text">Home</a>
+      <a href="atelier.html" class="nav-link-text active">Atelier</a>
+      <a href="pricing.html" class="nav-link-text">Pricing</a>
+      <a href="index.html#connect" class="nav-cta">Begin a conversation</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="wrap">
+    <span class="eyebrow">The Atelier</span>
+    <h1>Where every site is <em>grown by hand.</em></h1>
+    <p class="lede">No templates. No clones. A small studio that shapes each project from seed to full bloom — and the gardens we've grown along the way.</p>
+  </div>
+</section>
+
+<!-- ============ WHAT WE MAKE ============ -->
+<section class="section make">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">What we make</span>
+      <h2>A few ways a bloom <em>can take shape.</em></h2>
+    </div>
+    <div class="make-grid">
+      <article class="make-card">
+        <svg class="mk-flower" viewBox="-30 -30 60 60" fill="currentColor" aria-hidden="true">
+          <circle cx="0" cy="0" r="6"/>
+          <ellipse cx="0" cy="-15" rx="3.5" ry="10" opacity="0.6"/>
+        </svg>
+        <h3>Landing <em>pages</em></h3>
+        <p>A single, tailored page — built fast and built well. For campaigns, launches, and brave small starts.</p>
+        <span class="mk-meta">Seed · from $300</span>
+      </article>
+      <article class="make-card">
+        <svg class="mk-flower" viewBox="-30 -30 60 60" fill="currentColor" aria-hidden="true">
+          <g>
+            <ellipse cx="0" cy="-14" rx="4" ry="10"/>
+            <ellipse cx="0" cy="14" rx="4" ry="10"/>
+            <ellipse cx="-14" cy="0" rx="10" ry="4"/>
+            <ellipse cx="14" cy="0" rx="10" ry="4"/>
+          </g>
+          <circle cx="0" cy="0" r="5" fill="var(--bloom)"/>
+        </svg>
+        <h3>Multi-page <em>sites</em></h3>
+        <p>A presence in full sway — premium multi-page experiences with bespoke motion and a considered system.</p>
+        <span class="mk-meta">Blossom · from $1,000</span>
+      </article>
+      <article class="make-card">
+        <svg class="mk-flower" viewBox="-30 -30 60 60" fill="currentColor" aria-hidden="true">
+          <g>
+            <ellipse cx="0" cy="-16" rx="4" ry="12"/>
+            <ellipse cx="0" cy="16" rx="4" ry="12"/>
+            <ellipse cx="-16" cy="0" rx="12" ry="4"/>
+            <ellipse cx="16" cy="0" rx="12" ry="4"/>
+            <ellipse cx="-11" cy="-11" rx="12" ry="4" transform="rotate(-45 -11 -11)"/>
+            <ellipse cx="11" cy="11" rx="12" ry="4" transform="rotate(-45 11 11)"/>
+            <ellipse cx="11" cy="-11" rx="12" ry="4" transform="rotate(45 11 -11)"/>
+            <ellipse cx="-11" cy="11" rx="12" ry="4" transform="rotate(45 -11 11)"/>
+          </g>
+          <circle cx="0" cy="0" r="6" fill="var(--bloom)"/>
+        </svg>
+        <h3>Brand <em>systems</em></h3>
+        <p>A bespoke garden, fully tended — complete identity, component library, motion language, and long-form handover.</p>
+        <span class="mk-meta">Bloom · from $2,000</span>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW WE WORK ============ -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">How we work</span>
+      <h2>From bulb <em>to full bloom.</em></h2>
+    </div>
+    <div class="process-steps">
+      <div class="p-step">
+        <span class="p-phase">01 · Bulb</span>
+        <h4>Discovery <em>— the quiet seed.</em></h4>
+        <p>Listen first. Map the terrain. Understand the goal before a single pixel is placed.</p>
+      </div>
+      <div class="p-step">
+        <span class="p-phase">02 · Sprouting</span>
+        <h4>Blueprint <em>— roots take hold.</em></h4>
+        <p>Architecture, wireframes, and direction. The structure beneath the beauty.</p>
+      </div>
+      <div class="p-step">
+        <span class="p-phase">03 · Budding</span>
+        <h4>Craft <em>— the form emerges.</em></h4>
+        <p>Pixel-perfect UI and meticulous engineering. Where the bloom takes its shape.</p>
+      </div>
+      <div class="p-step">
+        <span class="p-phase">04 · Full Bloom</span>
+        <h4>Launch <em>— your identity, alive.</em></h4>
+        <p>Staged launch, tuned, and handed over. The garden, open to the world.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SITES CREATED ============ -->
+<section class="section sites">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Sites we've grown</span>
+      <h2>Gardens, <em>tended this year.</em></h2>
+    </div>
+    <div class="sites-grid">
+
+      <article class="case case-b">
+        <div class="preview">
+          <svg class="deco" viewBox="-100 -100 200 200" fill="currentColor"><g>
+            <ellipse cx="0" cy="-50" rx="8" ry="32"/>
+            <ellipse cx="0" cy="-50" rx="8" ry="32" transform="rotate(60)"/>
+            <ellipse cx="0" cy="-50" rx="8" ry="32" transform="rotate(120)"/>
+            <ellipse cx="0" cy="-50" rx="8" ry="32" transform="rotate(180)"/>
+            <ellipse cx="0" cy="-50" rx="8" ry="32" transform="rotate(240)"/>
+            <ellipse cx="0" cy="-50" rx="8" ry="32" transform="rotate(300)"/>
+          </g></svg>
+          <span class="label">Personal portfolio</span>
+        </div>
+        <div class="body">
+          <h3>Lila Okonkwo — <em>photographer</em></h3>
+          <p>A slow, image-led portfolio with three quiet chapters of work.</p>
+          <div class="row"><span>Lagos · 2026</span><strong>+4 commissions</strong></div>
+        </div>
+      </article>
+
+      <article class="case case-c">
+        <div class="preview">
+          <svg class="deco" viewBox="-100 -100 200 200" fill="currentColor"><g>
+            <ellipse cx="0" cy="-45" rx="6" ry="28"/>
+            <ellipse cx="0" cy="-45" rx="6" ry="28" transform="rotate(72)"/>
+            <ellipse cx="0" cy="-45" rx="6" ry="28" transform="rotate(144)"/>
+            <ellipse cx="0" cy="-45" rx="6" ry="28" transform="rotate(216)"/>
+            <ellipse cx="0" cy="-45" rx="6" ry="28" transform="rotate(288)"/>
+          </g></svg>
+          <span class="label">Small brand &amp; web</span>
+        </div>
+        <div class="body">
+          <h3>Tiller Studio — <em>brand consultancy</em></h3>
+          <p>Quiet, slow-scroll editorial site for a three-person studio in Berlin.</p>
+          <div class="row"><span>Berlin · 2026</span><strong>4× avg. session</strong></div>
+        </div>
+      </article>
+
+      <article class="case case-a">
+        <div class="preview">
+          <svg class="deco" viewBox="-100 -100 200 200" fill="currentColor"><g>
+            <ellipse cx="0" cy="-48" rx="7" ry="30"/>
+            <ellipse cx="0" cy="-48" rx="7" ry="30" transform="rotate(45)"/>
+            <ellipse cx="0" cy="-48" rx="7" ry="30" transform="rotate(90)"/>
+            <ellipse cx="0" cy="-48" rx="7" ry="30" transform="rotate(135)"/>
+            <ellipse cx="0" cy="-48" rx="7" ry="30" transform="rotate(180)"/>
+            <ellipse cx="0" cy="-48" rx="7" ry="30" transform="rotate(225)"/>
+            <ellipse cx="0" cy="-48" rx="7" ry="30" transform="rotate(270)"/>
+            <ellipse cx="0" cy="-48" rx="7" ry="30" transform="rotate(315)"/>
+          </g></svg>
+          <span class="label">Full brand system</span>
+        </div>
+        <div class="body">
+          <h3>Marisol Vineyards — <em>family estate</em></h3>
+          <p>A complete identity and multi-page site for a third-generation winery.</p>
+          <div class="row"><span>Mendoza · 2026</span><strong>+38% enquiries</strong></div>
+        </div>
+      </article>
+
+      <article class="case case-d">
+        <div class="preview">
+          <svg class="deco" viewBox="-100 -100 200 200" fill="currentColor"><g>
+            <ellipse cx="0" cy="-46" rx="6" ry="26"/>
+            <ellipse cx="0" cy="-46" rx="6" ry="26" transform="rotate(51)"/>
+            <ellipse cx="0" cy="-46" rx="6" ry="26" transform="rotate(102)"/>
+            <ellipse cx="0" cy="-46" rx="6" ry="26" transform="rotate(153)"/>
+            <ellipse cx="0" cy="-46" rx="6" ry="26" transform="rotate(204)"/>
+            <ellipse cx="0" cy="-46" rx="6" ry="26" transform="rotate(255)"/>
+            <ellipse cx="0" cy="-46" rx="6" ry="26" transform="rotate(306)"/>
+          </g></svg>
+          <span class="label">Product launch</span>
+        </div>
+        <div class="body">
+          <h3>Møss &amp; Ember — <em>ceramics</em></h3>
+          <p>A bespoke launch site with scroll-led storytelling for a slow-craft ceramics line.</p>
+          <div class="row"><span>Copenhagen · 2026</span><strong>Sold out in 9 days</strong></div>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="final-cta-section">
+  <div class="wrap">
+    <h2>Give us the seed. <em>We'll make it bloom.</em></h2>
+    <p>Tell us about your project. We'll respond within 48 hours with thoughts, questions, and a starting direction.</p>
+    <a href="index.html#connect" class="final-cta-btn">
+      Begin a conversation
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 11L11 3M11 3H5M11 3V9"/></svg>
+    </a>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer">
+  <div class="wrap">© Aster Studio — Hand-built, hand-tended.</div>
+</footer>
+
+<script>
+// Sticky nav border on scroll
+(function () {
+  const nav = document.getElementById("nav");
+  if (!nav) return;
+  function update() {
+    if (window.scrollY > 16) nav.classList.add("scrolled");
+    else nav.classList.remove("scrolled");
+  }
+  update();
+  window.addEventListener("scroll", update, { passive: true });
+})();
+</script>
+
+</body>
+</html>
