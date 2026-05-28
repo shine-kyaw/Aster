@@ -136,28 +136,20 @@
       }
     }
 
-    // Three layered rings give the bloom a lush, full aster silhouette
-    // (real asters have many fine rays). Counts kept tasteful so it reads
-    // refined, not busy.
-    // Back ring — longest, leans back a touch
+    // Two rings, deliberately understated — restraint over flourish.
+    // Premium comes from the refined material, light, and motion, not
+    // from piling on petals. A clean, calm silhouette reads expensive.
+    // Back ring — longer, leans back a touch
     addRing({
-      count: 24, length: 2.0, width: 0.155, cup: 0.16, tipLift: 0.14,
-      tiltBack: 0.34, angleOffset: 0,
+      count: 20, length: 1.95, width: 0.16, cup: 0.16, tipLift: 0.14,
+      tiltBack: 0.32, angleOffset: 0,
       baseRadius: 0.30, jitterSeed: 11,
     });
-    // Mid ring — medium, half-offset
+    // Front ring — shorter, half-offset, near flat
     addRing({
-      count: 20, length: 1.66, width: 0.145, cup: 0.19, tipLift: 0.20,
-      tiltBack: 0.05, angleOffset: Math.PI / 20,
+      count: 16, length: 1.65, width: 0.15, cup: 0.20, tipLift: 0.22,
+      tiltBack: -0.04, angleOffset: Math.PI / 16,
       baseRadius: 0.24, jitterSeed: 37,
-    });
-    // Inner ring — short rays cupping inward toward the center, the
-    // detail that makes it read as a real, full bloom rather than a
-    // simple two-ring daisy.
-    addRing({
-      count: 16, length: 1.18, width: 0.115, cup: 0.24, tipLift: 0.30,
-      tiltBack: -0.20, angleOffset: Math.PI / 12,
-      baseRadius: 0.15, jitterSeed: 53,
     });
 
     // ── Center — a warm coral dome, matching the brand asters (hero /
