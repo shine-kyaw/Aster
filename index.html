@@ -589,19 +589,63 @@ img, svg { display: block; max-width: 100%; }
   max-width: 560px;
   margin: 0 auto;
 }
+/* Soft grounding glow behind the 3D bloom — a layered radial wash that
+   settles the floating flower into the page (premium depth, not a harsh
+   drop shadow). Sits behind the canvas. */
+.cyclical-stage::before {
+  content: "";
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 46%,
+    rgba(196, 165, 224, 0.22) 0%,
+    rgba(232, 154, 124, 0.10) 42%,
+    transparent 70%);
+  filter: blur(28px);
+  pointer-events: none;
+  z-index: 0;
+}
 .cyclical-stage svg { width: 100%; height: 100%; overflow: visible; }
-/* 3D aster mount inside the cyclical philosophy stage — Three.js
-   renderer appends its <canvas> here and fills the square container. */
+/* 3D aster mount inside the philosophy stage — Three.js renderer
+   appends its <canvas> here and fills the square container. */
 .philosophy-aster-3d {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
+  z-index: 1;
 }
 .philosophy-aster-3d canvas {
   display: block;
   width: 100% !important;
   height: 100% !important;
+}
+/* Interaction affordance — quiet, editorial, fades on first grab.
+   Mono micro-type with a tracked uppercase label (principle 2:
+   widely-tracked small uppercase) + custom hairline arrow icon. */
+.aster-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  white-space: nowrap;
+  opacity: 0.72;
+  transition: opacity 0.7s var(--ease);
+  pointer-events: none;
+  z-index: 2;
+}
+.aster-hint svg { display: block; opacity: 0.8; }
+.aster-hint.faded { opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .aster-hint { transition: none; }
 }
 .cyclical-ring {
   animation: spinSlow 40s linear infinite;
@@ -2830,24 +2874,31 @@ body.in-bloom-zoom .ambient-petals {
   <div class="wrap">
     <div class="philosophy-grid">
       <div class="philosophy-copy reveal">
-        <span class="eyebrow">A Cyclical Philosophy</span>
-        <h2>The bloom never ends. <em class="italic">It only deepens.</em></h2>
-        <p>Nothing borrowed. Nothing templated. Hand-shaped. Solely Aster.</p>
+        <span class="eyebrow">The Aster, alive</span>
+        <h2>Feel the bloom <em class="italic">in your hands.</em></h2>
+        <p>Every Aster is shaped by hand — nothing borrowed, nothing templated. Take this one and turn it in the light.</p>
         <div class="philosophy-tags">
           <span class="tag glow-track">Handcrafted</span>
-          <span class="tag glow-track">Cyclical</span>
+          <span class="tag glow-track">Tactile</span>
           <span class="tag glow-track">Unrepeatable</span>
           <span class="tag glow-track">Intimate</span>
         </div>
       </div>
 
-      <!-- Interactive Three.js 3D aster — replaces the prior rotating
-           text ring + flat aster icon. Sits in the right column of
-           "The bloom never ends. It only deepens." section.
+      <!-- Interactive Three.js 3D aster — the section's signature moment.
+           Sits in the right column of "Feel the bloom in your hands."
            No .reveal class so the canvas is always visible — Three.js
            renders into a stable, non-transforming parent. -->
       <div class="cyclical-stage" aria-label="Interactive 3D aster — click and drag to rotate">
         <div id="philosophyAster3D" class="philosophy-aster-3d"></div>
+        <!-- Subtle interaction affordance — fades on first grab. -->
+        <div id="asterHint" class="aster-hint" aria-hidden="true">
+          <svg width="20" height="13" viewBox="0 0 22 14" fill="none">
+            <path d="M2 7 H20 M2 7 L7 2 M2 7 L7 12 M20 7 L15 2 M20 7 L15 12"
+                  stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Drag to turn</span>
+        </div>
       </div>
     </div>
   </div>
@@ -4048,6 +4099,22 @@ body.in-bloom-zoom .ambient-petals {
       const stage = document.getElementById('philosophyAster3D');
       if (!stage || !window.AsterFlower3D || !window.THREE) return;
       window.AsterFlower3D.mount(stage);
+
+      // Fade the "Drag to turn" hint once the user actually grabs the
+      // bloom — a quiet, one-time affordance (principle: motion guides,
+      // never nags). After 7s of no interaction, dim it part-way so it
+      // never lingers at full strength.
+      const hint = document.getElementById('asterHint');
+      if (hint) {
+        let faded = false;
+        const fade = () => {
+          if (faded) return;
+          faded = true;
+          hint.classList.add('faded');
+        };
+        stage.addEventListener('pointerdown', fade, { once: true });
+        setTimeout(() => { if (!faded) hint.style.opacity = '0.4'; }, 7000);
+      }
     }
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', mountAster3D);
