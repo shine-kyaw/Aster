@@ -3420,6 +3420,38 @@ body.in-bloom-zoom .ambient-petals {
 (function () {
   const ns = "http://www.w3.org/2000/svg";
 
+  // ── Land directly on a hash target when arriving from another page ──
+  // "Begin a conversation" (and similar) link to index.html#connect from
+  // the Atelier / Pricing pages. Lenis + the load sequence would otherwise
+  // leave us parked at the top of the landing page for a beat before the
+  // fragment jump — so you'd glimpse the hero first. Jump to the target
+  // immediately, then re-assert a couple of times to override Lenis /
+  // ScrollTrigger init. The cream page-veil is covering during this
+  // window, so the jump itself is never seen — the page simply fades up
+  // already at the connect section.
+  (function landOnHash() {
+    const hash = window.location.hash;
+    if (!hash || hash.length < 2) return;
+    let target;
+    try { target = document.querySelector(hash); } catch (_) { return; }
+    if (!target) return;
+    try { history.scrollRestoration = "manual"; } catch (_) {}
+    function go() {
+      const lenis = window.__asterLenis;
+      if (lenis && typeof lenis.scrollTo === "function") {
+        lenis.scrollTo(target, { immediate: true, force: true });
+      } else {
+        target.scrollIntoView({ block: "start", behavior: "auto" });
+      }
+    }
+    go();
+    window.addEventListener("load", function () {
+      go();
+      setTimeout(go, 90);
+      setTimeout(go, 350);
+    });
+  })();
+
   function buildPetals(container, count, length, width, fill, offsetDeg) {
     if (!container) return;
     offsetDeg = offsetDeg || 0;
