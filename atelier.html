@@ -229,33 +229,65 @@ img, svg { display: block; max-width: 100%; }
 .process-steps {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: clamp(20px, 2.4vw, 30px);
-  counter-reset: step;
+  gap: clamp(28px, 3.4vw, 52px);
 }
-@media (max-width: 860px) { .process-steps { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 860px) { .process-steps { grid-template-columns: 1fr 1fr; gap: clamp(32px, 5vw, 48px); } }
 @media (max-width: 520px) { .process-steps { grid-template-columns: 1fr; } }
 .p-step {
+  position: relative;
   border-top: 1px solid var(--line);
-  padding-top: 22px;
+  padding-top: 30px;
+}
+/* A small diamond node where each step meets its hairline — echoes the
+   brand's petal-bullet motif and marks the start of each stage. */
+.p-step::before {
+  content: "";
+  position: absolute;
+  top: -4.5px;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  background: var(--aster);
+  transform: rotate(45deg);
+  transition: transform 0.5s var(--ease);
+}
+.p-step:hover::before { transform: rotate(135deg); }
+/* Large, light serif numeral — the elegant focal marker of each stage. */
+.p-step .p-num {
+  display: block;
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: clamp(38px, 3.6vw, 54px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--aster-light);
+  margin-bottom: 18px;
 }
 .p-step .p-phase {
   font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.24em;
+  font-size: 10.5px;
+  letter-spacing: 0.3em;
   text-transform: uppercase;
   color: var(--aster-deep);
   display: block;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 .p-step h4 {
   font-family: var(--serif);
   font-weight: 400;
-  font-size: clamp(20px, 1.8vw, 26px);
-  margin: 0 0 10px;
+  font-size: clamp(20px, 1.8vw, 25px);
+  line-height: 1.18;
+  margin: 0 0 12px;
   letter-spacing: -0.01em;
 }
 .p-step h4 em { font-style: italic; color: var(--aster-deep); }
-.p-step p { color: var(--ink-soft); font-size: 14px; margin: 0; line-height: 1.55; }
+.p-step p {
+  color: var(--ink-soft);
+  font-size: 14px;
+  margin: 0;
+  line-height: 1.62;
+  max-width: 30ch;
+}
 
 /* ========== Sites created — portfolio grid ========== */
 .sites { background: var(--cream-soft); border-top: 1px solid var(--line-soft); }
@@ -512,26 +544,30 @@ img, svg { display: block; max-width: 100%; }
       <h2>From bulb <em>to full bloom.</em></h2>
     </div>
     <div class="process-steps">
-      <div class="p-step">
-        <span class="p-phase">01 · Bulb</span>
+      <article class="p-step">
+        <span class="p-num">01</span>
+        <span class="p-phase">Bulb</span>
         <h4>Discovery <em>— the quiet seed.</em></h4>
         <p>Listen first. Map the terrain. Understand the goal before a single pixel is placed.</p>
-      </div>
-      <div class="p-step">
-        <span class="p-phase">02 · Sprouting</span>
+      </article>
+      <article class="p-step">
+        <span class="p-num">02</span>
+        <span class="p-phase">Sprouting</span>
         <h4>Blueprint <em>— roots take hold.</em></h4>
         <p>Architecture, wireframes, and direction. The structure beneath the beauty.</p>
-      </div>
-      <div class="p-step">
-        <span class="p-phase">03 · Budding</span>
+      </article>
+      <article class="p-step">
+        <span class="p-num">03</span>
+        <span class="p-phase">Budding</span>
         <h4>Craft <em>— the form emerges.</em></h4>
         <p>Pixel-perfect UI and meticulous engineering. Where the bloom takes its shape.</p>
-      </div>
-      <div class="p-step">
-        <span class="p-phase">04 · Full Bloom</span>
+      </article>
+      <article class="p-step">
+        <span class="p-num">04</span>
+        <span class="p-phase">Full Bloom</span>
         <h4>Launch <em>— your identity, alive.</em></h4>
         <p>Staged launch, tuned, and handed over. The garden, open to the world.</p>
-      </div>
+      </article>
     </div>
   </div>
 </section>
