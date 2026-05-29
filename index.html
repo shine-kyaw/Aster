@@ -2642,9 +2642,52 @@ body.in-bloom-zoom .ambient-petals {
   /* Custom cursor stays hidden — already handled, just confirming */
   .cursor-dot, .cursor-ring { display: none !important; }
 }
+
+/* ============================================================
+   PAGE TRANSITION — smooth cream cross-fade between pages
+   ────────────────────────────────────────────────────────────
+   A full-bleed cream veil. On load it auto-lifts (CSS animation,
+   no JS dependency — can never get stuck covering the page). On
+   navigating to another page in the site, JS fades it back in,
+   then changes location — so pages dissolve through the brand
+   cream instead of hard-cutting. Both pages share the cream base,
+   so the cross-fade is seamless.
+   ============================================================ */
+.page-veil {
+  position: fixed;
+  inset: 0;
+  background: var(--cream);
+  z-index: 100000;            /* above nav + custom cursor */
+  opacity: 0;
+  pointer-events: none;
+  /* Incoming: auto-lift on load (1 → 0). `both` holds opacity:1 before
+     the active phase so the first paint is fully covered, then fades. */
+  animation: veilLift 0.6s var(--ease) both;
+}
+@keyframes veilLift {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+@keyframes veilCover {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.page-veil.covering {
+  /* Outgoing: a dedicated keyframe animation guarantees a smooth 0 → 1
+     fade (a CSS transition can't reliably animate away from an
+     animation-filled value, so we swap animations instead). */
+  animation: veilCover 0.45s var(--ease) forwards;
+  pointer-events: all;
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-veil { display: none; }
+}
 </style>
 </head>
 <body>
+
+<!-- Page-transition veil (cream cross-fade between pages) -->
+<div class="page-veil" aria-hidden="true"></div>
 
 <!-- ============ ATMOSPHERIC BACKGROUND ============ -->
 <div class="aurora a1" aria-hidden="true"></div>
@@ -3462,6 +3505,45 @@ body.in-bloom-zoom .ambient-petals {
       }
     });
   });
+
+  // ===== Page transition — smooth cream cross-fade between pages =====
+  // Intercept links to other pages in the site (e.g. atelier.html,
+  // pricing.html) and fade the cream veil in before navigating. The
+  // destination page's veil auto-lifts on load, so the two pages
+  // dissolve through cream. Hash links and external links are ignored.
+  (function () {
+    const veil = document.querySelector(".page-veil");
+    if (!veil) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    document.addEventListener("click", function (e) {
+      // Respect modifier-clicks / middle-click (open in new tab)
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey ||
+          e.shiftKey || e.altKey) return;
+      const a = e.target.closest('a[href]');
+      if (!a) return;
+      const href = a.getAttribute("href");
+      if (!href) return;
+      // Only intercept internal page navigations (same-origin .html files).
+      if (a.target === "_blank" || /^(https?:)?\/\//.test(href) ||
+          href.startsWith("#") || href.startsWith("mailto:") ||
+          href.startsWith("tel:")) return;
+      if (!/\.html(?:[?#].*)?$/.test(href)) return;
+
+      // It's an internal page nav — fade out, then go.
+      e.preventDefault();
+      if (reduce) { window.location.href = href; return; }
+      veil.classList.add("covering");
+      // Navigate once the veil has covered (matches the 0.45s transition).
+      window.setTimeout(function () { window.location.href = href; }, 460);
+    });
+
+    // If the page is restored from the bfcache (back/forward), make sure
+    // the veil is lifted rather than stuck covering.
+    window.addEventListener("pageshow", function (ev) {
+      if (ev.persisted) veil.classList.remove("covering");
+    });
+  })();
 
   // ===== Drawer / overlay (shared by steps + tiers) =====
   const overlay = document.getElementById("overlay");

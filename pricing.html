@@ -672,9 +672,26 @@ img, svg { display: block; max-width: 100%; }
   body { -webkit-overflow-scrolling: touch; }
   .tier-card:hover { transform: none; box-shadow: none; }
 }
+
+/* ===== Page transition — smooth cream cross-fade between pages ===== */
+.page-veil {
+  position: fixed; inset: 0;
+  background: var(--cream);
+  z-index: 100000;
+  opacity: 0;
+  pointer-events: none;
+  animation: veilLift 0.6s var(--ease) both;
+}
+@keyframes veilLift { from { opacity: 1; } to { opacity: 0; } }
+@keyframes veilCover { from { opacity: 0; } to { opacity: 1; } }
+.page-veil.covering { animation: veilCover 0.45s var(--ease) forwards; pointer-events: all; }
+@media (prefers-reduced-motion: reduce) { .page-veil { display: none; } }
 </style>
 </head>
 <body>
+
+<!-- Page-transition veil (cream cross-fade between pages) -->
+<div class="page-veil" aria-hidden="true"></div>
 
 <!-- ============ NAV ============ -->
 <nav class="nav" id="nav">
@@ -1034,6 +1051,33 @@ img, svg { display: block; max-width: 100%; }
   }
   update();
   window.addEventListener("scroll", update, { passive: true });
+})();
+
+// Page transition — fade out through cream before navigating to
+// another page in the site (the destination's veil lifts on load).
+(function () {
+  const veil = document.querySelector(".page-veil");
+  if (!veil) return;
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  document.addEventListener("click", function (e) {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey ||
+        e.shiftKey || e.altKey) return;
+    const a = e.target.closest('a[href]');
+    if (!a) return;
+    const href = a.getAttribute("href");
+    if (!href) return;
+    if (a.target === "_blank" || /^(https?:)?\/\//.test(href) ||
+        href.startsWith("#") || href.startsWith("mailto:") ||
+        href.startsWith("tel:")) return;
+    if (!/\.html(?:[?#].*)?$/.test(href)) return;
+    e.preventDefault();
+    if (reduce) { window.location.href = href; return; }
+    veil.classList.add("covering");
+    window.setTimeout(function () { window.location.href = href; }, 460);
+  });
+  window.addEventListener("pageshow", function (ev) {
+    if (ev.persisted) veil.classList.remove("covering");
+  });
 })();
 </script>
 
