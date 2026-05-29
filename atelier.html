@@ -316,6 +316,29 @@ img, svg { display: block; max-width: 100%; }
 }
 .case .body .row strong { color: var(--aster-deep); font-weight: 500; }
 
+/* Foliyo — featured, full-width live project. Spans both columns; on
+   wider screens the preview sits left and the copy reads right. */
+.case-foliyo {
+  grid-column: 1 / -1;
+  cursor: pointer;
+}
+.case-foliyo .preview {
+  background: linear-gradient(135deg, #e6d7f1 0%, var(--aster) 55%, var(--aster-deep) 100%);
+}
+@media (min-width: 760px) {
+  .case-foliyo { flex-direction: row; align-items: stretch; }
+  .case-foliyo .preview { flex: 0 0 46%; aspect-ratio: auto; min-height: 280px; }
+  .case-foliyo .body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(32px, 4vw, 52px);
+  }
+  .case-foliyo .body h3 { font-size: clamp(28px, 3vw, 38px); }
+  .case-foliyo .body p { font-size: clamp(15px, 1.3vw, 18px); max-width: 46ch; }
+}
+
 /* ========== Final CTA ========== */
 .final-cta-section {
   background: var(--ink);
@@ -521,6 +544,28 @@ img, svg { display: block; max-width: 100%; }
       <h2>Gardens, <em>tended this year.</em></h2>
     </div>
     <div class="sites-grid">
+
+      <!-- Foliyo — real, live project. Featured full-width, links out. -->
+      <a class="case case-foliyo" href="https://foliyo-delta.vercel.app/" target="_blank" rel="noopener noreferrer">
+        <div class="preview">
+          <svg class="deco" viewBox="-100 -100 200 200" fill="currentColor"><g>
+            <ellipse cx="0" cy="-50" rx="7" ry="30"/>
+            <ellipse cx="0" cy="-50" rx="7" ry="30" transform="rotate(45)"/>
+            <ellipse cx="0" cy="-50" rx="7" ry="30" transform="rotate(90)"/>
+            <ellipse cx="0" cy="-50" rx="7" ry="30" transform="rotate(135)"/>
+            <ellipse cx="0" cy="-50" rx="7" ry="30" transform="rotate(180)"/>
+            <ellipse cx="0" cy="-50" rx="7" ry="30" transform="rotate(225)"/>
+            <ellipse cx="0" cy="-50" rx="7" ry="30" transform="rotate(270)"/>
+            <ellipse cx="0" cy="-50" rx="7" ry="30" transform="rotate(315)"/>
+          </g></svg>
+          <span class="label">Live · Fintech web app</span>
+        </div>
+        <div class="body">
+          <h3>Foliyo — <em>stock app</em></h3>
+          <p>A clean, real-time stock &amp; portfolio tracker — markets made calm, focused, and legible.</p>
+          <div class="row"><span>Live site</span><strong>Visit Foliyo ↗</strong></div>
+        </div>
+      </a>
 
       <article class="case case-b">
         <div class="preview">
