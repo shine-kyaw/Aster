@@ -19,7 +19,7 @@
   --paper: #fbf6ea;
   --ink: #1f1d18;
   --ink-soft: #4a4640;
-  --ink-mute: #7e786c;
+  --ink-mute: #6b6456; /* darkened from #7e786c → 5.04:1 on cream for WCAG AA on 11px labels */
   --line: #d8cfb8;
   --line-soft: #e3dac3;
   --gold: #c4a5e0;
@@ -58,7 +58,10 @@ body {
   font-weight: 400;
   line-height: 1.55;
   font-feature-settings: "ss01", "cv11";
+  font-optical-sizing: auto;
+  text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   /* `clip` instead of `hidden` — same visual clipping but does NOT create
      a scroll-clipping context, which is what was breaking position:sticky
      on the bloom-zoom stage (and any future sticky descendant). */
@@ -68,6 +71,36 @@ body {
 a { color: inherit; text-decoration: none; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
 img, svg { display: block; max-width: 100%; }
+
+/* ========== Premium polish: typography, scrollbar, focus ========== */
+/* Balanced headings + orphan-free body copy (progressive enhancement) */
+h2, h3, .h-lg, .h-md, .h-sm { text-wrap: balance; }
+.lede, p { text-wrap: pretty; }
+
+/* Brand-tinted slim scrollbar */
+html { scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 999px;
+  border: 3px solid var(--cream);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--aster-light); }
+
+/* Cohesive keyboard focus ring (only on keyboard nav; outline follows radius) */
+a:focus-visible,
+button:focus-visible,
+.btn:focus-visible,
+.case:focus-visible,
+.tier:focus-visible,
+.tier-cta:focus-visible,
+.footer-col a:focus-visible,
+.nav-links a:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--aster);
+  outline-offset: 3px;
+}
 
 .wrap { max-width: var(--max); margin: 0 auto; padding-left: var(--pad-x); padding-right: var(--pad-x); }
 .section { padding-top: var(--pad-section); padding-bottom: var(--pad-section); position: relative; }
@@ -239,7 +272,7 @@ img, svg { display: block; max-width: 100%; }
   font-size: 14px;
   letter-spacing: 0.02em;
   font-weight: 500;
-  transition: transform 0.3s var(--ease), background 0.3s, color 0.3s, border-color 0.3s;
+  transition: transform 0.3s var(--ease), background 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.4s var(--ease);
   border: 1px solid transparent;
 }
 .btn .ar {
@@ -250,8 +283,13 @@ img, svg { display: block; max-width: 100%; }
 .btn-primary {
   background: var(--ink);
   color: var(--cream);
+  box-shadow: 0 6px 18px -10px rgba(31, 29, 24, 0.45);
 }
-.btn-primary:hover { background: #000; transform: translateY(-1px); }
+.btn-primary:hover {
+  background: #000;
+  transform: translateY(-2px);
+  box-shadow: 0 16px 34px -12px rgba(31, 29, 24, 0.55);
+}
 .btn-ghost {
   color: var(--ink);
   border-color: var(--ink);
@@ -328,7 +366,7 @@ img, svg { display: block; max-width: 100%; }
 /* ========== Section divider ========== */
 .fine-divide {
   height: 1px;
-  background: var(--line-soft);
+  background: linear-gradient(90deg, transparent 0%, var(--line-soft) 14%, var(--line-soft) 86%, transparent 100%);
   max-width: var(--max);
   margin: 0 auto;
 }
@@ -1641,8 +1679,10 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
   transition: transform 0.5s var(--ease), box-shadow 0.5s, border-color 0.5s;
 }
 .case:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 30px 60px -30px rgba(31, 20, 36, 0.22);
+  transform: translateY(-6px);
+  box-shadow:
+    0 2px 6px -2px rgba(31, 20, 36, 0.07),
+    0 32px 64px -28px rgba(31, 20, 36, 0.26);
   border-color: var(--aster-light);
 }
 .case .preview {
@@ -1797,7 +1837,9 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
 }
 .tier:hover {
   transform: translateY(-6px);
-  box-shadow: 0 30px 60px -30px rgba(94, 61, 138, 0.22);
+  box-shadow:
+    0 2px 6px -2px rgba(94, 61, 138, 0.08),
+    0 32px 64px -28px rgba(94, 61, 138, 0.26);
   border-color: var(--tier-accent, var(--aster-light));
 }
 .tier:hover::before { opacity: 1; transform: none; }
@@ -4260,6 +4302,10 @@ body.in-bloom-zoom .ambient-petals {
   // stays empty — the rest of the page is unaffected).
   (function () {
     function mountAster3D() {
+      // Dev/preview escape hatch: ?no3d skips the WebGL mount so headless
+      // screenshot tooling (which hangs on a live WebGL context) can capture
+      // static layout. Invisible to real visitors.
+      if (/(\?|&|#)no3d\b/.test(window.location.href)) return;
       const stage = document.getElementById('philosophyAster3D');
       if (!stage || !window.AsterFlower3D || !window.THREE) return;
       window.AsterFlower3D.mount(stage);
