@@ -26,9 +26,11 @@
     // throat where petals overlap, and pales to a luminous, almost translucent
     // edge at the tip where light passes through. This falloff (not gloss) is
     // what makes a petal read as a living membrane.
-    const cBase = new T.Color(0x8f6fb8);  // deeper violet at the throat
-    const cMid  = new T.Color(0xc1a4e3);  // aster body
-    const cTip  = new T.Color(0xf6effc);  // sunlit translucent edge
+    // Periwinkle blue-violet to match the watercolor logo: deep at the
+    // shadowed throat, periwinkle through the body, cool pale at the sunlit edge.
+    const cBase = new T.Color(0x6857bf);  // deep periwinkle-violet (throat)
+    const cMid  = new T.Color(0x9385da);  // periwinkle body
+    const cTip  = new T.Color(0xe7e2f8);  // cool, near-white translucent edge
 
     for (let i = 0; i < pos.count; i++) {
       const u = pos.getX(i) + 0.5;     // 0..1 along length
@@ -239,22 +241,32 @@
     center.position.z = 0.05;
     bloomGroup.add(center);
 
-    // Brighter coral pip at the very center — lifts the focal point and
-    // gives the disc dimensional depth without dense floret meshes.
-    const innerGeo = new T.SphereGeometry(0.155, 30, 18, 0, Math.PI * 2, 0, Math.PI / 2.1);
-    const innerMat = new T.MeshStandardMaterial({
-      color: 0xf2cc63,        // bright pollen yellow — the lit crown of the disc
-      roughness: 0.82,
-      metalness: 0.0,
-      side: T.DoubleSide,
-      emissive: 0x6e4a14,
-      emissiveIntensity: 0.18,
-    });
-    const inner = new T.Mesh(innerGeo, innerMat);
-    inner.rotation.x = Math.PI / 2;     // apex toward camera
-    inner.scale.set(1.0, 0.5, 1.0);
-    inner.position.z = 0.10;            // sits just proud of the disc
-    bloomGroup.add(inner);
+    // ── Stippled pollen — a tight cluster of tiny grains mounded over the
+    // dome, the way a real aster disc reads. Deterministic placement with
+    // size + colour variation so it looks packed and organic, never patterned.
+    const grainGeo = new T.SphereGeometry(1, 8, 6);
+    const grainMats = [0xf3d070, 0xe6b248, 0xcf9234, 0xf7e09a].map((c) =>
+      new T.MeshStandardMaterial({
+        color: c, roughness: 0.72, metalness: 0.0,
+        emissive: 0x4a3110, emissiveIntensity: 0.12,
+      })
+    );
+    const frac = (x) => x - Math.floor(x);
+    const DR = 0.27, DH = 0.62, cz = 0.05;
+    for (let k = 0; k < 64; k++) {
+      const a = frac(Math.sin((k + 1) * 12.9898) * 43758.5453);
+      const b = frac(Math.sin((k + 1) * 78.2330) * 12543.1230);
+      const c = frac(Math.sin((k + 1) * 37.7190) *  9871.2310);
+      const rr  = Math.sqrt(a) * DR * 0.95;        // sqrt → even area density
+      const ang = b * Math.PI * 2;
+      const gx  = Math.cos(ang) * rr;
+      const gy  = Math.sin(ang) * rr;
+      const gz  = Math.sqrt(Math.max(0, DR * DR - rr * rr)) * DH + cz;  // ride the dome
+      const grain = new T.Mesh(grainGeo, grainMats[k & 3]);
+      grain.position.set(gx, gy, gz);
+      grain.scale.setScalar(0.020 + c * 0.016);
+      bloomGroup.add(grain);
+    }
 
     return bloomGroup;
   }
