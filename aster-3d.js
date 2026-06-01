@@ -86,6 +86,42 @@
   }
 
   // ────────────────────────────────────────────────────────────────────────
+  // Soft studio environment (equirectangular gradient) — fed through PMREM so
+  // the physical petal material has something real to reflect. This is what
+  // gives the sheen + clearcoat their premium, light-catching satin quality
+  // instead of a flat matte. Warm sky above, lavender mid, deep base, plus a
+  // single soft key highlight for a believable specular glint.
+  // ────────────────────────────────────────────────────────────────────────
+  function makeStudioEnvTexture() {
+    const c = document.createElement('canvas');
+    c.width = 512; c.height = 256;
+    const ctx = c.getContext('2d');
+    const g = ctx.createLinearGradient(0, 0, 0, 256);
+    g.addColorStop(0.00, '#fff7f1');   // warm light from above
+    g.addColorStop(0.42, '#f4e9f8');   // soft lavender sky
+    g.addColorStop(0.66, '#ddccea');   // horizon
+    g.addColorStop(1.00, '#4d3c5e');   // shadowed ground
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 512, 256);
+    // Soft key-light bloom (upper-left) → crisp but gentle specular highlight
+    const rg = ctx.createRadialGradient(150, 64, 0, 150, 64, 170);
+    rg.addColorStop(0.0, 'rgba(255,252,244,0.95)');
+    rg.addColorStop(1.0, 'rgba(255,252,244,0)');
+    ctx.fillStyle = rg;
+    ctx.fillRect(0, 0, 512, 256);
+    // Faint cool counter-glow (lower-right) for dimensional fill
+    const rg2 = ctx.createRadialGradient(400, 200, 0, 400, 200, 150);
+    rg2.addColorStop(0.0, 'rgba(214,196,230,0.55)');
+    rg2.addColorStop(1.0, 'rgba(214,196,230,0)');
+    ctx.fillStyle = rg2;
+    ctx.fillRect(0, 0, 512, 256);
+    const tex = new T.CanvasTexture(c);
+    tex.mapping = T.EquirectangularReflectionMapping;
+    tex.colorSpace = T.SRGBColorSpace;
+    return tex;
+  }
+
+  // ────────────────────────────────────────────────────────────────────────
   // Build the bloom.
   // ────────────────────────────────────────────────────────────────────────
   function buildFlower() {
@@ -97,14 +133,18 @@
     const petalMat = new T.MeshPhysicalMaterial({
       color: 0xffffff,
       vertexColors: true,
-      roughness: 0.58,                       // silkier satin (was 0.72)
+      roughness: 0.50,                       // silkier satin
       metalness: 0.0,
       side: T.DoubleSide,
-      sheen: 0.95,                           // luminous petal sheen (was 0.7)
+      sheen: 1.0,                            // full luminous petal sheen
       sheenColor: new T.Color(0xfff0f4),     // delicate warm-pink sheen edge
-      sheenRoughness: 0.5,
-      clearcoat: 0.16,                       // subtle refined glow (was 0.08)
-      clearcoatRoughness: 0.55,
+      sheenRoughness: 0.42,
+      clearcoat: 0.30,                       // refined glossy edge that catches the env
+      clearcoatRoughness: 0.40,
+      iridescence: 0.22,                     // delicate pearlescent shimmer (tasteful, low)
+      iridescenceIOR: 1.30,
+      iridescenceThicknessRange: [120, 360],
+      envMapIntensity: 0.7,                  // lets the studio env paint the satin
     });
 
     // ── Petals — two rings, deliberately understated counts.
@@ -217,6 +257,20 @@
     renderer.domElement.style.touchAction = 'none';
     renderer.domElement.style.cursor = 'grab';
 
+    // ── Image-based lighting — soft studio env via PMREM. The single biggest
+    // lift to the material's realism: sheen, clearcoat and iridescence now
+    // reflect a real gradient world rather than rendering flat.
+    let envRT = null;
+    try {
+      const pmrem = new T.PMREMGenerator(renderer);
+      pmrem.compileEquirectangularShader();
+      const envSrc = makeStudioEnvTexture();
+      envRT = pmrem.fromEquirectangular(envSrc);
+      scene.environment = envRT.texture;
+      envSrc.dispose();
+      pmrem.dispose();
+    } catch (e) { /* env is an enhancement; render proceeds without it */ }
+
     // ── Lights — three-point, soft but with enough rim/key contrast that
     // the petals read against the pale ground.
     const hemi = new T.HemisphereLight(0xfff6f2, 0x6a5878, 0.62);
@@ -261,9 +315,35 @@
     root.add(floatGroup);
     scene.add(root);
 
-    // Initial pose — slight three-quarter tilt so the form reads at rest.
-    root.rotation.x = -0.20;
-    root.rotation.y = 0.18;
+    // ── Entrance / reveal state.
+    // "Front" pose: face-on to the camera with a whisper of top-down tilt so
+    // the bloom reads as 3D rather than a flat disc. Every time the section
+    // scrolls into view we home back to this, hold a beat, then ease the idle
+    // float in — the bloom always greets you face-first, then drifts.
+    const FRONT_X = -0.10;
+    const FRONT_Y = 0.0;
+    root.rotation.x = FRONT_X;
+    root.rotation.y = FRONT_Y;
+
+    let revealed = false;
+    let revealStart = 0;
+    let homing = false;        // actively easing back toward FRONT
+    let userInteracted = false;
+
+    function triggerReveal(now) {
+      revealed = true;
+      revealStart = now;
+      homing = true;
+      velX = 0; velY = 0; pendingVX = 0; pendingVY = 0;
+    }
+
+    // Watch the container; greet front-first on every entry into view.
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((en) => {
+        if (en.isIntersecting) triggerReveal(performance.now());
+      });
+    }, { threshold: 0.3 });
+    io.observe(container);
 
     // ── Pointer interaction (custom; no OrbitControls — feel matters).
     let dragging = false;
@@ -287,6 +367,8 @@
     });
     canvas.addEventListener('pointerdown', (e) => {
       dragging = true;
+      homing = false;          // user takes over — stop auto-homing to front
+      userInteracted = true;
       lastX = e.clientX; lastY = e.clientY;
       velX = 0; velY = 0; pendingVX = 0; pendingVY = 0;
       canvas.style.cursor = 'grabbing';
@@ -344,40 +426,47 @@
       const dt = Math.min(50, now - lastFrame);
       lastFrame = now;
       const f = dt / 16.6667;
-      const t = (now - startTime) / 1000;  // seconds since mount
 
-      if (!dragging) {
+      // Float phase + amplitude are anchored to the reveal (not to mount), so
+      // the bloom always starts from a still, face-on front pose and the drift
+      // grows in afterward.
+      const ft = revealed ? (now - revealStart) / 1000 : 0;
+      let amp = 0;
+      if (revealed && !reducedMotion) {
+        const lin = Math.min(1, Math.max(0, (ft - 0.35) / 1.5));  // brief front-hold, then ease in
+        amp = lin * lin * (3 - 2 * lin);                          // smoothstep
+      }
+
+      if (homing) {
+        // Ease back to the face-on front pose — the front greeting.
+        root.rotation.x += (FRONT_X - root.rotation.x) * 0.085 * f;
+        root.rotation.y += (FRONT_Y - root.rotation.y) * 0.085 * f;
+        if (Math.abs(root.rotation.x - FRONT_X) < 0.004 &&
+            Math.abs(root.rotation.y - FRONT_Y) < 0.004) {
+          root.rotation.x = FRONT_X;
+          root.rotation.y = FRONT_Y;
+          homing = false;
+        }
+      } else if (!dragging) {
+        // Spin-down from release momentum (a flick still glides to rest).
         const damp = Math.pow(0.93, f);
         velX *= damp; velY *= damp;
         root.rotation.x += velX * f;
         root.rotation.y += velY * f;
         root.rotation.x = Math.max(-X_CLAMP, Math.min(X_CLAMP, root.rotation.x));
-
-        const settled = Math.abs(velX) + Math.abs(velY) < 0.0008;
-        if (settled && !reducedMotion) {
-          root.rotation.y += idleRotateSpeed * f;
-        }
       }
 
-      // ── Idle float — gentle position bob and slow rotational sway on the
-      // floatGroup so it composes cleanly with whatever the user has done
-      // to `root`. Multiple incommensurate frequencies → never repeats,
-      // never feels mechanical.
+      // ── Idle float — gentle bob + sway on floatGroup, scaled by `amp` so it
+      // blooms in after the front greeting. Bounded and built from
+      // incommensurate frequencies, so it floats *around* the front view and
+      // always returns — it never turns its back to you.
       if (!reducedMotion) {
-        // vertical bob, ~5s period
-        const bobY = Math.sin(t * 1.20) * 0.07
-                   + Math.sin(t * 0.47 + 1.3) * 0.025;
-        // tiny horizontal drift
-        const driftX = Math.sin(t * 0.65 + 0.7) * 0.025;
-
+        const bobY   = (Math.sin(ft * 1.10) * 0.075 + Math.sin(ft * 0.47 + 1.3) * 0.03) * amp;
+        const driftX = (Math.sin(ft * 0.63 + 0.7) * 0.05) * amp;
         floatGroup.position.set(driftX, bobY, 0);
-
-        // sway — petals tip toward whichever way the bloom is drifting
-        floatGroup.rotation.x = Math.sin(t * 0.55) * 0.04
-                              + Math.sin(t * 1.10 + 0.9) * 0.015;
-        floatGroup.rotation.z = Math.sin(t * 0.43 + 2.1) * 0.05;
-        // gentle yaw breathing
-        floatGroup.rotation.y = Math.sin(t * 0.31 + 0.4) * 0.03;
+        floatGroup.rotation.x = (Math.sin(ft * 0.55) * 0.05 + Math.sin(ft * 1.05 + 0.9) * 0.02) * amp;
+        floatGroup.rotation.z = (Math.sin(ft * 0.43 + 2.1) * 0.06) * amp;
+        floatGroup.rotation.y = (Math.sin(ft * 0.37 + 0.4) * 0.13) * amp;  // gentle turn — "floating around"
       }
 
       // Hover lift — additive on root (separate from idle float)
@@ -399,9 +488,12 @@
       dispose() {
         cancelAnimationFrame(rafId);
         ro.disconnect();
+        io.disconnect();
+        if (envRT) envRT.dispose();
         renderer.dispose();
         canvas.remove();
       },
+      reveal() { triggerReveal(performance.now()); },
       scene, camera, renderer, root, bloom,
     };
   }

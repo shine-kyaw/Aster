@@ -4308,7 +4308,7 @@ body.in-bloom-zoom .ambient-petals {
       if (/(\?|&|#)no3d\b/.test(window.location.href)) return;
       const stage = document.getElementById('philosophyAster3D');
       if (!stage || !window.AsterFlower3D || !window.THREE) return;
-      window.AsterFlower3D.mount(stage);
+      window.__aster3d = window.AsterFlower3D.mount(stage);
     }
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', mountAster3D);
