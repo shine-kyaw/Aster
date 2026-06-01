@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Pricing — Aster Studio</title>
 <meta name="description" content="Detailed pricing plans from Aster Studio. Seed, Blossom, and Full Bloom — bespoke design and development tiers for every stage of your project." />
+<link rel="icon" type="image/png" href="favicon.png" />
+<link rel="apple-touch-icon" href="logo.png" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -94,8 +96,8 @@ img, svg { display: block; max-width: 100%; }
   letter-spacing: -0.01em;
 }
 .brand-mark {
-  width: 28px; height: 28px;
-  color: var(--aster);
+  width: 34px; height: 34px;
+  object-fit: contain;
   transition: transform 0.6s var(--ease);
 }
 .nav-brand:hover .brand-mark { transform: rotate(45deg); }
@@ -697,17 +699,7 @@ img, svg { display: block; max-width: 100%; }
 <nav class="nav" id="nav">
   <div class="nav-inner">
     <a href="index.html" class="nav-brand" aria-label="Aster Studio — back to home">
-      <svg class="brand-mark" viewBox="-30 -30 60 60" fill="currentColor" aria-hidden="true">
-        <g>
-          <ellipse cx="0" cy="-18" rx="5" ry="14"/>
-          <ellipse cx="0" cy="-18" rx="5" ry="14" transform="rotate(60)"/>
-          <ellipse cx="0" cy="-18" rx="5" ry="14" transform="rotate(120)"/>
-          <ellipse cx="0" cy="-18" rx="5" ry="14" transform="rotate(180)"/>
-          <ellipse cx="0" cy="-18" rx="5" ry="14" transform="rotate(240)"/>
-          <ellipse cx="0" cy="-18" rx="5" ry="14" transform="rotate(300)"/>
-        </g>
-        <circle cx="0" cy="0" r="6" fill="var(--bloom)"/>
-      </svg>
+      <img class="brand-mark" src="logo.png" width="60" height="60" alt="" decoding="async" />
       Aster
     </a>
     <div class="nav-links">

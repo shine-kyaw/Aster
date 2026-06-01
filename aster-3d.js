@@ -15,53 +15,66 @@
   // Lies in XY, grows along +X from origin. Strap silhouette, soft cup,
   // a touch of lift at the tip. Vertex colors carry a faint base→tip blush.
   // ────────────────────────────────────────────────────────────────────────
-  function makePetalGeo({ length, maxWidth, cup, tipLift }) {
-    const segU = 12;
-    const segV = 6;
+  function makePetalGeo({ length, maxWidth, cup, curl, twist }) {
+    const segU = 20;   // smoother lengthwise curve
+    const segV = 7;
     const geo = new T.PlaneGeometry(1, 1, segU, segV);
     const pos = geo.attributes.position;
     const colors = new Float32Array(pos.count * 3);
 
-    // Lighter, airier palette to match the brand asters (aster-light →
-    // aster-mist). The base keeps just enough depth to read 3D form;
-    // the tip lifts to a near-white lavender mist for a luminous edge.
-    const cBase = new T.Color(0xb79ed8);  // soft lavender — gentle base shadow
-    const cMid  = new T.Color(0xceb4e8);  // aster-light, airy
-    const cTip  = new T.Color(0xf6f1fc);  // near-white lavender mist
+    // Botanical gradient: a real ray petal is deeper/cooler at the shadowed
+    // throat where petals overlap, and pales to a luminous, almost translucent
+    // edge at the tip where light passes through. This falloff (not gloss) is
+    // what makes a petal read as a living membrane.
+    const cBase = new T.Color(0x8f6fb8);  // deeper violet at the throat
+    const cMid  = new T.Color(0xc1a4e3);  // aster body
+    const cTip  = new T.Color(0xf6effc);  // sunlit translucent edge
 
     for (let i = 0; i < pos.count; i++) {
       const u = pos.getX(i) + 0.5;     // 0..1 along length
       const v = pos.getY(i) + 0.5;     // 0..1 across width
       const cv = (v - 0.5) * 2;        // -1..1
 
-      // Strap silhouette — quick ramp from base, soft tapered tip
-      let wf = Math.min(1, u * 6);
-      wf *= 1 - Math.pow(u, 3.2) * 0.78;
+      // Width profile — narrow claw at the base, a soft belly through the
+      // middle, gently rounded taper to the tip. Reads as a petal, not a strap.
+      let wf = Math.min(1, u * 4.5);
+      wf *= 1 - Math.pow(u, 3.0) * 0.80;
+      wf *= 0.82 + 0.30 * Math.sin(Math.min(1, u) * Math.PI);
 
       const x = u * length;
-      const y = cv * wf * maxWidth;
+      const y0 = cv * wf * maxWidth;
 
-      // Gentle U-channel cup + soft tip lift
-      const cupZ  = -(cv * cv) * cup * wf;
-      const liftZ = Math.pow(u, 1.8) * tipLift;
+      // Cross-section cup (U-channel) + lengthwise recurve (the petal arcs
+      // forward toward the light, the way ray florets curve out of the disc).
+      let z0 = -(cv * cv) * cup * wf;
+      z0 += Math.pow(u, 1.6) * curl;
+
+      // Gentle twist along the length — no two edges catch the light the same.
+      const tw = twist * u;
+      const ct = Math.cos(tw), st = Math.sin(tw);
+      const y = y0 * ct - z0 * st;
+      const z = y0 * st + z0 * ct;
 
       pos.setX(i, x);
       pos.setY(i, y);
-      pos.setZ(i, cupZ + liftZ);
+      pos.setZ(i, z);
 
-      // Vertex color — base → mid → tip gives each petal real form against
-      // the pale ground without saturating the palette.
+      // base → mid → tip falloff
+      let r, g, b;
       if (u < 0.5) {
         const k = u / 0.5;
-        colors[i * 3 + 0] = cBase.r + (cMid.r - cBase.r) * k;
-        colors[i * 3 + 1] = cBase.g + (cMid.g - cBase.g) * k;
-        colors[i * 3 + 2] = cBase.b + (cMid.b - cBase.b) * k;
+        r = cBase.r + (cMid.r - cBase.r) * k;
+        g = cBase.g + (cMid.g - cBase.g) * k;
+        b = cBase.b + (cMid.b - cBase.b) * k;
       } else {
         const k = (u - 0.5) / 0.5;
-        colors[i * 3 + 0] = cMid.r + (cTip.r - cMid.r) * k;
-        colors[i * 3 + 1] = cMid.g + (cTip.g - cMid.g) * k;
-        colors[i * 3 + 2] = cMid.b + (cTip.b - cMid.b) * k;
+        r = cMid.r + (cTip.r - cMid.r) * k;
+        g = cMid.g + (cTip.g - cMid.g) * k;
+        b = cMid.b + (cTip.b - cMid.b) * k;
       }
+      colors[i * 3 + 0] = r;
+      colors[i * 3 + 1] = g;
+      colors[i * 3 + 2] = b;
     }
     pos.needsUpdate = true;
     geo.setAttribute('color', new T.BufferAttribute(colors, 3));
@@ -127,102 +140,120 @@
   function buildFlower() {
     const bloomGroup = new T.Group();
 
-    // ── Material — one petal material, shared. Soft, matte, premium.
-    // Pale lavender-blush base color paints the body; vertex colors carry
-    // the base→tip falloff that gives each petal form.
+    // ── Material — a thin, living petal membrane.
+    // The defining quality of a real petal is TRANSLUCENCY: it is thin enough
+    // that light passes through and glows from within (most visible when
+    // backlit). We model that with transmission + thickness + a warm rosy
+    // attenuation, kept rough so the transmitted light is *diffuse* (a frosted,
+    // luminous petal — never clear glass). Surface is matte-velvety with a
+    // soft sheen at the edge; deliberately NO clearcoat and NO iridescence —
+    // those read as wet plastic, not flora. Vertex colors carry the
+    // throat→tip falloff; a whisper of emissive fakes subsurface self-glow.
     const petalMat = new T.MeshPhysicalMaterial({
       color: 0xffffff,
       vertexColors: true,
-      roughness: 0.50,                       // silkier satin
       metalness: 0.0,
+      roughness: 0.62,                          // soft, diffuse — matte petal
       side: T.DoubleSide,
-      sheen: 1.0,                            // full luminous petal sheen
-      sheenColor: new T.Color(0xfff0f4),     // delicate warm-pink sheen edge
-      sheenRoughness: 0.42,
-      clearcoat: 0.30,                       // refined glossy edge that catches the env
-      clearcoatRoughness: 0.40,
-      iridescence: 0.22,                     // delicate pearlescent shimmer (tasteful, low)
-      iridescenceIOR: 1.30,
-      iridescenceThicknessRange: [120, 360],
-      envMapIntensity: 0.7,                  // lets the studio env paint the satin
+      transmission: 0.55,                       // light passes through the membrane
+      thickness: 0.45,                          // absorption depth → SSS feel
+      ior: 1.40,
+      attenuationColor: new T.Color(0xf0c8df),  // warm rosy glow of backlit petals
+      attenuationDistance: 1.1,
+      sheen: 0.7,                               // velvety, light-catching edge
+      sheenColor: new T.Color(0xffe9f0),
+      sheenRoughness: 0.65,
+      clearcoat: 0.0,
+      specularIntensity: 0.35,                  // gentle, soft highlights (not plastic)
+      emissive: new T.Color(0xb692d8),          // faint lit-from-within glow
+      emissiveIntensity: 0.05,
+      envMapIntensity: 0.4,
     });
 
-    // ── Petals — two rings, deliberately understated counts.
-    function addRing({ count, length, width, cup, tipLift, tiltBack,
+    // ── Petals — radiating ray florets, layered like a real aster. Density +
+    // natural per-petal variation (length, spacing, droop, roll) is what makes
+    // it read as grown rather than manufactured.
+    function addRing({ count, length, width, cup, curl, twist, tiltBack,
                        angleOffset, baseRadius, jitterSeed }) {
-      const geo = makePetalGeo({ length, maxWidth: width, cup, tipLift });
+      const geo = makePetalGeo({ length, maxWidth: width, cup, curl, twist });
       for (let i = 0; i < count; i++) {
         const t = i / count;
         const ang = angleOffset + t * Math.PI * 2;
-        // Deterministic micro-jitter — slight asymmetry, never showy
-        const r = (Math.sin((i + jitterSeed) * 12.9898) * 43758.5453) % 1;
-        const jr = r - Math.floor(r);
-        const lenJit  = 1 + (jr - 0.5) * 0.05;
-        const angJit  = (jr - 0.5) * 0.035;
-        const tiltJit = (jr - 0.5) * 0.06;
+        // Two deterministic pseudo-randoms per petal for varied, organic asymmetry
+        const ra = (Math.sin((i + jitterSeed) * 12.9898) * 43758.5453) % 1;
+        const jr = ra - Math.floor(ra);
+        const rb = (Math.sin((i + jitterSeed) * 78.2330) * 12543.1230) % 1;
+        const jr2 = rb - Math.floor(rb);
+
+        const lenJit   = 1 + (jr  - 0.5) * 0.12;   // varied petal lengths
+        const widJit   = 1 + (jr2 - 0.5) * 0.10;
+        const angJit   = (jr2 - 0.5) * 0.05;        // uneven spacing
+        const pitchJit = (jr  - 0.5) * 0.13;        // some droop, some lift
+        const rollJit  = (jr2 - 0.5) * 0.10;        // slight roll — catches light unevenly
 
         const wrap = new T.Group();
         wrap.rotation.z = ang + angJit;
 
         const tilt = new T.Group();
-        tilt.rotation.y = tiltBack + tiltJit;
+        tilt.rotation.y = tiltBack + pitchJit;
 
         const m = new T.Mesh(geo, petalMat);
         m.position.set(baseRadius, 0, 0);
-        m.scale.set(lenJit, 1, 1);
+        m.rotation.x = rollJit;
+        m.scale.set(lenJit, widJit, 1);
         tilt.add(m);
         wrap.add(tilt);
         bloomGroup.add(wrap);
       }
     }
 
-    // Two rings, deliberately understated — restraint over flourish.
-    // Premium comes from the refined material, light, and motion, not
-    // from piling on petals. A clean, calm silhouette reads expensive.
-    // Back ring — longer, leans back a touch
+    // Outer ring — long, open, leaning gently back; the silhouette of the bloom.
     addRing({
-      count: 20, length: 1.95, width: 0.16, cup: 0.16, tipLift: 0.14,
-      tiltBack: 0.32, angleOffset: 0,
+      count: 26, length: 2.05, width: 0.145, cup: 0.16, curl: 0.26, twist: 0.22,
+      tiltBack: 0.36, angleOffset: 0,
       baseRadius: 0.30, jitterSeed: 11,
     });
-    // Front ring — shorter, half-offset, near flat
+    // Inner ring — shorter, more recurved, half-offset to fill the gaps so the
+    // bloom layers densely toward the disc (overlap → translucent inner glow).
     addRing({
-      count: 16, length: 1.65, width: 0.15, cup: 0.20, tipLift: 0.22,
-      tiltBack: -0.04, angleOffset: Math.PI / 16,
-      baseRadius: 0.24, jitterSeed: 37,
+      count: 20, length: 1.62, width: 0.135, cup: 0.22, curl: 0.40, twist: -0.18,
+      tiltBack: 0.12, angleOffset: Math.PI / 20,
+      baseRadius: 0.22, jitterSeed: 37,
     });
 
     // ── Center — a warm coral dome, matching the brand asters (hero /
     // process flowers all use a coral center, deepening outward:
     // #d97757 → #e89a7c). Replaces the prior honey-gold for cohesion.
-    const centerGeo = new T.SphereGeometry(0.26, 36, 22, 0, Math.PI * 2, 0, Math.PI / 2.1);
+    const centerGeo = new T.SphereGeometry(0.27, 40, 24, 0, Math.PI * 2, 0, Math.PI / 2.1);
     const centerMat = new T.MeshStandardMaterial({
-      color: 0xd97757,        // bloom-deep coral (outer dome)
-      roughness: 0.55,
+      color: 0xd79a3c,        // golden-amber disc (the aster's pollen eye)
+      roughness: 0.88,        // matte, powdery — like packed pollen, not a bead
       metalness: 0.0,
-      emissive: 0x6e2f18,     // soft warm glow from within
-      emissiveIntensity: 0.24,
+      side: T.DoubleSide,     // never cull to a hole
+      emissive: 0x4a2f0c,     // faint warm depth
+      emissiveIntensity: 0.14,
     });
     const center = new T.Mesh(centerGeo, centerMat);
-    center.rotation.x = -Math.PI / 2;
-    center.scale.set(1.0, 0.55, 1.0);
-    center.position.z = 0.04;
+    center.rotation.x = Math.PI / 2;    // dome apex faces the camera (+Z)
+    center.scale.set(1.0, 0.62, 1.0);   // flatten the dome height → a low pollen mound
+    center.position.z = 0.05;
     bloomGroup.add(center);
 
     // Brighter coral pip at the very center — lifts the focal point and
     // gives the disc dimensional depth without dense floret meshes.
-    const innerGeo = new T.SphereGeometry(0.15, 28, 18, 0, Math.PI * 2, 0, Math.PI / 2.1);
+    const innerGeo = new T.SphereGeometry(0.155, 30, 18, 0, Math.PI * 2, 0, Math.PI / 2.1);
     const innerMat = new T.MeshStandardMaterial({
-      color: 0xe89a7c,        // bloom coral (lighter, the lit center)
-      roughness: 0.5,
+      color: 0xf2cc63,        // bright pollen yellow — the lit crown of the disc
+      roughness: 0.82,
       metalness: 0.0,
-      emissive: 0x7a3a22,
-      emissiveIntensity: 0.28,
+      side: T.DoubleSide,
+      emissive: 0x6e4a14,
+      emissiveIntensity: 0.18,
     });
     const inner = new T.Mesh(innerGeo, innerMat);
-    inner.rotation.x = -Math.PI / 2;
+    inner.rotation.x = Math.PI / 2;     // apex toward camera
     inner.scale.set(1.0, 0.5, 1.0);
-    inner.position.z = 0.055;
+    inner.position.z = 0.10;            // sits just proud of the disc
     bloomGroup.add(inner);
 
     return bloomGroup;
@@ -271,23 +302,33 @@
       pmrem.dispose();
     } catch (e) { /* env is an enhancement; render proceeds without it */ }
 
-    // ── Lights — three-point, soft but with enough rim/key contrast that
-    // the petals read against the pale ground.
-    const hemi = new T.HemisphereLight(0xfff6f2, 0x6a5878, 0.62);
+    // ── Lights — naturalistic garden daylight. A real bloom is lit by a warm
+    // sun, a cool sky, and a soft green bounce off the foliage below — and,
+    // crucially, a strong warm light from BEHIND that pushes through the thin
+    // petals and makes them glow (the effect the transmission material exists
+    // for). This warm-key / cool-fill / hot-backlight balance is what sells it.
+    const hemi = new T.HemisphereLight(0xfff3e8, 0x7d8a5e, 0.55);  // warm sky / green ground bounce
     scene.add(hemi);
 
-    const key = new T.DirectionalLight(0xfff6ec, 1.55);
-    key.position.set(-2.5, 4.5, 4.0);
+    // Sun — warm key, high and to the side.
+    const key = new T.DirectionalLight(0xfff1de, 2.2);
+    key.position.set(-2.6, 4.8, 3.4);
     scene.add(key);
 
-    const fill = new T.DirectionalLight(0xd8c8e4, 0.60);   // soft lavender fill
-    fill.position.set(3.5, 1.2, 2.5);
+    // Sky fill — cool, soft, opposite the sun, opening the shadows.
+    const fill = new T.DirectionalLight(0xcdd9ee, 0.45);
+    fill.position.set(3.6, 1.0, 2.2);
     scene.add(fill);
 
-    // Rim — the most important light. Soft warm backlight lifts every petal
-    // edge into a luminous halo against the cream background.
-    const rim = new T.DirectionalLight(0xffe6dc, 1.5);     // brighter (was 1.25)
-    rim.position.set(-0.8, 1.2, -4.0);
+    // Backlight — THE light for petal glow: strong, warm, low and behind, so it
+    // rakes through the translucent membranes and lights every overlapping edge.
+    const back = new T.DirectionalLight(0xffe2c6, 2.6);
+    back.position.set(-0.6, 1.6, -4.2);
+    scene.add(back);
+
+    // A softer cool rim from upper-right-behind for crisp dimensional edges.
+    const rim = new T.DirectionalLight(0xffe8f0, 1.1);
+    rim.position.set(2.4, 2.6, -3.0);
     scene.add(rim);
 
     // ── Soft ground shadow on a fixed plane.
