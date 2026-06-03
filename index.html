@@ -246,53 +246,75 @@ button:focus-visible,
 .menu-open .nav-toggle-bar:nth-child(2) { transform: translateY(-4.3px) rotate(-45deg); width: 28px; }
 
 .nav-menu {
-  position: fixed; inset: 0;
+  position: fixed;
+  top: 74px;
+  right: clamp(20px, 5vw, 80px);
   z-index: 99;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(245, 237, 224, 0);
+  background: var(--paper);
+  border: 1px solid var(--line-soft);
+  border-radius: 18px;
+  box-shadow: 0 26px 60px -28px rgba(31, 20, 36, 0.30),
+              0 3px 10px -6px rgba(31, 20, 36, 0.12);
+  padding: 12px;
+  min-width: 234px;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.5s var(--ease), background 0.5s var(--ease),
-              backdrop-filter 0.5s var(--ease), visibility 0.5s;
+  transform: translateY(-10px) scale(0.97);
+  transform-origin: top right;
+  transition: opacity 0.32s var(--ease), transform 0.4s var(--ease), visibility 0.4s;
 }
 .menu-open .nav-menu {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
-  background: rgba(245, 237, 224, 0.9);
-  backdrop-filter: blur(18px) saturate(140%);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  transform: translateY(0) scale(1);
 }
 .nav-menu-inner {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: clamp(14px, 3.2vh, 32px);
-  text-align: center;
+  gap: 2px;
+  text-align: left;
 }
 .nav-menu-inner a {
   font-family: var(--serif);
   font-weight: 400;
-  font-size: clamp(34px, 6.5vw, 66px);
-  letter-spacing: -0.02em;
-  line-height: 1;
+  font-size: 23px;
+  letter-spacing: -0.005em;
+  line-height: 1.1;
   color: var(--ink);
+  padding: 11px 16px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   opacity: 0;
-  transform: translateY(22px);
-  transition: transform 0.6s var(--ease), opacity 0.6s var(--ease), color 0.3s;
+  transform: translateY(6px);
+  transition: background 0.25s var(--ease), color 0.25s var(--ease),
+              opacity 0.4s var(--ease), transform 0.4s var(--ease);
 }
+.nav-menu-inner a::before {
+  content: "";
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--aster-light);
+  flex-shrink: 0;
+  transform: scale(0);
+  transition: transform 0.25s var(--ease), background 0.25s;
+}
+.nav-menu-inner a:hover { background: var(--aster-mist); color: var(--aster-deep); }
+.nav-menu-inner a:hover::before { transform: scale(1); background: var(--aster-deep); }
 .menu-open .nav-menu-inner a { opacity: 1; transform: translateY(0); }
-.menu-open .nav-menu-inner a:nth-child(1) { transition-delay: 0.10s; }
-.menu-open .nav-menu-inner a:nth-child(2) { transition-delay: 0.16s; }
-.menu-open .nav-menu-inner a:nth-child(3) { transition-delay: 0.22s; }
-.menu-open .nav-menu-inner a:nth-child(4) { transition-delay: 0.28s; }
-.nav-menu-inner a:hover { color: var(--aster-deep); }
-.menu-open { overflow: hidden; }
+.menu-open .nav-menu-inner a:nth-child(1) { transition-delay: 0.04s; }
+.menu-open .nav-menu-inner a:nth-child(2) { transition-delay: 0.09s; }
+.menu-open .nav-menu-inner a:nth-child(3) { transition-delay: 0.14s; }
+.menu-open .nav-menu-inner a:nth-child(4) { transition-delay: 0.19s; }
 @media (prefers-reduced-motion: reduce) {
-  .nav-menu-inner a { transition: opacity 0.2s, color 0.3s; transform: none; }
+  .nav-menu { transition: opacity 0.2s, visibility 0.2s; transform: none; }
+  .nav-menu-inner a { transition: background 0.2s, color 0.2s; transform: none; opacity: 1; }
+}
+@media (max-width: 760px) {
+  .nav-menu { right: 16px; left: 16px; min-width: 0; }
 }
 
 /* ========== Hero ========== */
@@ -305,17 +327,17 @@ button:focus-visible,
 }
 .hero-arch {
   position: absolute;
-  top: clamp(18px, 4.5vh, 70px);   /* a touch higher */
+  top: clamp(10px, 3.8vh, 58px);   /* a touch higher */
   left: 50%;
   transform: translateX(-50%);
-  width: min(1400px, 106vw);       /* bigger + wider */
+  width: min(1540px, 112vw);       /* bigger + wider → clears the flower */
   z-index: 0;                       /* pure backdrop — behind headline + flower */
   pointer-events: none;
-  opacity: 0.92;
+  opacity: 0.97;                    /* less transparent, more present */
 }
 .hero-arch svg { width: 100%; height: auto; display: block; }
 @media (max-width: 760px) {
-  .hero-arch { opacity: 0.6; top: 24px; width: 152%; }
+  .hero-arch { opacity: 0.68; top: 22px; width: 160%; }
 }
 .hero-grid {
   display: grid;
@@ -2935,18 +2957,19 @@ body.in-bloom-zoom .ambient-petals {
         </g>
       </defs>
 
-      <!-- carved stone arch (two concentric lines), wider span + taller crown -->
+      <!-- carved stone arch (two concentric lines), wider span + taller crown.
+           Charcoal tone (matches the site's ink) so it sits in the palette. -->
       <path d="M88 620 L88 262 C88 116 322 46 600 42 C878 46 1112 116 1112 262 L1112 620"
-            stroke="#574e44" stroke-width="1.7" opacity="0.30"/>
+            stroke="#4a4640" stroke-width="1.9" opacity="0.42"/>
       <path d="M118 620 L118 268 C118 136 334 78 600 74 C866 78 1082 136 1082 268 L1082 620"
-            stroke="#574e44" stroke-width="1.2" opacity="0.17"/>
+            stroke="#4a4640" stroke-width="1.3" opacity="0.25"/>
 
       <!-- small keystone leaf at the crown -->
-      <path d="M600 34 C 608 50 608 60 600 78 C 592 60 592 50 600 34 Z" fill="#574e44" opacity="0.22"/>
+      <path d="M600 34 C 608 50 608 60 600 78 C 592 60 592 50 600 34 Z" fill="#4a4640" opacity="0.32"/>
 
       <!-- climbing vine (left), mirrored to the right -->
       <path id="vineL" d="M98 614 C70 544 150 524 116 460 C92 414 156 376 118 322 C90 280 182 216 226 176 C306 108 476 66 600 52"
-            stroke="#45583a" stroke-width="2.6" stroke-linecap="round" opacity="0.6"/>
+            stroke="#45583a" stroke-width="2.9" stroke-linecap="round" opacity="0.74"/>
       <use href="#vineL" transform="translate(1200 0) scale(-1 1)"/>
 
       <!-- foliage filled by buildArch() -->
@@ -3766,10 +3789,16 @@ body.in-bloom-zoom .ambient-petals {
       setOpen(!document.body.classList.contains('menu-open'));
     });
     menu.addEventListener('click', function (e) {
-      if (e.target.closest('a') || e.target === menu) setOpen(false);
+      if (e.target.closest('a')) setOpen(false);
     });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && document.body.classList.contains('menu-open')) setOpen(false);
+    });
+    // click anywhere outside the panel (and not the toggle) closes it
+    document.addEventListener('click', function (e) {
+      if (!document.body.classList.contains('menu-open')) return;
+      if (menu.contains(e.target) || toggle.contains(e.target)) return;
+      setOpen(false);
     });
   })();
 
