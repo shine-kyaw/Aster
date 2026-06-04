@@ -333,14 +333,14 @@ button:focus-visible,
   width: min(1560px, 114vw);        /* reaches close to the sides */
   z-index: 0;                        /* pure backdrop — behind headline + flower */
   pointer-events: none;
-  opacity: 0.9;
+  opacity: 0.5;                      /* faint wash — present but never competes with the title */
   /* dissolve gracefully toward both sides instead of hard-stopping */
-  -webkit-mask-image: linear-gradient(90deg, transparent 1%, #000 15%, #000 85%, transparent 99%);
-          mask-image: linear-gradient(90deg, transparent 1%, #000 15%, #000 85%, transparent 99%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 1%, #000 16%, #000 84%, transparent 99%);
+          mask-image: linear-gradient(90deg, transparent 1%, #000 16%, #000 84%, transparent 99%);
 }
 .hero-arch svg { width: 100%; height: auto; display: block; }
 @media (max-width: 760px) {
-  .hero-arch { opacity: 0.66; top: 20px; width: 168%; }
+  .hero-arch { opacity: 0.38; top: 20px; width: 168%; }
 }
 .hero-grid {
   display: grid;
