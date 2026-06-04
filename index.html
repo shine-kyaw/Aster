@@ -327,17 +327,20 @@ button:focus-visible,
 }
 .hero-arch {
   position: absolute;
-  top: clamp(10px, 3.8vh, 58px);   /* a touch higher */
+  top: clamp(12px, 3.6vh, 58px);
   left: 50%;
   transform: translateX(-50%);
-  width: min(1540px, 112vw);       /* bigger + wider → clears the flower */
-  z-index: 0;                       /* pure backdrop — behind headline + flower */
+  width: min(1560px, 114vw);        /* reaches close to the sides */
+  z-index: 0;                        /* pure backdrop — behind headline + flower */
   pointer-events: none;
-  opacity: 0.97;                    /* less transparent, more present */
+  opacity: 0.9;
+  /* dissolve gracefully toward both sides instead of hard-stopping */
+  -webkit-mask-image: linear-gradient(90deg, transparent 1%, #000 15%, #000 85%, transparent 99%);
+          mask-image: linear-gradient(90deg, transparent 1%, #000 15%, #000 85%, transparent 99%);
 }
 .hero-arch svg { width: 100%; height: auto; display: block; }
 @media (max-width: 760px) {
-  .hero-arch { opacity: 0.68; top: 22px; width: 160%; }
+  .hero-arch { opacity: 0.66; top: 20px; width: 168%; }
 }
 .hero-grid {
   display: grid;
@@ -2925,7 +2928,7 @@ body.in-bloom-zoom .ambient-petals {
 
   <!-- Old-European garden archway with climbing vines (decorative) -->
   <div class="hero-arch" aria-hidden="true">
-    <svg viewBox="0 0 1200 320" preserveAspectRatio="xMidYMin meet" fill="none">
+    <svg viewBox="0 0 1200 300" preserveAspectRatio="xMidYMin meet" fill="none">
       <defs>
         <g id="archLeaf">
           <path d="M0 0 C 6.4 -6 8 -22 0 -31 C -8 -22 -6.4 -6 0 0 Z" fill="#6f9163"/>
@@ -2957,19 +2960,20 @@ body.in-bloom-zoom .ambient-petals {
         </g>
       </defs>
 
-      <!-- a single spanning arch that runs off to BOTH sides — no legs/poles.
-           Charcoal tone (matches the site's ink) so it sits in the palette. -->
-      <path d="M0 250 C 210 96 405 58 600 54 C 795 58 990 96 1200 250"
-            stroke="#4a4640" stroke-width="1.9" opacity="0.42"/>
-      <path d="M0 286 C 222 130 412 90 600 86 C 788 90 978 130 1200 286"
-            stroke="#4a4640" stroke-width="1.3" opacity="0.25"/>
+      <!-- a single, shallow spanning arch that runs off to BOTH sides (no legs)
+           and fades at the edges via the container mask. Charcoal tone matches
+           the site ink; a faint inner hairline gives a carved depth. -->
+      <path d="M0 214 C 230 104 412 72 600 68 C 788 72 970 104 1200 214"
+            stroke="#4a4640" stroke-width="1.6" opacity="0.34"/>
+      <path d="M0 244 C 240 138 416 104 600 100 C 784 104 960 138 1200 244"
+            stroke="#4a4640" stroke-width="1.1" opacity="0.16"/>
 
       <!-- small keystone leaf at the crown -->
-      <path d="M600 40 C 608 56 608 66 600 84 C 592 66 592 56 600 40 Z" fill="#4a4640" opacity="0.32"/>
+      <path d="M600 52 C 608 70 608 80 600 98 C 592 80 592 70 600 52 Z" fill="#4a4640" opacity="0.28"/>
 
-      <!-- vine twining along the left half of the arch, mirrored to the right -->
-      <path id="vineL" d="M0 250 C 120 196 168 150 268 126 C 348 106 360 92 452 80 C 524 70 566 72 600 60"
-            stroke="#45583a" stroke-width="2.9" stroke-linecap="round" opacity="0.74"/>
+      <!-- vine hugging the arch on the left half, mirrored to the right -->
+      <path id="vineL" d="M0 218 C 150 130 332 92 470 80 C 542 73 576 73 600 68"
+            stroke="#45583a" stroke-width="2.4" stroke-linecap="round" opacity="0.66"/>
       <use href="#vineL" transform="translate(1200 0) scale(-1 1)"/>
 
       <!-- foliage filled by buildArch() -->
@@ -3745,31 +3749,31 @@ body.in-bloom-zoom .ambient-petals {
       const q = vine.getPointAtLength(Math.min(len, dd + 1.5));
       return { x: p.x, y: p.y, ang: Math.atan2(q.y - p.y, q.x - p.x) * 180 / Math.PI };
     }
-    // Leaves — alternating sides + two tones for depth.
-    const N = 12;
+    // Leaves — sparser + alternating sides + two tones for depth.
+    const N = 8;
     for (let i = 1; i <= N; i++) {
       const t = tangent((i / (N + 1)) * len);
       const side = (i % 2 === 0) ? 1 : -1;
       const leaf = (i % 3 === 0) ? 'archLeaf2' : 'archLeaf';
-      place(folL, leaf, t.x, t.y, t.ang + 90 + side * 46, 0.8 + (i % 3) * 0.18);
+      place(folL, leaf, t.x, t.y, t.ang + 90 + side * 46, 0.72 + (i % 3) * 0.16);
     }
-    // Tendril curls — that old-garden flourish.
-    [0.30, 0.58, 0.84].forEach(function (f, k) {
+    // A couple of tendril curls — that old-garden flourish.
+    [0.34, 0.66].forEach(function (f, k) {
       const t = tangent(f * len);
-      place(folL, 'archTendril', t.x, t.y, t.ang + (k % 2 ? 40 : -40), 0.9 + k * 0.12);
+      place(folL, 'archTendril', t.x, t.y, t.ang + (k % 2 ? 40 : -40), 0.85);
     });
-    // Blooms — varied sizes along the climb.
-    [[0.10, 0.9], [0.32, 1.25], [0.56, 1.0], [0.80, 1.1]].forEach(function (pr) {
+    // A few blooms, varied sizes.
+    [[0.18, 0.85], [0.46, 1.1], [0.74, 0.95]].forEach(function (pr) {
       const p = vine.getPointAtLength(pr[0] * len);
       place(folL, 'archBloom', p.x, p.y, 0, pr[1]);
     });
     if (folR) Array.prototype.slice.call(folL.childNodes).forEach(function (n) { folR.appendChild(n.cloneNode(true)); });
     // Crown cluster (not mirrored).
     if (folC) {
-      place(folC, 'archBloom', 600, 56, 0, 1.75);
-      place(folC, 'archLeaf',  570, 72, -40, 1.15);
-      place(folC, 'archLeaf2', 630, 72,  40, 1.15);
-      place(folC, 'archBloom', 600, 86, 0, 0.7);
+      place(folC, 'archBloom', 600, 64, 0, 1.6);
+      place(folC, 'archLeaf',  572, 80, -40, 1.05);
+      place(folC, 'archLeaf2', 628, 80,  40, 1.05);
+      place(folC, 'archBloom', 600, 94, 0, 0.65);
     }
   }
   buildArch();
