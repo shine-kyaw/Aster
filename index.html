@@ -333,10 +333,17 @@ button:focus-visible,
   width: min(1560px, 114vw);        /* reaches close to the sides */
   z-index: 0;                        /* pure backdrop — behind headline + flower */
   pointer-events: none;
-  opacity: 0.5;                      /* faint wash — present but never competes with the title */
-  /* dissolve gracefully toward both sides instead of hard-stopping */
-  -webkit-mask-image: linear-gradient(90deg, transparent 1%, #000 16%, #000 84%, transparent 99%);
-          mask-image: linear-gradient(90deg, transparent 1%, #000 16%, #000 84%, transparent 99%);
+  opacity: 0.55;                     /* faint wash — present but never competes with the title */
+  /* long, eased dissolve: solid only at the centre, melting gently to nothing
+     toward both sides (multi-stop = a soft, pretty falloff, not a hard ramp) */
+  -webkit-mask-image: linear-gradient(90deg,
+      transparent 0%, rgba(0,0,0,0.06) 10%, rgba(0,0,0,0.22) 20%, rgba(0,0,0,0.5) 30%,
+      rgba(0,0,0,0.82) 40%, #000 47%, #000 53%, rgba(0,0,0,0.82) 60%, rgba(0,0,0,0.5) 70%,
+      rgba(0,0,0,0.22) 80%, rgba(0,0,0,0.06) 90%, transparent 100%);
+          mask-image: linear-gradient(90deg,
+      transparent 0%, rgba(0,0,0,0.06) 10%, rgba(0,0,0,0.22) 20%, rgba(0,0,0,0.5) 30%,
+      rgba(0,0,0,0.82) 40%, #000 47%, #000 53%, rgba(0,0,0,0.82) 60%, rgba(0,0,0,0.5) 70%,
+      rgba(0,0,0,0.22) 80%, rgba(0,0,0,0.06) 90%, transparent 100%);
 }
 .hero-arch svg { width: 100%; height: auto; display: block; }
 @media (max-width: 760px) {
