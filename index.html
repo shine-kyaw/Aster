@@ -2925,7 +2925,7 @@ body.in-bloom-zoom .ambient-petals {
 
   <!-- Old-European garden archway with climbing vines (decorative) -->
   <div class="hero-arch" aria-hidden="true">
-    <svg viewBox="0 0 1200 620" preserveAspectRatio="xMidYMin meet" fill="none">
+    <svg viewBox="0 0 1200 320" preserveAspectRatio="xMidYMin meet" fill="none">
       <defs>
         <g id="archLeaf">
           <path d="M0 0 C 6.4 -6 8 -22 0 -31 C -8 -22 -6.4 -6 0 0 Z" fill="#6f9163"/>
@@ -2957,18 +2957,18 @@ body.in-bloom-zoom .ambient-petals {
         </g>
       </defs>
 
-      <!-- carved stone arch (two concentric lines), wider span + taller crown.
+      <!-- a single spanning arch that runs off to BOTH sides — no legs/poles.
            Charcoal tone (matches the site's ink) so it sits in the palette. -->
-      <path d="M88 620 L88 262 C88 116 322 46 600 42 C878 46 1112 116 1112 262 L1112 620"
+      <path d="M0 250 C 210 96 405 58 600 54 C 795 58 990 96 1200 250"
             stroke="#4a4640" stroke-width="1.9" opacity="0.42"/>
-      <path d="M118 620 L118 268 C118 136 334 78 600 74 C866 78 1082 136 1082 268 L1082 620"
+      <path d="M0 286 C 222 130 412 90 600 86 C 788 90 978 130 1200 286"
             stroke="#4a4640" stroke-width="1.3" opacity="0.25"/>
 
       <!-- small keystone leaf at the crown -->
-      <path d="M600 34 C 608 50 608 60 600 78 C 592 60 592 50 600 34 Z" fill="#4a4640" opacity="0.32"/>
+      <path d="M600 40 C 608 56 608 66 600 84 C 592 66 592 56 600 40 Z" fill="#4a4640" opacity="0.32"/>
 
-      <!-- climbing vine (left), mirrored to the right -->
-      <path id="vineL" d="M98 614 C70 544 150 524 116 460 C92 414 156 376 118 322 C90 280 182 216 226 176 C306 108 476 66 600 52"
+      <!-- vine twining along the left half of the arch, mirrored to the right -->
+      <path id="vineL" d="M0 250 C 120 196 168 150 268 126 C 348 106 360 92 452 80 C 524 70 566 72 600 60"
             stroke="#45583a" stroke-width="2.9" stroke-linecap="round" opacity="0.74"/>
       <use href="#vineL" transform="translate(1200 0) scale(-1 1)"/>
 
@@ -3766,10 +3766,10 @@ body.in-bloom-zoom .ambient-petals {
     if (folR) Array.prototype.slice.call(folL.childNodes).forEach(function (n) { folR.appendChild(n.cloneNode(true)); });
     // Crown cluster (not mirrored).
     if (folC) {
-      place(folC, 'archBloom', 600, 50, 0, 1.75);
-      place(folC, 'archLeaf',  571, 66, -40, 1.15);
-      place(folC, 'archLeaf2', 629, 66,  40, 1.15);
-      place(folC, 'archBloom', 600, 80, 0, 0.7);
+      place(folC, 'archBloom', 600, 56, 0, 1.75);
+      place(folC, 'archLeaf',  570, 72, -40, 1.15);
+      place(folC, 'archLeaf2', 630, 72,  40, 1.15);
+      place(folC, 'archBloom', 600, 86, 0, 0.7);
     }
   }
   buildArch();
