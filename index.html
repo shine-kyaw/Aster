@@ -1106,6 +1106,35 @@ button:focus-visible,
 }
 .btn-block.btn-ghost:hover { border-color: var(--ink); background: transparent; color: var(--ink); }
 
+/* ===== Clean contact form ===== */
+.connect-intro { text-align: center; max-width: 34ch; margin: 0 auto 44px; }
+.connect-intro .eyebrow { justify-content: center; margin-bottom: 20px; }
+.connect-intro h2 { margin: 0 0 16px; }
+.connect-intro .lede { margin: 0 auto; color: var(--ink-soft); }
+.connect-form {
+  max-width: 600px;
+  margin: 0 auto;
+  background: var(--paper);
+  border: 1px solid var(--line-soft);
+  border-radius: 24px;
+  padding: clamp(28px, 4vw, 52px);
+  box-shadow: 0 30px 60px -40px rgba(31, 20, 36, 0.18);
+}
+.hp-field { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.form-status {
+  margin: 16px 2px 0;
+  font-size: 14px;
+  line-height: 1.55;
+  min-height: 1.2em;
+  transition: color 0.3s var(--ease);
+}
+.form-status.is-ok { color: var(--sage-deep); }
+.form-status.is-error { color: #a14a3a; }
+.form-status.is-pending { color: var(--ink-mute); }
+.connect-alt { text-align: center; margin: 22px 0 0; font-size: 13px; color: var(--ink-mute); }
+.connect-alt a { color: var(--aster-deep); border-bottom: 1px solid transparent; transition: border-color 0.25s var(--ease); }
+.connect-alt a:hover { border-color: var(--aster-deep); }
+
 .track-feedback {
   margin-top: 18px;
   padding: 14px 18px;
@@ -3426,119 +3455,57 @@ body.in-bloom-zoom .ambient-petals {
     <svg class="dp" style="--x: 12vw; --delay: -22s; --dur: 26s; --hue: var(--aster-light);" viewBox="0 0 20 28"><ellipse cx="10" cy="14" rx="5" ry="13"/></svg>
   </div>
   <div class="wrap">
-    <div class="portal-intro reveal">
-      <h2 class="h-lg">Begin — <em class="italic">or return.</em></h2>
-      <p class="portal-lede">Held in confidence.</p>
+    <div class="connect-intro reveal">
+      <span class="eyebrow">Begin a conversation</span>
+      <h2 class="h-lg">Tell us about <em class="italic">your brand.</em></h2>
+      <p class="lede">Share where you are and where you'd like to bloom. We read every note by hand and reply within a day.</p>
     </div>
 
-    <div class="portal-grid">
-      <!-- Begin a Conversation -->
-      <form class="portal-card reveal" id="messageForm" novalidate>
-        <span class="eyebrow" style="margin-bottom:18px;">Begin a Conversation</span>
-        <h3 class="h-md">Tell us about your brand.</h3>
-        <p class="lede">We'll reach back within a day.</p>
+    <form class="connect-form reveal" id="contactForm" novalidate>
+      <!-- DELIVERY: paste your free Web3Forms access key (https://web3forms.com,
+           ~30s, no account) into value below to enable real email delivery.
+           Until then the form gracefully opens the visitor's email app. -->
+      <input type="hidden" name="access_key" value="REPLACE_WITH_WEB3FORMS_KEY" />
+      <input type="hidden" name="subject" value="New enquiry from the Aster site" />
+      <input type="hidden" name="from_name" value="Aster Studio website" />
+      <!-- honeypot spam trap (kept off-screen) -->
+      <input type="checkbox" name="botcheck" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true" />
 
-        <div class="field-grid-2">
-          <div class="field">
-            <label for="name">Name</label>
-            <input id="name" type="text" placeholder="Your full name" required />
-            <svg class="field-bud" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>
-          </div>
-          <div class="field">
-            <label for="email">Email</label>
-            <input id="email" type="email" placeholder="hello@yourbrand.com" required />
-            <svg class="field-bud" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>
-          </div>
-        </div>
-
+      <div class="field-grid-2">
         <div class="field">
-          <label for="phone">
-            Phone
-            <span class="hint">— optional</span>
-          </label>
-          <input id="phone" type="tel" placeholder="+1 (555) 123-4567" autocomplete="tel" />
+          <label for="cName">Name</label>
+          <input id="cName" name="name" type="text" placeholder="Your full name" autocomplete="name" required />
           <svg class="field-bud" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>
         </div>
-
         <div class="field">
-          <label for="clue">
-            Clue
-            <span class="hint">— a personal keyword to retrieve your thread later</span>
-          </label>
-          <input id="clue" type="text" placeholder="e.g. lavender-october" required />
+          <label for="cEmail">Email</label>
+          <input id="cEmail" name="email" type="email" placeholder="hello@yourbrand.com" autocomplete="email" required />
           <svg class="field-bud" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>
-        </div>
-
-        <div class="field">
-          <label for="message">Message</label>
-          <textarea id="message" rows="4" placeholder="What season is your brand in right now?"></textarea>
-          <svg class="field-bud" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>
-        </div>
-
-        <div class="portal-actions">
-          <button type="submit" class="btn btn-primary btn-block" id="sendBtn">
-            Send Direct Message
-            <svg class="ar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 18 L18 6 M9 6 H18 V15"/></svg>
-          </button>
-          <div class="track-feedback" id="msgFeedback">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 L9 17 L4 12"/></svg>
-            <span></span>
-          </div>
-        </div>
-      </form>
-
-      <!-- Track / Retrieve -->
-      <div class="portal-card reveal" id="trackCard">
-        <span class="eyebrow" style="margin-bottom:18px;">Track Your Order</span>
-        <h3 class="h-md">Return to the bloom.</h3>
-        <p class="lede">Enter your code — or recover it below.</p>
-
-        <div class="field">
-          <label for="trackCode">Tracking Code</label>
-          <input id="trackCode" type="text" placeholder="ASTER-•••• • ••••" autocomplete="off" spellcheck="false" />
-          <svg class="field-bud" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>
-        </div>
-
-        <!-- Staff Layer 2 input — hidden by default, revealed only by Layer 1 secret -->
-        <div class="field staff-layer2" id="staffLayer2" hidden>
-          <label for="staffPass">Staff Authorisation</label>
-          <input id="staffPass" type="password" placeholder="Enter staff password" autocomplete="off" spellcheck="false" />
-        </div>
-
-        <div class="portal-actions">
-          <button class="btn btn-primary btn-block" id="checkBtn">
-            Check Status
-            <svg class="ar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 18 L18 6 M9 6 H18 V15"/></svg>
-          </button>
-        </div>
-
-        <div class="portal-divider">— Or recover your code —</div>
-
-        <div class="field-grid-2">
-          <div class="field">
-            <label for="recEmail">Email</label>
-            <input id="recEmail" type="email" placeholder="hello@yourbrand.com" />
-            <svg class="field-bud" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>
-          </div>
-          <div class="field">
-            <label for="recClue">Clue</label>
-            <input id="recClue" type="text" placeholder="lavender-october" />
-            <svg class="field-bud" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>
-          </div>
-        </div>
-
-        <div class="portal-actions">
-          <button class="btn btn-ghost btn-block" id="retrieveBtn">
-            Retrieve Your Code
-            <svg class="ar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 18 L18 6 M9 6 H18 V15"/></svg>
-          </button>
-          <div class="track-feedback" id="trackFeedback">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 L9 17 L4 12"/></svg>
-            <span></span>
-          </div>
         </div>
       </div>
-    </div>
+
+      <div class="field">
+        <label for="cPhone">Phone <span class="hint">— optional</span></label>
+        <input id="cPhone" name="phone" type="tel" placeholder="+1 (555) 123-4567" autocomplete="tel" />
+        <svg class="field-bud" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>
+      </div>
+
+      <div class="field">
+        <label for="cMessage">Message</label>
+        <textarea id="cMessage" name="message" rows="5" placeholder="What season is your brand in right now?" required></textarea>
+        <svg class="field-bud" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>
+      </div>
+
+      <div class="portal-actions">
+        <button type="submit" class="btn btn-primary btn-block glow-track glow-warm" id="contactSend">
+          <span class="label">Send message</span>
+          <svg class="ar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 18 L18 6 M9 6 H18 V15"/></svg>
+        </button>
+      </div>
+      <p class="form-status" id="contactStatus" role="status" aria-live="polite"></p>
+
+      <p class="connect-alt">Prefer email? <a href="mailto:hello@aster.studio">hello@aster.studio</a></p>
+    </form>
   </div>
 </section>
 
@@ -3560,39 +3527,6 @@ body.in-bloom-zoom .ambient-petals {
       <svg class="ar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 18 L18 6 M9 6 H18 V15"/></svg>
     </a>
   </aside>
-</div>
-
-<!-- ============ STAFF PANEL (hidden until 2-layer auth passes) ============ -->
-<div class="staff-panel" id="staffPanel" aria-hidden="true">
-  <div class="staff-bar">
-    <div class="staff-bar-left">
-      <svg viewBox="0 0 60 60" aria-hidden="true">
-        <g transform="translate(30 30)">
-          <g id="staffPetals" fill="#c4a5e0"></g>
-          <circle r="5" fill="#15140f"/>
-        </g>
-      </svg>
-      <div>
-        <span class="word">Aster <span class="sub">Staff Console</span></span>
-      </div>
-    </div>
-    <div class="staff-bar-right">
-      <span class="staff-status"><span class="dot"></span> Secure session</span>
-      <button class="staff-logout" id="staffLogout">Sign out</button>
-    </div>
-  </div>
-  <div class="staff-main">
-    <aside class="staff-list" id="staffList">
-      <div class="staff-list-head">
-        <span class="label">Inbox</span>
-        <span class="count" id="msgCount">0</span>
-      </div>
-      <div id="msgList"></div>
-    </aside>
-    <section class="staff-thread empty" id="staffThread">
-      Select a message to begin.
-    </section>
-  </div>
 </div>
 
 <!-- ============ FOOTER ============ -->
@@ -4150,98 +4084,77 @@ body.in-bloom-zoom .ambient-petals {
     });
   });
 
-  // ===== Portal forms (no deps) =====
-  const msgForm = document.getElementById("messageForm");
-  const msgFeedback = document.getElementById("msgFeedback");
+  // ===== Contact form → Web3Forms (with graceful mailto fallback) =====
+  (function () {
+    const form = document.getElementById("contactForm");
+    if (!form) return;
+    const statusEl = document.getElementById("contactStatus");
+    const btn = document.getElementById("contactSend");
+    const labelEl = btn ? btn.querySelector(".label") : null;
+    const keyEl = form.querySelector('[name="access_key"]');
+    const KEY = keyEl ? (keyEl.value || "") : "";
+    const CONFIGURED = KEY && KEY.indexOf("REPLACE_WITH") !== 0;
+    const CONTACT_EMAIL = "hello@aster.studio";
+    const val = (n) => { const el = form.querySelector('[name="' + n + '"]'); return el ? (el.value || "").trim() : ""; };
 
-  function generateCode(seed) {
-    const a = (seed || "ASTER") + Date.now().toString(36).toUpperCase();
-    const hash = a.replace(/[^A-Z0-9]/g, "").slice(-8);
-    return "ASTER-" + hash.slice(0, 4) + "-" + hash.slice(4, 8);
-  }
+    function setStatus(kind, msg) {
+      if (!statusEl) return;
+      statusEl.textContent = msg || "";
+      statusEl.className = "form-status" + (kind ? " is-" + kind : "");
+    }
+    function setSending(on) {
+      if (btn) btn.disabled = on;
+      if (labelEl) labelEl.textContent = on ? "Sending…" : "Send message";
+    }
 
-  if (msgForm) {
-    msgForm.addEventListener("submit", function (e) {
+    form.addEventListener("submit", async function (e) {
       e.preventDefault();
-      const name = document.getElementById("name").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const phoneEl = document.getElementById("phone");
-      const phone = phoneEl ? phoneEl.value.trim() : "";
-      const clue = document.getElementById("clue").value.trim();
-      const messageEl = document.getElementById("message");
-      const message = messageEl ? messageEl.value.trim() : "";
-      if (!name || !email || !clue) {
-        msgFeedback.querySelector("span").textContent =
-          "Please add your name, email and a memorable clue.";
-        msgFeedback.classList.add("show");
-        msgFeedback.style.color = "#a14a3a";
-        msgFeedback.style.background = "rgba(161, 74, 58, 0.08)";
-        msgFeedback.style.borderColor = "#e1c2b8";
+      const bot = form.querySelector('[name="botcheck"]');
+      if (bot && bot.checked) return;                       // honeypot tripped
+
+      const name = val("name"), email = val("email"), message = val("message");
+      if (!name || !email || !message) {
+        setStatus("error", "Please add your name, email, and a short message.");
         return;
       }
-      const code = generateCode(clue);
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+        setStatus("error", "That email doesn't look quite right — mind checking it?");
+        return;
+      }
+
+      // No key yet → open the visitor's email app, prefilled.
+      if (!CONFIGURED) {
+        const phone = val("phone");
+        const body = "Name: " + name + "\nEmail: " + email + (phone ? "\nPhone: " + phone : "") + "\n\n" + message;
+        window.location.href = "mailto:" + CONTACT_EMAIL +
+          "?subject=" + encodeURIComponent("New enquiry from " + name) +
+          "&body=" + encodeURIComponent(body);
+        setStatus("ok", "Opening your email app — or write us directly at " + CONTACT_EMAIL + ".");
+        return;
+      }
+
+      setSending(true);
+      setStatus("pending", "Sending your message…");
       try {
-        localStorage.setItem("aster:" + email + ":" + clue, code);
-        const payload = { name: name, email: email, phone: phone, clue: clue, message: message, code: code, time: Date.now() };
-        localStorage.setItem("aster-msg:" + code, JSON.stringify(payload));
-      } catch (_) {}
-      msgFeedback.querySelector("span").textContent =
-        "Sent. Your tracking code is " + code + " — we'll reach back within 24h.";
-      msgFeedback.classList.add("show");
-      msgFeedback.style.color = "";
-      msgFeedback.style.background = "";
-      msgFeedback.style.borderColor = "";
-      msgForm.reset();
-    });
-  }
-
-  const checkBtn = document.getElementById("checkBtn");
-  const retrieveBtn = document.getElementById("retrieveBtn");
-  const trackFeedback = document.getElementById("trackFeedback");
-
-  if (checkBtn) {
-    checkBtn.addEventListener("click", function () {
-      const code = document.getElementById("trackCode").value.trim();
-      if (!code) {
-        trackFeedback.querySelector("span").textContent =
-          "Enter your tracking code to check status.";
-      } else {
-        const seasons = [
-          "Bulb · Discovery",
-          "Sprouting · Blueprint",
-          "Budding · Craft",
-          "Full Bloom · Launch",
-        ];
-        const season = seasons[code.length % seasons.length];
-        trackFeedback.querySelector("span").textContent =
-          "Status — currently in " + season + ".";
+        const res = await fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+          body: JSON.stringify(Object.fromEntries(new FormData(form)))
+        });
+        const out = await res.json();
+        if (out && out.success) {
+          setStatus("ok", "Thank you, " + name.split(" ")[0] + " — your message is on its way. We'll reply within a day.");
+          form.reset();
+        } else {
+          setStatus("error", (out && out.message) || ("Something went wrong — please email " + CONTACT_EMAIL + "."));
+        }
+      } catch (err) {
+        setStatus("error", "Network hiccup — please email us at " + CONTACT_EMAIL + ".");
+      } finally {
+        setSending(false);
       }
-      trackFeedback.classList.add("show");
     });
-  }
-
-  if (retrieveBtn) {
-    retrieveBtn.addEventListener("click", function () {
-      const email = document.getElementById("recEmail").value.trim();
-      const clue = document.getElementById("recClue").value.trim();
-      if (!email || !clue) {
-        trackFeedback.querySelector("span").textContent =
-          "Add the email and clue you used originally.";
-        trackFeedback.classList.add("show");
-        return;
-      }
-      let stored = null;
-      try { stored = localStorage.getItem("aster:" + email + ":" + clue); } catch (_) {}
-      if (stored) {
-        trackFeedback.querySelector("span").textContent =
-          "Your code is " + stored + ". We've also sent it to " + email + ".";
-      } else {
-        trackFeedback.querySelector("span").textContent =
-          "We've sent a recovery link to " + email + ". Look for the aster.";
-      }
-      trackFeedback.classList.add("show");
-    });
-  }
+  })();
 
   // ============================================================
   // Persistent side rail — visibility gate + active-section
@@ -4308,255 +4221,8 @@ body.in-bloom-zoom .ambient-petals {
     }, { passive: true });
   })();
 
-  // ============================================================
-  // HIDDEN STAFF COMMAND — two-layer authentication
-  // Layer 1: typing `halalballpsg2026` into the tracking code input
-  //          reveals a second-layer staff password field.
-  // Layer 2: typing `arsenalbottlejobs` into that field opens
-  //          the secret Staff Panel.
-  // ============================================================
-  const LAYER_1 = "halalballpsg2026";
-  const LAYER_2 = "arsenalbottlejobs";
-
-  const trackInput = document.getElementById("trackCode");
-  const staffLayer2 = document.getElementById("staffLayer2");
-  const staffPassInput = document.getElementById("staffPass");
-  const staffPanel = document.getElementById("staffPanel");
-
-  function revealStaffLayer2() {
-    if (staffLayer2.hidden) {
-      staffLayer2.hidden = false;
-      // Quietly clear the track input so the secret doesn't linger
-      trackInput.value = "";
-      trackInput.blur();
-      setTimeout(function () { staffPassInput.focus(); }, 350);
-    }
-  }
-
-  if (trackInput) {
-    // Detect on input so paste also works; case-insensitive trim
-    trackInput.addEventListener("input", function () {
-      const v = (trackInput.value || "").toLowerCase().replace(/\s+/g, "");
-      if (v === LAYER_1) {
-        revealStaffLayer2();
-      }
-    });
-    // Also catch the Enter key after pasting
-    trackInput.addEventListener("keydown", function (e) {
-      if (e.key === "Enter") {
-        const v = (trackInput.value || "").toLowerCase().replace(/\s+/g, "");
-        if (v === LAYER_1) {
-          e.preventDefault();
-          revealStaffLayer2();
-        }
-      }
-    });
-  }
-
-  function openStaffPanel() {
-    staffPanel.classList.add("open");
-    staffPanel.setAttribute("aria-hidden", "false");
-    document.body.style.overflow = "hidden";
-    staffPassInput.value = "";
-    staffLayer2.hidden = true;
-    renderStaffInbox();
-  }
-
-  function closeStaffPanel() {
-    staffPanel.classList.remove("open");
-    staffPanel.setAttribute("aria-hidden", "true");
-    document.body.style.overflow = "";
-  }
-
-  if (staffPassInput) {
-    staffPassInput.addEventListener("input", function () {
-      const v = (staffPassInput.value || "").toLowerCase();
-      if (v === LAYER_2) {
-        openStaffPanel();
-      }
-    });
-    staffPassInput.addEventListener("keydown", function (e) {
-      if (e.key === "Enter") {
-        const v = (staffPassInput.value || "").toLowerCase();
-        if (v === LAYER_2) {
-          e.preventDefault();
-          openStaffPanel();
-        } else {
-          staffPassInput.style.borderBottomColor = "#a14a3a";
-          setTimeout(function () { staffPassInput.style.borderBottomColor = ""; }, 800);
-        }
-      }
-    });
-  }
-
-  document.getElementById("staffLogout").addEventListener("click", closeStaffPanel);
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && staffPanel.classList.contains("open")) closeStaffPanel();
-  });
-
-  // ===== Staff panel: mock inbox + thread =====
-  // Build the staff logo petals
-  (function () {
-    const sp = document.getElementById("staffPetals");
-    if (!sp) return;
-    for (let i = 0; i < 12; i++) {
-      const angle = (360 / 12) * i;
-      const g = document.createElementNS(ns, "g");
-      g.setAttribute("transform", "rotate(" + angle + ")");
-      const path = document.createElementNS(ns, "path");
-      path.setAttribute("d", "M 0 0 Q -4 -10 0 -22 Q 4 -10 0 0 Z");
-      path.setAttribute("fill", "#c4a5e0");
-      g.appendChild(path);
-      sp.appendChild(g);
-    }
-  })();
-
-  // Seed inbox (fictional, evocative)
-  const SEED_INBOX = [
-    {
-      id: "m1",
-      name: "Mira Halverson",
-      email: "mira@halverson-co.com",
-      clue: "lavender-october",
-      code: "ASTER-MH4T-7K2D",
-      stage: "Bulb · Discovery",
-      time: "2 hrs ago",
-      unread: true,
-      thread: [
-        { dir: "in", time: "2 hrs ago", text: "We're a boutique architecture practice rebuilding our identity ahead of a New York office launch. The current site feels academic — we want something quieter, more confident. Are you available in October?" }
-      ]
-    },
-    {
-      id: "m2",
-      name: "Daniyal Rashid",
-      email: "d@rashid-capital.co",
-      clue: "linden-tree",
-      code: "ASTER-DR9X-1M8P",
-      stage: "Sprouting · Blueprint",
-      time: "Yesterday",
-      unread: true,
-      thread: [
-        { dir: "in", time: "Tuesday", text: "Brief is attached. Quick turnaround needed — pitch deck is next month and the site has to support that narrative." },
-        { dir: "out", time: "Wednesday", text: "Received. Pulling architecture together — first wireframe pass by Friday." },
-        { dir: "in", time: "Yesterday", text: "Perfect. One question — can we phase the case studies in over two releases?" }
-      ]
-    },
-    {
-      id: "m3",
-      name: "Eun-Ji Park",
-      email: "ej.park@studio-saen.kr",
-      clue: "white-camellia",
-      code: "ASTER-EJ2H-5R7B",
-      stage: "Budding · Craft",
-      time: "3 days ago",
-      unread: false,
-      thread: [
-        { dir: "in", time: "Last week", text: "Loving the latest design pass. The reading rhythm in the case study templates feels exactly right." },
-        { dir: "out", time: "3 days ago", text: "Thank you — pushing the motion layer tomorrow. Expect a preview by EOD Thursday." }
-      ]
-    }
-  ];
-
-  // Pull any client-submitted messages from localStorage
-  function loadInbox() {
-    const fromStorage = [];
-    try {
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (k && k.indexOf("aster:") === 0) {
-          const parts = k.split(":");
-          const email = parts[1];
-          const clue = parts[2];
-          const code = localStorage.getItem(k);
-          fromStorage.push({
-            id: "s_" + i,
-            name: email.split("@")[0].replace(/[._-]/g, " "),
-            email: email,
-            clue: clue,
-            code: code,
-            stage: "Bulb · Discovery",
-            time: "Just now",
-            unread: true,
-            thread: [{ dir: "in", time: "Just now", text: "(Sent via the public client portal.)" }]
-          });
-        }
-      }
-    } catch (_) {}
-    return fromStorage.concat(SEED_INBOX);
-  }
-
-  let inbox = [];
-  let activeMsgId = null;
-
-  function renderStaffInbox() {
-    inbox = loadInbox();
-    const listEl = document.getElementById("msgList");
-    const countEl = document.getElementById("msgCount");
-    listEl.innerHTML = "";
-    countEl.textContent = String(inbox.length).padStart(2, "0");
-
-    inbox.forEach(function (m) {
-      const item = document.createElement("div");
-      item.className = "msg" + (m.unread ? " unread" : "");
-      item.setAttribute("data-id", m.id);
-      const preview = m.thread[m.thread.length - 1].text;
-      item.innerHTML =
-        '<div class="msg-top"><span class="msg-name">' + m.name + '</span><span class="msg-time">' + m.time + '</span></div>' +
-        '<div class="msg-preview">' + preview + '</div>' +
-        '<div class="msg-meta"><span class="pill">' + m.stage + '</span><span>' + m.code + '</span></div>';
-      item.addEventListener("click", function () { openThread(m.id); });
-      listEl.appendChild(item);
-    });
-
-    if (!activeMsgId && inbox.length) openThread(inbox[0].id);
-    else if (activeMsgId) openThread(activeMsgId);
-  }
-
-  function openThread(id) {
-    activeMsgId = id;
-    const msg = inbox.find(function (m) { return m.id === id; });
-    document.querySelectorAll(".msg").forEach(function (el) {
-      el.classList.toggle("active", el.getAttribute("data-id") === id);
-      if (el.getAttribute("data-id") === id) el.classList.remove("unread");
-    });
-    if (msg) msg.unread = false;
-
-    const thread = document.getElementById("staffThread");
-    thread.classList.remove("empty");
-    if (!msg) {
-      thread.innerHTML = "Select a message to begin.";
-      thread.classList.add("empty");
-      return;
-    }
-    thread.innerHTML =
-      '<div class="thread-head">' +
-        '<div><h3>' + msg.name + '</h3><div class="sub">' + msg.email + ' · clue: ' + msg.clue + ' · ' + msg.code + '</div></div>' +
-        '<span class="pill">' + msg.stage + '</span>' +
-      '</div>' +
-      '<div class="thread-body" id="threadBody"></div>' +
-      '<div class="thread-compose">' +
-        '<textarea id="composeBox" placeholder="Write a reply…"></textarea>' +
-        '<button id="sendReply">Send</button>' +
-      '</div>';
-
-    const bodyEl = document.getElementById("threadBody");
-    msg.thread.forEach(function (b) {
-      const bub = document.createElement("div");
-      bub.className = "bubble " + b.dir;
-      bub.innerHTML = b.text + '<span class="time">' + b.time + '</span>';
-      bodyEl.appendChild(bub);
-    });
-    bodyEl.scrollTop = bodyEl.scrollHeight;
-
-    document.getElementById("sendReply").addEventListener("click", function () {
-      const box = document.getElementById("composeBox");
-      const txt = (box.value || "").trim();
-      if (!txt) return;
-      msg.thread.push({ dir: "out", time: "Just now", text: txt });
-      box.value = "";
-      openThread(id);
-    });
-  }
+  // (Tracking-code system + hidden staff console removed — the public-facing
+  //  connection is now a single clean contact form, handled above.)
 })();
 </script>
 
