@@ -1509,6 +1509,48 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Staff gate — password overlay */
+.staff-gate {
+  position: fixed; inset: 0; z-index: 290;
+  display: none; align-items: center; justify-content: center;
+  background: rgba(21, 20, 15, 0.55);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  padding: 24px;
+}
+.staff-gate.open { display: flex; animation: staffPanelIn 0.35s var(--ease); }
+.staff-gate-card {
+  width: 100%; max-width: 360px;
+  background: var(--paper);
+  border: 1px solid var(--line-soft);
+  border-radius: 20px;
+  padding: 32px 28px;
+  display: flex; flex-direction: column; gap: 12px;
+  box-shadow: 0 40px 80px -40px rgba(21, 20, 15, 0.5);
+  text-align: center;
+}
+.staff-gate-card .eyebrow { justify-content: center; }
+.staff-gate-card h3 { font-family: var(--serif); font-weight: 400; margin: 2px 0 0; }
+.staff-gate-lede { font-size: 13px; color: var(--ink-mute); margin: 0 0 6px; }
+.staff-gate-card input {
+  font-family: var(--sans); font-size: 15px; text-align: center;
+  color: var(--ink); background: var(--cream-soft);
+  border: 1px solid var(--line); border-radius: 12px;
+  padding: 13px 16px; outline: none; letter-spacing: 0.04em;
+  transition: border-color 0.25s var(--ease);
+}
+.staff-gate-card input:focus { border-color: var(--aster-deep); }
+.staff-gate-msg { min-height: 1em; font-size: 12px; color: #a14a3a; margin: 2px 0 0; }
+.staff-gate-close {
+  background: none; border: 0; color: var(--ink-mute);
+  font-size: 12px; letter-spacing: 0.06em; cursor: pointer; padding: 4px;
+  transition: color 0.25s;
+}
+.staff-gate-close:hover { color: var(--ink); }
+.staff-empty { padding: 24px; color: #807961; font-size: 13px; font-style: italic; }
+.thread-tools { margin-top: 18px; }
+.thread-tools .btn { color: #c4a5e0; border-color: #3a3528; }
+.thread-tools .btn:hover { background: #2a271e; border-color: #c4a5e0; color: #ede5cf; }
+
 /* ============================================================
    STAFF PANEL — full screen overlay
    ============================================================ */
@@ -3529,6 +3571,39 @@ body.in-bloom-zoom .ambient-petals {
   </aside>
 </div>
 
+<!-- ============ STAFF (hidden — open with #staff, gated by code) ============ -->
+<div class="staff-gate" id="staffGate" aria-hidden="true">
+  <form class="staff-gate-card" id="staffGateForm" novalidate>
+    <span class="eyebrow">Aster · Staff</span>
+    <h3 class="h-sm">Authorisation</h3>
+    <p class="staff-gate-lede">Enter the staff code to view enquiries.</p>
+    <input id="staffGatePass" type="password" placeholder="Staff code" autocomplete="off" spellcheck="false" />
+    <button type="submit" class="btn btn-primary btn-block">Enter console</button>
+    <p class="staff-gate-msg" id="staffGateMsg" role="alert"></p>
+    <button type="button" class="staff-gate-close" id="staffGateClose">Cancel</button>
+  </form>
+</div>
+
+<div class="staff-panel" id="staffPanel" aria-hidden="true">
+  <div class="staff-bar">
+    <div class="staff-bar-left">
+      <img src="logo.png" width="28" height="28" alt="" decoding="async" />
+      <div><span class="word">Aster <span class="sub">Staff Console</span></span></div>
+    </div>
+    <div class="staff-bar-right">
+      <span class="staff-status"><span class="dot"></span> Local inbox</span>
+      <button class="staff-logout" id="staffLogout">Sign out</button>
+    </div>
+  </div>
+  <div class="staff-main">
+    <aside class="staff-list">
+      <div class="staff-list-head"><span class="label">Enquiries</span><span class="count" id="msgCount">00</span></div>
+      <div id="msgList"></div>
+    </aside>
+    <section class="staff-thread empty" id="staffThread">Select an enquiry to read.</section>
+  </div>
+</div>
+
 <!-- ============ FOOTER ============ -->
 <footer>
   <div class="footer-inner">
@@ -4122,6 +4197,13 @@ body.in-bloom-zoom .ambient-petals {
         return;
       }
 
+      // Keep a local copy for the in-site staff view (this browser only).
+      try {
+        const box = JSON.parse(localStorage.getItem("aster-inbox") || "[]");
+        box.push({ name: name, email: email, phone: val("phone"), message: message, time: Date.now() });
+        localStorage.setItem("aster-inbox", JSON.stringify(box.slice(-200)));
+      } catch (_) {}
+
       // No key yet → open the visitor's email app, prefilled.
       if (!CONFIGURED) {
         const phone = val("phone");
@@ -4221,8 +4303,123 @@ body.in-bloom-zoom .ambient-petals {
     }, { passive: true });
   })();
 
-  // (Tracking-code system + hidden staff console removed — the public-facing
-  //  connection is now a single clean contact form, handled above.)
+  // ===== Hidden staff console (open via #staff, gated by code) =====
+  (function staffConsole() {
+    const STAFF_CODE = "Ast3r_m4de";
+    const gate = document.getElementById("staffGate");
+    const gateForm = document.getElementById("staffGateForm");
+    const gatePass = document.getElementById("staffGatePass");
+    const gateMsg = document.getElementById("staffGateMsg");
+    const gateClose = document.getElementById("staffGateClose");
+    const panel = document.getElementById("staffPanel");
+    const listEl = document.getElementById("msgList");
+    const countEl = document.getElementById("msgCount");
+    const threadEl = document.getElementById("staffThread");
+    const logoutBtn = document.getElementById("staffLogout");
+    if (!gate || !panel || !gateForm) return;
+
+    function esc(s) {
+      return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+      });
+    }
+    function fmt(t) {
+      try { return new Date(t).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+      catch (_) { return ""; }
+    }
+    function load() {
+      let a = [];
+      try { a = JSON.parse(localStorage.getItem("aster-inbox") || "[]"); } catch (_) {}
+      return Array.isArray(a) ? a.slice().reverse() : [];
+    }
+
+    function showGate(on) {
+      gate.classList.toggle("open", on);
+      gate.setAttribute("aria-hidden", on ? "false" : "true");
+      if (on) { gateMsg.textContent = ""; setTimeout(function () { gatePass.focus(); }, 120); }
+    }
+    function openPanel() {
+      panel.classList.add("open");
+      panel.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+      render();
+    }
+    function closePanel() {
+      panel.classList.remove("open");
+      panel.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+      if (location.hash === "#staff") history.replaceState(null, "", location.pathname + location.search);
+    }
+
+    function render() {
+      const inbox = load();
+      countEl.textContent = String(inbox.length).padStart(2, "0");
+      listEl.innerHTML = "";
+      if (!inbox.length) {
+        listEl.innerHTML = '<div class="staff-empty">No enquiries on this device yet.</div>';
+        threadEl.className = "staff-thread empty";
+        threadEl.textContent = "Messages sent from this browser appear here.";
+        return;
+      }
+      inbox.forEach(function (m, i) {
+        const item = document.createElement("div");
+        item.className = "msg";
+        item.setAttribute("data-i", String(i));
+        item.innerHTML =
+          '<div class="msg-top"><span class="msg-name">' + esc(m.name) + '</span><span class="msg-time">' + fmt(m.time) + '</span></div>' +
+          '<div class="msg-preview">' + esc(m.message) + '</div>' +
+          '<div class="msg-meta"><span>' + esc(m.email) + '</span></div>';
+        item.addEventListener("click", function () { openMsg(i); });
+        listEl.appendChild(item);
+      });
+      openMsg(0);
+    }
+    function openMsg(i) {
+      const inbox = load();
+      const m = inbox[i];
+      if (!m) return;
+      listEl.querySelectorAll(".msg").forEach(function (el) {
+        el.classList.toggle("active", Number(el.getAttribute("data-i")) === i);
+      });
+      threadEl.className = "staff-thread";
+      const replyHref = "mailto:" + encodeURIComponent(m.email) +
+        "?subject=" + encodeURIComponent("Re: your note to Aster Studio") +
+        "&body=" + encodeURIComponent("\n\n— Aster Studio");
+      threadEl.innerHTML =
+        '<div class="thread-head"><div><h3>' + esc(m.name) + '</h3>' +
+        '<div class="sub">' + esc(m.email) + (m.phone ? " · " + esc(m.phone) : "") + " · " + fmt(m.time) + '</div></div></div>' +
+        '<div class="thread-body"><div class="bubble in">' + esc(m.message) + '</div>' +
+        '<div class="thread-tools"><a class="btn btn-ghost" href="' + replyHref + '">Reply by email</a></div></div>';
+    }
+
+    gateForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if ((gatePass.value || "") === STAFF_CODE) {
+        gatePass.value = "";
+        showGate(false);
+        openPanel();
+      } else {
+        gateMsg.textContent = "Incorrect code.";
+        gatePass.select();
+      }
+    });
+    if (gateClose) gateClose.addEventListener("click", function () {
+      showGate(false);
+      if (location.hash === "#staff") history.replaceState(null, "", location.pathname + location.search);
+    });
+    if (logoutBtn) logoutBtn.addEventListener("click", closePanel);
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Escape") return;
+      if (panel.classList.contains("open")) closePanel();
+      else if (gate.classList.contains("open")) showGate(false);
+    });
+
+    function checkHash() {
+      if (location.hash === "#staff" && !panel.classList.contains("open")) showGate(true);
+    }
+    window.addEventListener("hashchange", checkHash);
+    checkHash();
+  })();
 })();
 </script>
 
