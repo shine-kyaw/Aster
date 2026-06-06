@@ -1107,10 +1107,10 @@ button:focus-visible,
 .btn-block.btn-ghost:hover { border-color: var(--ink); background: transparent; color: var(--ink); }
 
 /* ===== Clean contact form ===== */
-.connect-intro { text-align: center; max-width: 34ch; margin: 0 auto 44px; }
+.connect-intro { text-align: center; margin: 0 auto 44px; }
 .connect-intro .eyebrow { justify-content: center; margin-bottom: 20px; letter-spacing: 0.14em; }
-.connect-intro h2 { margin: 0 0 16px; }
-.connect-intro .lede { margin: 0 auto; color: var(--ink-soft); }
+.connect-intro h2 { margin: 0 0 16px; }   /* full width so the <br> gives a clean 2-line title, not a crammed wrap */
+.connect-intro .lede { margin: 16px auto 0; max-width: 42ch; color: var(--ink-soft); }
 .connect-form {
   background: transparent;   /* no card box looming behind the fields */
   border: 0;
