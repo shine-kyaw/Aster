@@ -1161,6 +1161,31 @@ button:focus-visible,
 .track-result .track-status { font-family: var(--sans); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--aster-deep); margin-bottom: 8px; }
 .track-result .track-msg { font-family: var(--serif); font-style: italic; font-size: 17px; color: var(--ink); line-height: 1.5; }
 .track-result .track-meta { margin-top: 8px; font-size: 12px; color: var(--ink-mute); }
+.track-preview {
+  display: inline-flex; align-items: center; margin-top: 14px;
+  font-family: var(--sans); font-size: 13px; letter-spacing: 0.02em;
+  color: var(--aster-deep); border-bottom: 1px solid var(--aster-light);
+  padding-bottom: 2px; transition: border-color 0.25s var(--ease), color 0.25s;
+}
+.track-preview:hover { color: var(--ink); border-color: var(--aster-deep); }
+
+/* Staff: attach status + in-progress site link to a tracking code */
+.thread-edit { margin-top: 20px; padding-top: 18px; border-top: 1px solid #2a271e; display: flex; flex-direction: column; gap: 14px; }
+.thread-field { display: flex; flex-direction: column; gap: 6px; }
+.thread-field span { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #807961; }
+.thread-field input {
+  font-family: var(--sans); font-size: 14px; color: #ede5cf;
+  background: #14130d; border: 1px solid #2a271e; border-radius: 10px;
+  padding: 11px 13px; outline: none; transition: border-color 0.25s;
+}
+.thread-field input:focus { border-color: #c4a5e0; }
+.thread-edit-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.thread-edit-row .btn { padding: 12px 18px; font-size: 13px; }
+.thread-edit-row .btn-primary { background: #c4a5e0; color: #15140f; box-shadow: none; }
+.thread-edit-row .btn-primary:hover { background: #d8c0eb; transform: translateY(-1px); box-shadow: none; }
+.thread-edit-row .btn-ghost { color: #c4a5e0; border-color: #3a3528; }
+.thread-edit-row .btn-ghost:hover { background: #2a271e; border-color: #c4a5e0; color: #ede5cf; }
+.thread-saved { font-size: 12px; color: #9fd39a; }
 .hp-field { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .form-status {
   margin: 16px 2px 0;
@@ -3594,7 +3619,7 @@ body.in-bloom-zoom .ambient-petals {
             <strong class="receipt-code" id="receiptCode">—</strong>
             <span class="receipt-note">Keep this — enter it under “Track your message” to follow the conversation.</span>
           </div>
-          <p class="connect-alt">Prefer email? <a href="mailto:shine10012013@gmail.com">shine10012013@gmail.com</a></p>
+          <p class="connect-alt">Prefer email? <a href="https://mail.google.com/mail/?view=cm&fs=1&to=shine10012013@gmail.com" target="_blank" rel="noopener">shine10012013@gmail.com</a></p>
         </form>
       </div>
 
@@ -3701,7 +3726,7 @@ body.in-bloom-zoom .ambient-petals {
       <h5>Connect</h5>
       <a href="#connect">Begin a message</a>
       <a href="#connect">Retrieve a code</a>
-      <a href="mailto:shine10012013@gmail.com">shine10012013@gmail.com</a>
+      <a href="https://mail.google.com/mail/?view=cm&fs=1&to=shine10012013@gmail.com" target="_blank" rel="noopener">shine10012013@gmail.com</a>
     </div>
     <div class="footer-col">
       <h5>Elsewhere</h5>
@@ -4270,14 +4295,15 @@ body.in-bloom-zoom .ambient-petals {
         if (receiptCodeEl) receiptCodeEl.textContent = code;
         if (receiptEl) receiptEl.hidden = false;
 
-        // No key yet → open the visitor's email app, prefilled.
+        // No key yet → open a Gmail compose window, prefilled.
         if (!CONFIGURED) {
           const phone = val("phone");
           const body = "Tracking code: " + code + "\nName: " + name + "\nEmail: " + email + (phone ? "\nPhone: " + phone : "") + "\n\n" + message;
-          window.location.href = "mailto:" + CONTACT_EMAIL +
-            "?subject=" + encodeURIComponent("New enquiry " + code) +
+          const gmail = "https://mail.google.com/mail/?view=cm&fs=1&to=" + encodeURIComponent(CONTACT_EMAIL) +
+            "&su=" + encodeURIComponent("New enquiry " + code) +
             "&body=" + encodeURIComponent(body);
-          setStatus("ok", "Sent — your tracking code is " + code + ".");
+          window.open(gmail, "_blank", "noopener");
+          setStatus("ok", "Sent — your tracking code is " + code + ". (A Gmail window opened to finish sending.)");
           form.reset();
           return;
         }
@@ -4325,6 +4351,9 @@ body.in-bloom-zoom .ambient-petals {
         trackResult.innerHTML =
           '<div class="track-status">' + esc(found.status || "Received") + '</div>' +
           '<div class="track-msg">“' + esc(found.message) + '”</div>' +
+          (found.previewUrl
+            ? '<a class="track-preview" href="' + esc(found.previewUrl) + '" target="_blank" rel="noopener">View your site in progress ↗</a>'
+            : '') +
           '<div class="track-meta">Sent ' + new Date(found.time).toLocaleDateString() + ' · we reply within a day.</div>';
       } else {
         trackResult.className = "track-result is-error";
@@ -4429,6 +4458,14 @@ body.in-bloom-zoom .ambient-petals {
       try { a = JSON.parse(localStorage.getItem("aster-inbox") || "[]"); } catch (_) {}
       return Array.isArray(a) ? a.slice().reverse() : [];
     }
+    function updateByCode(code, patch) {
+      try {
+        const box = JSON.parse(localStorage.getItem("aster-inbox") || "[]");
+        for (let i = 0; i < box.length; i++) { if ((box[i].code || "") === code) { Object.assign(box[i], patch); break; } }
+        localStorage.setItem("aster-inbox", JSON.stringify(box));
+      } catch (_) {}
+    }
+    let activeI = 0;
 
     function showGate(on) {
       gate.classList.toggle("open", on);
@@ -4469,25 +4506,48 @@ body.in-bloom-zoom .ambient-petals {
         item.addEventListener("click", function () { openMsg(i); });
         listEl.appendChild(item);
       });
-      openMsg(0);
+      openMsg(activeI < inbox.length ? activeI : 0);
     }
     function openMsg(i) {
       const inbox = load();
       const m = inbox[i];
       if (!m) return;
+      activeI = i;
       listEl.querySelectorAll(".msg").forEach(function (el) {
         el.classList.toggle("active", Number(el.getAttribute("data-i")) === i);
       });
       threadEl.className = "staff-thread";
-      const replyHref = "mailto:" + encodeURIComponent(m.email) +
-        "?subject=" + encodeURIComponent("Re: your note to Aster Studio") +
+      const replyHref = "https://mail.google.com/mail/?view=cm&fs=1&to=" + encodeURIComponent(m.email) +
+        "&su=" + encodeURIComponent("Re: your note to Aster Studio" + (m.code ? " (" + m.code + ")" : "")) +
         "&body=" + encodeURIComponent("\n\n— Aster Studio");
       threadEl.innerHTML =
         '<div class="thread-head"><div><h3>' + esc(m.name) + '</h3>' +
         '<div class="sub">' + esc(m.email) + (m.phone ? " · " + esc(m.phone) : "") + " · " + fmt(m.time) + (m.code ? " · " + esc(m.code) : "") + '</div></div>' +
         (m.code ? '<span class="pill">' + esc(m.code) + '</span>' : '') + '</div>' +
         '<div class="thread-body"><div class="bubble in">' + esc(m.message) + '</div>' +
-        '<div class="thread-tools"><a class="btn btn-ghost" href="' + replyHref + '">Reply by email</a></div></div>';
+          '<div class="thread-edit">' +
+            '<label class="thread-field"><span>Status</span>' +
+              '<input id="stStatus" type="text" value="' + esc(m.status || "") + '" placeholder="e.g. Budding · in design" /></label>' +
+            '<label class="thread-field"><span>Website in progress — link the client can open</span>' +
+              '<input id="stPreview" type="url" value="' + esc(m.previewUrl || "") + '" placeholder="https://preview.yoursite.com/…" /></label>' +
+            '<div class="thread-edit-row">' +
+              '<button class="btn btn-primary" id="stSave">Save to ' + esc(m.code || "code") + '</button>' +
+              '<a class="btn btn-ghost" href="' + replyHref + '" target="_blank" rel="noopener">Reply by email</a>' +
+              '<span class="thread-saved" id="stSaved"></span>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      const saveBtn = document.getElementById("stSave");
+      if (saveBtn) saveBtn.addEventListener("click", function () {
+        updateByCode(m.code, {
+          status: (document.getElementById("stStatus").value || "").trim(),
+          previewUrl: (document.getElementById("stPreview").value || "").trim()
+        });
+        const saved = document.getElementById("stSaved");
+        if (saved) { saved.textContent = "Saved ✓"; setTimeout(function () { saved.textContent = ""; }, 2200); }
+        activeI = i;
+        render();
+      });
     }
 
     gateForm.addEventListener("submit", function (e) {
