@@ -1179,6 +1179,12 @@ button:focus-visible,
   padding: 11px 13px; outline: none; transition: border-color 0.25s;
 }
 .thread-field input:focus { border-color: #c4a5e0; }
+.thread-select {
+  font-family: var(--sans); font-size: 14px; color: #ede5cf;
+  background: #14130d; border: 1px solid #2a271e; border-radius: 10px;
+  padding: 11px 13px; outline: none; transition: border-color 0.25s;
+}
+.thread-select:focus { border-color: #c4a5e0; }
 .thread-edit-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .thread-edit-row .btn { padding: 12px 18px; font-size: 13px; }
 .thread-edit-row .btn-primary { background: #c4a5e0; color: #15140f; box-shadow: none; }
@@ -3753,6 +3759,74 @@ body.in-bloom-zoom .ambient-petals {
 </div>
 
 <!-- ============================================================
+     FIREBASE (compat) — cross-device tracking portal store.
+     Until a real config is pasted below, everything falls back to
+     this-browser localStorage, so the site always works.
+     ============================================================ -->
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script>
+  /* ▼▼ PASTE YOUR FIREBASE CONFIG HERE (replace every "REPLACE_ME") ▼▼
+     console.firebase.google.com → your project → Project settings → Your apps (</>).
+     Filling these in switches the portal from this-browser-only to a real
+     cross-device database (staff sees every enquiry; clients track from anywhere). */
+  window.ASTER_FB_CONFIG = {
+    apiKey: "REPLACE_ME",
+    authDomain: "REPLACE_ME",
+    projectId: "REPLACE_ME",
+    storageBucket: "REPLACE_ME",
+    messagingSenderId: "REPLACE_ME",
+    appId: "REPLACE_ME"
+  };
+  /* ▲▲ END FIREBASE CONFIG ▲▲ */
+  window.__asterDB = null;
+  (function () {
+    try {
+      var c = window.ASTER_FB_CONFIG;
+      var ok = c && c.apiKey && c.apiKey.indexOf("REPLACE") !== 0 && c.projectId && c.projectId.indexOf("REPLACE") !== 0;
+      if (ok && window.firebase && firebase.initializeApp) {
+        firebase.initializeApp(c);
+        window.__asterDB = firebase.firestore();
+      }
+    } catch (e) { window.__asterDB = null; }
+  })();
+
+  // Unified data store — Firestore when configured, else this-browser localStorage.
+  window.AsterStore = (function () {
+    var COL = "threads";
+    function rnd4() { var s = ""; for (var i = 0; i < 4; i++) s += "ABCDEFGHJKLMNPQRSTUVWXYZ23456789".charAt(Math.floor(Math.random() * 32)); return s; }
+    function genCode() { return "ASTER-" + rnd4() + "-" + rnd4(); }
+    function db() { return window.__asterDB; }
+    function lsGet() { try { return JSON.parse(localStorage.getItem("aster-inbox") || "[]") || []; } catch (e) { return []; } }
+    function lsSet(a) { try { localStorage.setItem("aster-inbox", JSON.stringify(a.slice(-300))); } catch (e) {} }
+    return {
+      mode: function () { return db() ? "firebase" : "local"; },
+      genCode: genCode,
+      create: async function (rec) {
+        var code = rec.code || genCode();
+        rec.code = code; if (!rec.time) rec.time = Date.now();
+        if (db()) { await db().collection(COL).doc(code).set(rec); }
+        else { var a = lsGet(); a.push(rec); lsSet(a); }
+        return code;
+      },
+      get: async function (code) {
+        code = (code || "").trim(); if (!code) return null;
+        if (db()) { var d = await db().collection(COL).doc(code.toUpperCase()).get(); return d.exists ? d.data() : null; }
+        var a = lsGet(); for (var i = a.length - 1; i >= 0; i--) { if ((a[i].code || "").toUpperCase() === code.toUpperCase()) return a[i]; } return null;
+      },
+      list: async function () {
+        if (db()) { var q = await db().collection(COL).orderBy("time", "desc").get(); var out = []; q.forEach(function (doc) { out.push(doc.data()); }); return out; }
+        return lsGet().slice().reverse();
+      },
+      update: async function (code, patch) {
+        if (db()) { await db().collection(COL).doc(code).update(patch); return; }
+        var a = lsGet(); for (var i = 0; i < a.length; i++) { if ((a[i].code || "") === code) { Object.assign(a[i], patch); break; } } lsSet(a);
+      }
+    };
+  })();
+</script>
+
+<!-- ============================================================
      SCRIPT BLOCK A — VANILLA (no dependencies)
      Runs no matter what. Reveals, petal-building, forms.
      ============================================================ -->
@@ -4263,15 +4337,6 @@ body.in-bloom-zoom .ambient-petals {
     const receiptCodeEl = document.getElementById("receiptCode");
 
     function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
-    function rnd4() { let s = ""; for (let i = 0; i < 4; i++) s += "ABCDEFGHJKLMNPQRSTUVWXYZ23456789".charAt(Math.floor(Math.random() * 32)); return s; }
-    function genCode() { return "ASTER-" + rnd4() + "-" + rnd4(); }
-    function saveLocal(rec) {
-      try {
-        const box = JSON.parse(localStorage.getItem("aster-inbox") || "[]");
-        box.push(rec);
-        localStorage.setItem("aster-inbox", JSON.stringify(box.slice(-200)));
-      } catch (_) {}
-    }
 
     // ---- Send a message
     if (form) {
@@ -4286,49 +4351,42 @@ body.in-bloom-zoom .ambient-petals {
         e.preventDefault();
         const bot = form.querySelector('[name="botcheck"]');
         if (bot && bot.checked) return;                       // honeypot tripped
-        const name = val("name"), email = val("email"), message = val("message");
+        const name = val("name"), email = val("email"), message = val("message"), phone = val("phone");
         if (!name || !email || !message) { setStatus("error", "Please add your name, email, and a short message."); return; }
         if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { setStatus("error", "That email doesn't look quite right — mind checking it?"); return; }
 
-        const code = genCode();
-        saveLocal({ code: code, name: name, email: email, phone: val("phone"), message: message, time: Date.now(), status: "New · received" });
-        if (receiptCodeEl) receiptCodeEl.textContent = code;
-        if (receiptEl) receiptEl.hidden = false;
-
-        // No key yet → open a Gmail compose window, prefilled.
-        if (!CONFIGURED) {
-          const phone = val("phone");
-          const body = "Tracking code: " + code + "\nName: " + name + "\nEmail: " + email + (phone ? "\nPhone: " + phone : "") + "\n\n" + message;
-          const gmail = "https://mail.google.com/mail/?view=cm&fs=1&to=" + encodeURIComponent(CONTACT_EMAIL) +
-            "&su=" + encodeURIComponent("New enquiry " + code) +
-            "&body=" + encodeURIComponent(body);
-          window.open(gmail, "_blank", "noopener");
-          setStatus("ok", "Sent — your tracking code is " + code + ". (A Gmail window opened to finish sending.)");
-          form.reset();
+        setSending(true);
+        setStatus("pending", "Sending…");
+        let code = "";
+        try {
+          // 1) save the enquiry to the portal (Firestore if configured, else local)
+          code = await window.AsterStore.create({
+            name: name, email: email, phone: phone, message: message,
+            status: "Received", previewUrl: "", time: Date.now()
+          });
+        } catch (err) {
+          setSending(false);
+          setStatus("error", "Couldn't save your message — please email " + CONTACT_EMAIL + ".");
           return;
         }
 
-        setSending(true);
-        setStatus("pending", "Sending your message…");
-        try {
-          const data = Object.fromEntries(new FormData(form));
-          data.tracking_code = code;
-          const res = await fetch("https://api.web3forms.com/submit", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "Accept": "application/json" },
-            body: JSON.stringify(data)
-          });
-          const out = await res.json();
-          if (out && out.success) {
-            setStatus("ok", "Thank you, " + name.split(" ")[0] + " — your message is on its way. Tracking code: " + code + ".");
-            form.reset();
-          } else {
-            setStatus("error", (out && out.message) || ("Something went wrong — please email " + CONTACT_EMAIL + "."));
-          }
-        } catch (err) {
-          setStatus("error", "Network hiccup — please email us at " + CONTACT_EMAIL + ".");
-        } finally {
-          setSending(false);
+        if (receiptCodeEl) receiptCodeEl.textContent = code;
+        if (receiptEl) receiptEl.hidden = false;
+        setStatus("ok", "Thank you, " + name.split(" ")[0] + " — your message is in. Your tracking code is " + code + ".");
+        form.reset();
+        setSending(false);
+
+        // 2) optional email ping to the studio via Web3Forms (silent, if a key is set)
+        if (CONFIGURED) {
+          try {
+            const data = { access_key: KEY, subject: "New enquiry " + code, from_name: "Aster site",
+              name: name, email: email, phone: phone, message: message, tracking_code: code };
+            fetch("https://api.web3forms.com/submit", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "Accept": "application/json" },
+              body: JSON.stringify(data)
+            }).catch(function () {});
+          } catch (_) {}
         }
       });
     }
@@ -4337,15 +4395,13 @@ body.in-bloom-zoom .ambient-petals {
     const trackBtn = document.getElementById("trackBtn");
     const trackInput = document.getElementById("trackCode");
     const trackResult = document.getElementById("trackResult");
-    function doTrack() {
+    async function doTrack() {
       if (!trackResult || !trackInput) return;
       const code = (trackInput.value || "").trim().toUpperCase();
       if (!code) { trackResult.className = "track-result is-error"; trackResult.textContent = "Enter your tracking code above."; return; }
+      trackResult.className = "track-result"; trackResult.textContent = "Looking…";
       let found = null;
-      try {
-        const box = JSON.parse(localStorage.getItem("aster-inbox") || "[]");
-        for (let i = box.length - 1; i >= 0; i--) { if ((box[i].code || "").toUpperCase() === code) { found = box[i]; break; } }
-      } catch (_) {}
+      try { found = await window.AsterStore.get(code); } catch (_) {}
       if (found) {
         trackResult.className = "track-result is-ok";
         trackResult.innerHTML =
@@ -4357,7 +4413,7 @@ body.in-bloom-zoom .ambient-petals {
           '<div class="track-meta">Sent ' + new Date(found.time).toLocaleDateString() + ' · we reply within a day.</div>';
       } else {
         trackResult.className = "track-result is-error";
-        trackResult.textContent = "No message found for that code on this device.";
+        trackResult.textContent = "No message found for that code.";
       }
     }
     if (trackBtn) trackBtn.addEventListener("click", doTrack);
@@ -4453,19 +4509,9 @@ body.in-bloom-zoom .ambient-petals {
       try { return new Date(t).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
       catch (_) { return ""; }
     }
-    function load() {
-      let a = [];
-      try { a = JSON.parse(localStorage.getItem("aster-inbox") || "[]"); } catch (_) {}
-      return Array.isArray(a) ? a.slice().reverse() : [];
-    }
-    function updateByCode(code, patch) {
-      try {
-        const box = JSON.parse(localStorage.getItem("aster-inbox") || "[]");
-        for (let i = 0; i < box.length; i++) { if ((box[i].code || "") === code) { Object.assign(box[i], patch); break; } }
-        localStorage.setItem("aster-inbox", JSON.stringify(box));
-      } catch (_) {}
-    }
-    let activeI = 0;
+    var STATUSES = ["Received", "In design", "In build", "In review", "Launched"];
+    var cache = [];
+    var activeI = 0;
 
     function showGate(on) {
       gate.classList.toggle("open", on);
@@ -4485,17 +4531,18 @@ body.in-bloom-zoom .ambient-petals {
       if (location.hash === "#staff") history.replaceState(null, "", location.pathname + location.search);
     }
 
-    function render() {
-      const inbox = load();
-      countEl.textContent = String(inbox.length).padStart(2, "0");
+    async function render() {
+      listEl.innerHTML = '<div class="staff-empty">Loading…</div>';
+      try { cache = await window.AsterStore.list(); } catch (_) { cache = []; }
+      countEl.textContent = String(cache.length).padStart(2, "0");
       listEl.innerHTML = "";
-      if (!inbox.length) {
-        listEl.innerHTML = '<div class="staff-empty">No enquiries on this device yet.</div>';
+      if (!cache.length) {
+        listEl.innerHTML = '<div class="staff-empty">No enquiries yet' + (window.AsterStore.mode() === "local" ? " on this device" : "") + '.</div>';
         threadEl.className = "staff-thread empty";
-        threadEl.textContent = "Messages sent from this browser appear here.";
+        threadEl.textContent = "New enquiries appear here.";
         return;
       }
-      inbox.forEach(function (m, i) {
+      cache.forEach(function (m, i) {
         const item = document.createElement("div");
         item.className = "msg";
         item.setAttribute("data-i", String(i));
@@ -4506,11 +4553,16 @@ body.in-bloom-zoom .ambient-petals {
         item.addEventListener("click", function () { openMsg(i); });
         listEl.appendChild(item);
       });
-      openMsg(activeI < inbox.length ? activeI : 0);
+      openMsg(activeI < cache.length ? activeI : 0);
+    }
+    function statusSelect(cur) {
+      var opts = "";
+      if (cur && STATUSES.indexOf(cur) === -1) opts += '<option selected>' + esc(cur) + '</option>';
+      STATUSES.forEach(function (s) { opts += '<option' + (s === cur ? ' selected' : '') + '>' + s + '</option>'; });
+      return '<select id="stStatus" class="thread-select">' + opts + '</select>';
     }
     function openMsg(i) {
-      const inbox = load();
-      const m = inbox[i];
+      const m = cache[i];
       if (!m) return;
       activeI = i;
       listEl.querySelectorAll(".msg").forEach(function (el) {
@@ -4526,8 +4578,7 @@ body.in-bloom-zoom .ambient-petals {
         (m.code ? '<span class="pill">' + esc(m.code) + '</span>' : '') + '</div>' +
         '<div class="thread-body"><div class="bubble in">' + esc(m.message) + '</div>' +
           '<div class="thread-edit">' +
-            '<label class="thread-field"><span>Status</span>' +
-              '<input id="stStatus" type="text" value="' + esc(m.status || "") + '" placeholder="e.g. Budding · in design" /></label>' +
+            '<label class="thread-field"><span>Status</span>' + statusSelect(m.status || "Received") + '</label>' +
             '<label class="thread-field"><span>Website in progress — link the client can open</span>' +
               '<input id="stPreview" type="url" value="' + esc(m.previewUrl || "") + '" placeholder="https://preview.yoursite.com/…" /></label>' +
             '<div class="thread-edit-row">' +
@@ -4538,14 +4589,19 @@ body.in-bloom-zoom .ambient-petals {
           '</div>' +
         '</div>';
       const saveBtn = document.getElementById("stSave");
-      if (saveBtn) saveBtn.addEventListener("click", function () {
-        updateByCode(m.code, {
-          status: (document.getElementById("stStatus").value || "").trim(),
-          previewUrl: (document.getElementById("stPreview").value || "").trim()
-        });
+      if (saveBtn) saveBtn.addEventListener("click", async function () {
+        saveBtn.disabled = true;
         const saved = document.getElementById("stSaved");
-        if (saved) { saved.textContent = "Saved ✓"; setTimeout(function () { saved.textContent = ""; }, 2200); }
-        activeI = i;
+        try {
+          await window.AsterStore.update(m.code, {
+            status: (document.getElementById("stStatus").value || "").trim(),
+            previewUrl: (document.getElementById("stPreview").value || "").trim()
+          });
+          if (saved) { saved.textContent = "Saved ✓"; setTimeout(function () { saved.textContent = ""; }, 2200); }
+        } catch (_) {
+          if (saved) saved.textContent = "Save failed — try again";
+        }
+        saveBtn.disabled = false;
         render();
       });
     }
