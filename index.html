@@ -1436,6 +1436,7 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
   display: flex;
   align-items: stretch;
   justify-content: flex-end;
+  overflow: hidden;   /* clip the off-screen (translateX 110%) drawer so it doesn't widen the page */
 }
 .overlay.open {
   pointer-events: auto;
@@ -2706,9 +2707,10 @@ body.in-bloom-zoom .ambient-petals {
   .aurora { display: none; }
 }
 
-/* Lift content above aurora */
-.nav, .hero, .section, footer, .cta-section, .marquee-section,
-.overlay, .staff-panel { position: relative; z-index: 2; }
+/* Lift content above aurora (NOT the fixed overlays — they keep position:fixed
+   and already sit above via their own z-index; forcing relative here put the
+   off-screen drawer into flow and widened the page). */
+.nav, .hero, .section, footer, .cta-section, .marquee-section { position: relative; z-index: 2; }
 
 /* ============================================================
    MTK · Ambient drifting petals
