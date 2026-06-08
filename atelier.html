@@ -360,6 +360,13 @@ img, svg { display: block; max-width: 100%; }
 .case-foliyo .preview {
   background: linear-gradient(135deg, #e6d7f1 0%, var(--aster) 55%, var(--aster-deep) 100%);
 }
+.case-foliyo .preview svg.deco {
+  position: absolute; inset: auto; top: 50%; left: 50%;
+  width: clamp(78px, 24%, 132px); height: auto;
+  transform: translate(-50%, -50%); opacity: 1;
+  filter: drop-shadow(0 14px 30px rgba(5, 7, 14, 0.45));
+}
+.case-foliyo:hover .preview svg.deco { transform: translate(-50%, -50%) scale(1.06); opacity: 1; }
 .case-gateway .preview { background: linear-gradient(135deg, #0b1026 0%, #1f2a63 50%, #45357f 100%); }
 .case-gateway .preview svg.deco { color: #d9e0ff; opacity: 0.5; }
 .case-gateway .body .row strong { color: #5a6ae0; }
@@ -580,16 +587,12 @@ img, svg { display: block; max-width: 100%; }
       <!-- Foliyo — real, live project. Featured full-width, links out. -->
       <a class="case case-foliyo" href="https://foliyo-delta.vercel.app/" target="_blank" rel="noopener noreferrer">
         <div class="preview">
-          <svg class="deco" viewBox="-100 -100 200 200" fill="currentColor"><g>
-            <ellipse cx="0" cy="-50" rx="7" ry="30"/>
-            <ellipse cx="0" cy="-50" rx="7" ry="30" transform="rotate(45)"/>
-            <ellipse cx="0" cy="-50" rx="7" ry="30" transform="rotate(90)"/>
-            <ellipse cx="0" cy="-50" rx="7" ry="30" transform="rotate(135)"/>
-            <ellipse cx="0" cy="-50" rx="7" ry="30" transform="rotate(180)"/>
-            <ellipse cx="0" cy="-50" rx="7" ry="30" transform="rotate(225)"/>
-            <ellipse cx="0" cy="-50" rx="7" ry="30" transform="rotate(270)"/>
-            <ellipse cx="0" cy="-50" rx="7" ry="30" transform="rotate(315)"/>
-          </g></svg>
+          <svg class="deco" viewBox="0 0 40 40" fill="none">
+            <rect width="40" height="40" rx="10" fill="#05070e"/>
+            <rect x="7"  y="24" width="7" height="9"  rx="2.5" fill="#06b6d4" opacity="0.45"/>
+            <rect x="17" y="17" width="7" height="16" rx="2.5" fill="#06b6d4" opacity="0.72"/>
+            <rect x="27" y="9"  width="7" height="24" rx="2.5" fill="#06b6d4"/>
+          </svg>
           <span class="label">Live · Fintech web app</span>
         </div>
         <div class="body">
@@ -599,43 +602,24 @@ img, svg { display: block; max-width: 100%; }
         </div>
       </a>
 
-      <!-- Gateway Orbital Explorer — real, live project. Featured full-width, links out. -->
-      <a class="case case-foliyo case-gateway" href="https://gateway-orbital-explorer.vercel.app/" target="_blank" rel="noopener noreferrer">
+      <!-- Gateway Orbital Explorer — real, live project. Small grid card, links out. -->
+      <a class="case case-gateway" href="https://gateway-orbital-explorer.vercel.app/" target="_blank" rel="noopener noreferrer">
         <div class="preview">
           <svg class="deco" viewBox="-100 -100 200 200" fill="none" stroke="currentColor">
-            <ellipse cx="0" cy="0" rx="80" ry="30" stroke-width="2.4"/>
-            <ellipse cx="0" cy="0" rx="58" ry="58" stroke-width="2.4" transform="rotate(28)"/>
-            <ellipse cx="0" cy="0" rx="42" ry="74" stroke-width="2.4" transform="rotate(-22)"/>
+            <ellipse cx="0" cy="0" rx="80" ry="30" stroke-width="3"/>
+            <ellipse cx="0" cy="0" rx="56" ry="56" stroke-width="3" transform="rotate(28)"/>
+            <ellipse cx="0" cy="0" rx="40" ry="74" stroke-width="3" transform="rotate(-22)"/>
             <circle cx="0" cy="0" r="11" fill="currentColor" stroke="none"/>
-            <circle cx="80" cy="0" r="5.5" fill="currentColor" stroke="none"/>
+            <circle cx="80" cy="0" r="6" fill="currentColor" stroke="none"/>
           </svg>
           <span class="label">Live · Orbital physics sim</span>
         </div>
         <div class="body">
-          <h3>Gateway Orbital Explorer — <em>physics sim</em></h3>
-          <p>A mission-control simulator for NASA's Lunar Gateway — dial in the insertion velocity and watch the orbit hold or drift across 30 simulated days, with live readouts and a research log.</p>
-          <div class="row"><span>Live site · Artemis</span><strong>Launch the explorer ↗</strong></div>
+          <h3>Gateway Orbital — <em>physics sim</em></h3>
+          <p>A mission-control simulator for NASA's Lunar Gateway orbit.</p>
+          <div class="row"><span>Live · Artemis</span><strong>Launch ↗</strong></div>
         </div>
       </a>
-
-      <article class="case case-b">
-        <div class="preview">
-          <svg class="deco" viewBox="-100 -100 200 200" fill="currentColor"><g>
-            <ellipse cx="0" cy="-50" rx="8" ry="32"/>
-            <ellipse cx="0" cy="-50" rx="8" ry="32" transform="rotate(60)"/>
-            <ellipse cx="0" cy="-50" rx="8" ry="32" transform="rotate(120)"/>
-            <ellipse cx="0" cy="-50" rx="8" ry="32" transform="rotate(180)"/>
-            <ellipse cx="0" cy="-50" rx="8" ry="32" transform="rotate(240)"/>
-            <ellipse cx="0" cy="-50" rx="8" ry="32" transform="rotate(300)"/>
-          </g></svg>
-          <span class="label">Personal portfolio</span>
-        </div>
-        <div class="body">
-          <h3>Lila Okonkwo — <em>photographer</em></h3>
-          <p>A slow, image-led portfolio with three quiet chapters of work.</p>
-          <div class="row"><span>Lagos · 2026</span><strong>+4 commissions</strong></div>
-        </div>
-      </article>
 
       <article class="case case-c">
         <div class="preview">
