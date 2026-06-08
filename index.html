@@ -2043,6 +2043,12 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
   background: linear-gradient(135deg, #e6d7f1 0%, var(--aster) 55%, var(--aster-deep) 100%);
 }
 .case-foliyo .body .row strong { color: var(--aster-deep); }
+/* Gateway Orbital Explorer — same featured layout, a deep-space preview. */
+.case-gateway .preview {
+  background: linear-gradient(135deg, #0b1026 0%, #1f2a63 50%, #45357f 100%);
+}
+.case-gateway .preview svg.deco { color: #d9e0ff; opacity: 0.5; }
+.case-gateway .body .row strong { color: #5a6ae0; }
 @media (min-width: 760px) {
   .case-foliyo { flex-direction: row; align-items: stretch; }
   .case-foliyo .preview { flex: 0 0 46%; aspect-ratio: auto; min-height: 280px; }
@@ -3383,6 +3389,25 @@ body.in-bloom-zoom .ambient-petals {
           <h3>Foliyo — <em>stock app</em></h3>
           <p>Markets found nowhere else — a clean, real-time stock &amp; portfolio tracker that keeps them calm, focused, and legible.</p>
           <div class="row"><span>Live site</span><strong>Visit Foliyo ↗</strong></div>
+        </div>
+      </a>
+
+      <!-- Gateway Orbital Explorer — real, live project. Featured full-width, links out. -->
+      <a class="case case-foliyo case-gateway" href="https://gateway-orbital-explorer.vercel.app/" target="_blank" rel="noopener noreferrer">
+        <div class="preview">
+          <svg class="deco" viewBox="-100 -100 200 200" fill="none" stroke="currentColor">
+            <ellipse cx="0" cy="0" rx="80" ry="30" stroke-width="2.4"/>
+            <ellipse cx="0" cy="0" rx="58" ry="58" stroke-width="2.4" transform="rotate(28)"/>
+            <ellipse cx="0" cy="0" rx="42" ry="74" stroke-width="2.4" transform="rotate(-22)"/>
+            <circle cx="0" cy="0" r="11" fill="currentColor" stroke="none"/>
+            <circle cx="80" cy="0" r="5.5" fill="currentColor" stroke="none"/>
+          </svg>
+          <span class="label">Live · Orbital physics sim</span>
+        </div>
+        <div class="body">
+          <h3>Gateway Orbital Explorer — <em>physics sim</em></h3>
+          <p>A mission-control simulator for NASA's Lunar Gateway — dial in the insertion velocity and watch the orbit hold or drift across 30 simulated days, with live readouts and a research log.</p>
+          <div class="row"><span>Live site · Artemis</span><strong>Launch the explorer ↗</strong></div>
         </div>
       </a>
 
