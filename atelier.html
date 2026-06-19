@@ -438,6 +438,11 @@ img, svg { display: block; max-width: 100%; }
   .final-cta-section h2 { font-size: clamp(32px, 9vw, 48px); }
   .final-cta-btn { min-height: 48px; }
 }
+@media (max-width: 480px) {
+  :root { --pad-x: 18px; }
+  .hero h1 { font-size: clamp(30px, 12vw, 46px); }
+  .nav-brand { font-size: 16px; }
+}
 @media (hover: none) {
   .make-card:hover, .case:hover { transform: none; box-shadow: none; }
 }
@@ -743,5 +748,6 @@ img, svg { display: block; max-width: 100%; }
 })();
 </script>
 
+<script src="aster-chat.js"></script>
 </body>
 </html>
