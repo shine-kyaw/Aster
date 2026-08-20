@@ -294,10 +294,19 @@ img, svg { display: block; max-width: 100%; }
 
 /* ========== Sites created — portfolio grid ========== */
 .sites { background: var(--cream-soft); border-top: 1px solid var(--line-soft); }
+/* Featured Foliyo card spans the row; the three remaining projects
+   fill an even row beneath it, so no card is left orphaned. */
 .sites-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: clamp(20px, 2.4vw, 28px);
+}
+/* At two columns the 1 + 3 split would leave a lone card on the last
+   row, so the final card widens to fill it. */
+@media (min-width: 861px) and (max-width: 1080px) {
+  .sites-grid { grid-template-columns: 1fr 1fr; }
+  .sites-grid > .case:last-child { grid-column: 1 / -1; }
+  .sites-grid > .case:last-child .preview { aspect-ratio: 24 / 7; }
 }
 @media (max-width: 860px) { .sites-grid { grid-template-columns: 1fr; } }
 .case {
@@ -315,10 +324,6 @@ img, svg { display: block; max-width: 100%; }
   border-color: var(--aster-light);
 }
 .case .preview { aspect-ratio: 16 / 10; position: relative; overflow: hidden; }
-.case-a .preview { background: radial-gradient(circle at 30% 40%, #d6b8e8 0%, var(--aster) 50%, var(--aster-deep) 100%); }
-.case-b .preview { background: linear-gradient(160deg, #f5d5c5 0%, var(--bloom) 50%, var(--bloom-deep) 100%); }
-.case-c .preview { background: linear-gradient(135deg, #dfe9d4 0%, var(--sage-soft) 60%, var(--sage) 100%); }
-.case-d .preview { background: linear-gradient(150deg, #e6d7f1 0%, var(--aster-light) 55%, var(--aster) 100%); }
 .case .preview svg.deco {
   position: absolute; inset: 0;
   width: 100%; height: 100%;
@@ -335,7 +340,14 @@ img, svg { display: block; max-width: 100%; }
   padding: 6px 12px; border-radius: 999px;
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
 }
-.case .body { padding: 26px 28px 28px; }
+/* Let the body absorb the leftover height so each card's meta row
+   lands on the same baseline, whatever the length of its copy. */
+.case .body {
+  padding: 26px 28px 28px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
 .case .body h3 {
   font-family: var(--serif); font-weight: 400;
   font-size: 24px; line-height: 1.15; letter-spacing: -0.01em;
@@ -346,6 +358,7 @@ img, svg { display: block; max-width: 100%; }
 .case .body .row {
   display: flex; justify-content: space-between; align-items: baseline;
   font-size: 12px; color: var(--ink-mute);
+  margin-top: auto;
   border-top: 1px solid var(--line-soft); padding-top: 14px;
   font-family: var(--mono); letter-spacing: 0.04em;
 }
@@ -371,6 +384,18 @@ img, svg { display: block; max-width: 100%; }
 .case-gateway .preview { background: linear-gradient(135deg, #0b1026 0%, #1f2a63 50%, #45357f 100%); }
 .case-gateway .preview svg.deco { color: #d9e0ff; opacity: 0.5; }
 .case-gateway .body .row strong { color: #5a6ae0; }
+
+/* Power Tagun — deep engineering navy with the firm's signal red. */
+.case-tagun .preview { background: linear-gradient(145deg, #07111d 0%, #101f33 55%, #1b2c44 100%); }
+.case-tagun .preview svg.deco { color: #e51d24; opacity: 0.62; }
+.case-tagun:hover .preview svg.deco { opacity: 0.85; }
+.case-tagun .body .row strong { color: #c0161c; }
+
+/* KTK — woven-sack umber and the group's red. */
+.case-ktk .preview { background: linear-gradient(150deg, #16130e 0%, #33291d 55%, #4d3d29 100%); }
+.case-ktk .preview svg.deco { color: #e8e2d6; opacity: 0.5; }
+.case-ktk:hover .preview svg.deco { opacity: 0.72; }
+.case-ktk .body .row strong { color: #b1341f; }
 @media (min-width: 760px) {
   .case-foliyo { flex-direction: row; align-items: stretch; }
   .case-foliyo .preview { flex: 0 0 46%; aspect-ratio: auto; min-height: 280px; }
@@ -460,6 +485,39 @@ img, svg { display: block; max-width: 100%; }
 @keyframes veilCover { from { opacity: 0; } to { opacity: 1; } }
 .page-veil.covering { animation: veilCover 0.45s var(--ease) forwards; pointer-events: all; }
 @media (prefers-reduced-motion: reduce) { .page-veil { display: none; } }
+
+/* ========== Keyboard focus ==========
+   This page previously had no focus styling at all, so anyone
+   tabbing through it had no idea where they were. Only :focus-visible
+   is styled, so a mouse click never paints a ring. */
+:where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--aster-deep);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+.case:focus-visible {
+  outline: 2px solid var(--aster-deep);
+  outline-offset: 4px;
+  border-radius: 22px;
+}
+/* The dark final-CTA panel needs a light ring to stay visible. */
+.final-cta-section a:focus-visible,
+.final-cta-btn:focus-visible {
+  outline: 2px solid var(--aster-light);
+  outline-offset: 3px;
+}
+
+/* Respect a reduced-motion preference across the page, not just the
+   page veil — the cards, reveals, and hover lifts all animate. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .case:hover { transform: none; }
+}
 </style>
 </head>
 <body>
@@ -627,64 +685,38 @@ img, svg { display: block; max-width: 100%; }
         </div>
       </a>
 
-      <article class="case case-c">
+      <!-- Power Tagun Engineering — real, live project. Links out. -->
+      <a class="case case-tagun" href="https://powertagun.vercel.app/" target="_blank" rel="noopener noreferrer">
         <div class="preview">
-          <svg class="deco" viewBox="-100 -100 200 200" fill="currentColor"><g>
-            <ellipse cx="0" cy="-45" rx="6" ry="28"/>
-            <ellipse cx="0" cy="-45" rx="6" ry="28" transform="rotate(72)"/>
-            <ellipse cx="0" cy="-45" rx="6" ry="28" transform="rotate(144)"/>
-            <ellipse cx="0" cy="-45" rx="6" ry="28" transform="rotate(216)"/>
-            <ellipse cx="0" cy="-45" rx="6" ry="28" transform="rotate(288)"/>
-          </g></svg>
-          <span class="label">Small brand &amp; web</span>
+          <svg class="deco" viewBox="-100 -100 200 200" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 -66 L-30 -4 H2 L-14 66 L34 -2 H0 Z" fill="currentColor" stroke="none"/>
+            <path d="M-72 -46 V46" opacity="0.5"/>
+            <path d="M72 -46 V46" opacity="0.5"/>
+          </svg>
+          <span class="label">Live · Electrical engineering</span>
         </div>
         <div class="body">
-          <h3>Tiller Studio — <em>brand consultancy</em></h3>
-          <p>Quiet, slow-scroll editorial site for a three-person studio in Berlin.</p>
-          <div class="row"><span>Berlin · 2026</span><strong>4× avg. session</strong></div>
+          <h3>Power Tagun — <em>engineering group</em></h3>
+          <p>A corporate site for a Myanmar electrical engineering firm — product supply, procurement, and EPC turnkey delivery, with a project-reference library buyers can actually search.</p>
+          <div class="row"><span>Live · Myanmar</span><strong>Visit Power Tagun ↗</strong></div>
         </div>
-      </article>
+      </a>
 
-      <article class="case case-a">
+      <!-- KTK / Kaung Thu Kha — real, live project. Links out. -->
+      <a class="case case-ktk" href="https://ktk-umber.vercel.app/" target="_blank" rel="noopener noreferrer">
         <div class="preview">
-          <svg class="deco" viewBox="-100 -100 200 200" fill="currentColor"><g>
-            <ellipse cx="0" cy="-48" rx="7" ry="30"/>
-            <ellipse cx="0" cy="-48" rx="7" ry="30" transform="rotate(45)"/>
-            <ellipse cx="0" cy="-48" rx="7" ry="30" transform="rotate(90)"/>
-            <ellipse cx="0" cy="-48" rx="7" ry="30" transform="rotate(135)"/>
-            <ellipse cx="0" cy="-48" rx="7" ry="30" transform="rotate(180)"/>
-            <ellipse cx="0" cy="-48" rx="7" ry="30" transform="rotate(225)"/>
-            <ellipse cx="0" cy="-48" rx="7" ry="30" transform="rotate(270)"/>
-            <ellipse cx="0" cy="-48" rx="7" ry="30" transform="rotate(315)"/>
-          </g></svg>
-          <span class="label">Full brand system</span>
+          <svg class="deco" viewBox="-100 -100 200 200" fill="none" stroke="currentColor" stroke-width="9">
+            <path d="M-78 -54 H78 M-78 -18 H78 M-78 18 H78 M-78 54 H78" opacity="0.55"/>
+            <path d="M-54 -78 V78 M-18 -78 V78 M18 -78 V78 M54 -78 V78" opacity="0.9"/>
+          </svg>
+          <span class="label">Live · Industrial packaging</span>
         </div>
         <div class="body">
-          <h3>Marisol Vineyards — <em>family estate</em></h3>
-          <p>A complete identity and multi-page site for a third-generation winery.</p>
-          <div class="row"><span>Mendoza · 2026</span><strong>+38% enquiries</strong></div>
+          <h3>KTK — <em>woven packaging</em></h3>
+          <p>A manufacturer site for Kaung Thu Kha Group: cement sacks and PP woven bags off European STARLINGER lines, told through the weave itself.</p>
+          <div class="row"><span>Live · Myanmar</span><strong>Visit KTK ↗</strong></div>
         </div>
-      </article>
-
-      <article class="case case-d">
-        <div class="preview">
-          <svg class="deco" viewBox="-100 -100 200 200" fill="currentColor"><g>
-            <ellipse cx="0" cy="-46" rx="6" ry="26"/>
-            <ellipse cx="0" cy="-46" rx="6" ry="26" transform="rotate(51)"/>
-            <ellipse cx="0" cy="-46" rx="6" ry="26" transform="rotate(102)"/>
-            <ellipse cx="0" cy="-46" rx="6" ry="26" transform="rotate(153)"/>
-            <ellipse cx="0" cy="-46" rx="6" ry="26" transform="rotate(204)"/>
-            <ellipse cx="0" cy="-46" rx="6" ry="26" transform="rotate(255)"/>
-            <ellipse cx="0" cy="-46" rx="6" ry="26" transform="rotate(306)"/>
-          </g></svg>
-          <span class="label">Product launch</span>
-        </div>
-        <div class="body">
-          <h3>Møss &amp; Ember — <em>ceramics</em></h3>
-          <p>A bespoke launch site with scroll-led storytelling for a slow-craft ceramics line.</p>
-          <div class="row"><span>Copenhagen · 2026</span><strong>Sold out in 9 days</strong></div>
-        </div>
-      </article>
+      </a>
 
     </div>
   </div>

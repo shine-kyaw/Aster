@@ -1124,6 +1124,12 @@ button:focus-visible,
   margin: 0 auto;
   align-items: start;
 }
+/* With the tracking panel switched off, the form centres on its own
+   rather than sitting in a lopsided half-empty grid. */
+.connect-grid--solo {
+  grid-template-columns: minmax(0, 560px);
+  justify-content: center;
+}
 .connect-col--track { position: relative; }
 .connect-col--track::before {
   content: "";
@@ -1150,7 +1156,7 @@ button:focus-visible,
   display: flex;
   flex-direction: column;
   gap: 4px;
-  animation: staffSlide 0.4s var(--ease);
+  animation: receiptIn 0.4s var(--ease);
 }
 .contact-receipt .receipt-label { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--aster-deep); }
 .contact-receipt .receipt-code { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 20px; letter-spacing: 0.04em; color: var(--ink); }
@@ -1169,29 +1175,6 @@ button:focus-visible,
 }
 .track-preview:hover { color: var(--ink); border-color: var(--aster-deep); }
 
-/* Staff: attach status + in-progress site link to a tracking code */
-.thread-edit { margin-top: 20px; padding-top: 18px; border-top: 1px solid #2a271e; display: flex; flex-direction: column; gap: 14px; }
-.thread-field { display: flex; flex-direction: column; gap: 6px; }
-.thread-field span { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #807961; }
-.thread-field input {
-  font-family: var(--sans); font-size: 14px; color: #ede5cf;
-  background: #14130d; border: 1px solid #2a271e; border-radius: 10px;
-  padding: 11px 13px; outline: none; transition: border-color 0.25s;
-}
-.thread-field input:focus { border-color: #c4a5e0; }
-.thread-select {
-  font-family: var(--sans); font-size: 14px; color: #ede5cf;
-  background: #14130d; border: 1px solid #2a271e; border-radius: 10px;
-  padding: 11px 13px; outline: none; transition: border-color 0.25s;
-}
-.thread-select:focus { border-color: #c4a5e0; }
-.thread-edit-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.thread-edit-row .btn { padding: 12px 18px; font-size: 13px; }
-.thread-edit-row .btn-primary { background: #c4a5e0; color: #15140f; box-shadow: none; }
-.thread-edit-row .btn-primary:hover { background: #d8c0eb; transform: translateY(-1px); box-shadow: none; }
-.thread-edit-row .btn-ghost { color: #c4a5e0; border-color: #3a3528; }
-.thread-edit-row .btn-ghost:hover { background: #2a271e; border-color: #c4a5e0; color: #ede5cf; }
-.thread-saved { font-size: 12px; color: #9fd39a; }
 .hp-field { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .form-status {
   margin: 16px 2px 0;
@@ -1203,9 +1186,22 @@ button:focus-visible,
 .form-status.is-ok { color: var(--sage-deep); }
 .form-status.is-error { color: #a14a3a; }
 .form-status.is-pending { color: var(--ink-mute); }
+/* A failed send offers mailto links inline — keep them legible against
+   the error colour rather than inheriting it. */
+.form-status a {
+  color: var(--aster-deep);
+  border-bottom: 1px solid rgba(94, 61, 138, 0.4);
+  transition: border-color 0.25s var(--ease);
+}
+.form-status a:hover { border-color: var(--aster-deep); }
+@keyframes receiptIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 .connect-alt { text-align: center; margin: 22px 0 0; font-size: 13px; color: var(--ink-mute); }
 .connect-alt a { color: var(--aster-deep); border-bottom: 1px solid transparent; transition: border-color 0.25s var(--ease); }
 .connect-alt a:hover { border-color: var(--aster-deep); }
+.connect-alt .alt-sep { color: var(--ink-mute); opacity: 0.7; margin: 0 2px; }
 
 .track-feedback {
   margin-top: 18px;
@@ -1562,353 +1558,6 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
 
 .drawer .btn { align-self: flex-start; margin-top: auto; }
 
-/* ============================================================
-   Staff layer 2 input
-   ============================================================ */
-.staff-layer2 {
-  border: 1px solid var(--aster-deep);
-  background: rgba(196, 165, 224, 0.12);
-  padding: 14px 16px;
-  border-radius: 12px;
-  margin-top: 4px;
-  animation: staffSlide 0.45s var(--ease);
-}
-.staff-layer2 label {
-  color: var(--aster-deep);
-}
-.staff-layer2 input { border-bottom-color: var(--aster-deep); }
-@keyframes staffSlide {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Staff gate — password overlay */
-.staff-gate {
-  position: fixed; inset: 0; z-index: 290;
-  display: none; align-items: center; justify-content: center;
-  background: rgba(21, 20, 15, 0.55);
-  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  padding: 24px;
-}
-.staff-gate.open { display: flex; animation: staffPanelIn 0.35s var(--ease); }
-.staff-gate-card {
-  width: 100%; max-width: 360px;
-  background: var(--paper);
-  border: 1px solid var(--line-soft);
-  border-radius: 20px;
-  padding: 32px 28px;
-  display: flex; flex-direction: column; gap: 12px;
-  box-shadow: 0 40px 80px -40px rgba(21, 20, 15, 0.5);
-  text-align: center;
-}
-.staff-gate-card .eyebrow { justify-content: center; }
-.staff-gate-card h3 { font-family: var(--serif); font-weight: 400; margin: 2px 0 0; }
-.staff-gate-lede { font-size: 13px; color: var(--ink-mute); margin: 0 0 6px; }
-.staff-gate-card input {
-  font-family: var(--sans); font-size: 15px; text-align: center;
-  color: var(--ink); background: var(--cream-soft);
-  border: 1px solid var(--line); border-radius: 12px;
-  padding: 13px 16px; outline: none; letter-spacing: 0.04em;
-  transition: border-color 0.25s var(--ease);
-}
-.staff-gate-card input:focus { border-color: var(--aster-deep); }
-.staff-gate-msg { min-height: 1em; font-size: 12px; color: #a14a3a; margin: 2px 0 0; }
-.staff-gate-close {
-  background: none; border: 0; color: var(--ink-mute);
-  font-size: 12px; letter-spacing: 0.06em; cursor: pointer; padding: 4px;
-  transition: color 0.25s;
-}
-.staff-gate-close:hover { color: var(--ink); }
-.staff-empty { padding: 24px; color: #807961; font-size: 13px; font-style: italic; }
-.thread-tools { margin-top: 18px; }
-.thread-tools .btn { color: #c4a5e0; border-color: #3a3528; }
-.thread-tools .btn:hover { background: #2a271e; border-color: #c4a5e0; color: #ede5cf; }
-
-/* ============================================================
-   STAFF PANEL — full screen overlay
-   ============================================================ */
-.staff-panel {
-  position: fixed;
-  inset: 0;
-  z-index: 300;
-  background: #15140f;
-  color: #ede5cf;
-  display: none;
-  flex-direction: column;
-  font-family: var(--sans);
-}
-.staff-panel.open { display: flex; animation: staffPanelIn 0.5s var(--ease); }
-@keyframes staffPanelIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-.staff-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 18px clamp(20px, 4vw, 40px);
-  background: #100f0a;
-  border-bottom: 1px solid #2a271e;
-}
-.staff-bar-left {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-.staff-bar-left svg { width: 28px; height: 28px; }
-.staff-bar-left .word {
-  font-family: var(--serif);
-  font-size: 18px;
-  letter-spacing: 0.02em;
-}
-.staff-bar-left .sub {
-  font-size: 10px;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  color: #c4a5e0;
-  margin-left: 6px;
-}
-.staff-bar-right {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-.staff-status {
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #c4a5e0;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-.staff-status .dot {
-  width: 7px; height: 7px;
-  border-radius: 999px;
-  background: #c4a5e0;
-  box-shadow: 0 0 8px #c4a5e0;
-  animation: dotPulse 1.8s ease-in-out infinite;
-}
-@keyframes dotPulse {
-  50% { opacity: 0.4; transform: scale(0.85); }
-}
-.staff-logout {
-  padding: 8px 16px;
-  border-radius: 999px;
-  border: 1px solid #3a3528;
-  background: transparent;
-  color: #ede5cf;
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  cursor: pointer;
-  transition: background 0.25s, border-color 0.25s;
-}
-.staff-logout:hover { background: #2a271e; border-color: #c4a5e0; }
-
-.staff-main {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 360px 1fr;
-  overflow: hidden;
-}
-@media (max-width: 760px) {
-  .staff-main { grid-template-columns: 1fr; }
-  .staff-thread.empty { display: none; }
-}
-.staff-list {
-  border-right: 1px solid #2a271e;
-  overflow-y: auto;
-  background: #14130d;
-}
-.staff-list-head {
-  padding: 22px 24px 14px;
-  border-bottom: 1px solid #2a271e;
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-}
-.staff-list-head .label {
-  font-size: 11px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: #c4a5e0;
-}
-.staff-list-head .count {
-  font-family: var(--serif);
-  font-size: 22px;
-  color: #ede5cf;
-}
-.msg {
-  padding: 18px 24px;
-  border-bottom: 1px solid #1f1d15;
-  cursor: pointer;
-  transition: background 0.25s, padding-left 0.3s var(--ease);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.msg:hover { background: #1a1810; padding-left: 28px; }
-.msg.active { background: #1d1b12; border-left: 2px solid #c4a5e0; }
-.msg-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 12px;
-}
-.msg-name {
-  font-weight: 500;
-  color: #ede5cf;
-  letter-spacing: 0.01em;
-}
-.msg-time { color: #807961; }
-.msg-preview {
-  font-size: 13px;
-  color: #b3ad97;
-  line-height: 1.4;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-.msg-meta {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #807961;
-}
-.msg-meta .pill {
-  padding: 3px 8px;
-  border: 1px solid #3a3528;
-  border-radius: 999px;
-  color: #c4a5e0;
-}
-.msg.unread .msg-name::after {
-  content: "•";
-  color: #c4a5e0;
-  margin-left: 8px;
-  font-size: 18px;
-  line-height: 0;
-}
-
-.staff-thread {
-  padding: 28px clamp(20px, 4vw, 48px) 28px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  position: relative;
-}
-.staff-thread.empty {
-  align-items: center;
-  justify-content: center;
-  color: #807961;
-  font-style: italic;
-}
-.thread-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  padding-bottom: 18px;
-  border-bottom: 1px solid #2a271e;
-  margin-bottom: 22px;
-}
-.thread-head h3 {
-  font-family: var(--serif);
-  font-size: clamp(24px, 2.4vw, 32px);
-  letter-spacing: -0.01em;
-  margin: 0 0 4px;
-  color: #ede5cf;
-  font-weight: 400;
-}
-.thread-head .sub {
-  font-size: 12px;
-  color: #807961;
-}
-.thread-head .pill {
-  padding: 4px 12px;
-  border: 1px solid #c4a5e0;
-  border-radius: 999px;
-  color: #c4a5e0;
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-.thread-body {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding-right: 4px;
-}
-.bubble {
-  max-width: 70%;
-  padding: 14px 18px;
-  border-radius: 16px;
-  font-size: 14px;
-  line-height: 1.5;
-  background: #1d1b12;
-  border: 1px solid #2a271e;
-}
-.bubble.in {
-  align-self: flex-start;
-  background: #1d1b12;
-  color: #ede5cf;
-}
-.bubble.out {
-  align-self: flex-end;
-  background: #c4a5e0;
-  color: #15140f;
-  border-color: #c4a5e0;
-}
-.bubble .time {
-  display: block;
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  margin-top: 6px;
-  opacity: 0.7;
-}
-
-.thread-compose {
-  margin-top: 18px;
-  padding-top: 18px;
-  border-top: 1px solid #2a271e;
-  display: flex;
-  gap: 12px;
-}
-.thread-compose textarea {
-  flex: 1;
-  resize: none;
-  font-family: var(--sans);
-  font-size: 14px;
-  color: #ede5cf;
-  background: #14130d;
-  border: 1px solid #2a271e;
-  border-radius: 12px;
-  padding: 12px 14px;
-  outline: none;
-  transition: border-color 0.25s;
-  min-height: 56px;
-  max-height: 140px;
-}
-.thread-compose textarea:focus { border-color: #c4a5e0; }
-.thread-compose button {
-  align-self: flex-end;
-  padding: 14px 22px;
-  border-radius: 999px;
-  background: #c4a5e0;
-  color: #15140f;
-  font-weight: 500;
-  font-size: 13px;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  border: 0;
-  transition: background 0.25s, transform 0.25s var(--ease);
-}
-.thread-compose button:hover { background: #d8c0eb; transform: translateY(-1px); }
 
 /* ============================================================
    Process — pin compensation
@@ -1945,10 +1594,20 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
   margin: 16px 0 0;
 }
 .work .head h2 em { color: var(--aster-deep); font-style: italic; }
+/* Three columns so the featured Foliyo card (which spans the full row)
+   is followed by an even row of the three remaining projects — four
+   real projects divide as 1 + 3, never leaving one card orphaned. */
 .work-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: clamp(20px, 2.4vw, 28px);
+}
+/* At two columns the 1 + 3 split would leave a lone card on the last
+   row, so the final card widens to fill it. */
+@media (min-width: 881px) and (max-width: 1080px) {
+  .work-grid { grid-template-columns: 1fr 1fr; }
+  .work-grid > .case:last-child { grid-column: 1 / -1; }
+  .work-grid > .case:last-child .preview { aspect-ratio: 24 / 7; }
 }
 @media (max-width: 880px) { .work-grid { grid-template-columns: 1fr; } }
 .case {
@@ -1972,9 +1631,6 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
   position: relative;
   overflow: hidden;
 }
-.case-a .preview { background: radial-gradient(circle at 30% 40%, #d6b8e8 0%, var(--aster) 50%, var(--aster-deep) 100%); }
-.case-b .preview { background: linear-gradient(160deg, #f5d5c5 0%, var(--bloom) 50%, var(--bloom-deep) 100%); }
-.case-c .preview { background: linear-gradient(135deg, #dfe9d4 0%, var(--sage-soft) 60%, var(--sage) 100%); }
 .case .preview svg.deco {
   position: absolute;
   inset: 0;
@@ -2000,7 +1656,14 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
-.case .body { padding: 26px 28px 28px; }
+/* Let the body absorb the leftover height so each card's meta row
+   lands on the same baseline, whatever the length of its copy. */
+.case .body {
+  padding: 26px 28px 28px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
 .case .body h3 {
   font-family: var(--serif);
   font-weight: 400;
@@ -2022,6 +1685,7 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
 .case .body .row {
   display: flex;
   justify-content: space-between;
+  margin-top: auto;
   border-top: 1px solid var(--line-soft);
   padding-top: 14px;
   font-family: var(--sans);
@@ -2057,6 +1721,19 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
 }
 .case-gateway .preview svg.deco { color: #d9e0ff; opacity: 0.5; }
 .case-gateway .body .row strong { color: #5a6ae0; }
+
+/* Power Tagun — deep engineering navy with the firm's signal red. */
+.case-tagun .preview { background: linear-gradient(145deg, #07111d 0%, #101f33 55%, #1b2c44 100%); }
+.case-tagun .preview svg.deco { color: #e51d24; opacity: 0.62; }
+.case-tagun:hover .preview svg.deco { opacity: 0.85; }
+.case-tagun .body .row strong { color: #c0161c; }
+
+/* KTK — woven-sack umber and the group's red. */
+.case-ktk .preview { background: linear-gradient(150deg, #16130e 0%, #33291d 55%, #4d3d29 100%); }
+.case-ktk .preview svg.deco { color: #e8e2d6; opacity: 0.5; }
+.case-ktk:hover .preview svg.deco { opacity: 0.72; }
+.case-ktk .body .row strong { color: #b1341f; }
+
 @media (min-width: 760px) {
   .case-foliyo { flex-direction: row; align-items: stretch; }
   .case-foliyo .preview { flex: 0 0 46%; aspect-ratio: auto; min-height: 280px; }
@@ -3412,25 +3089,38 @@ body.in-bloom-zoom .ambient-petals {
           <div class="row"><span>Live · Artemis</span><strong>Launch ↗</strong></div>
         </div>
       </a>
-      <article class="case case-c">
+      <!-- Power Tagun Engineering — real, live project. Links out. -->
+      <a class="case case-tagun" href="https://powertagun.vercel.app/" target="_blank" rel="noopener noreferrer">
         <div class="preview">
-          <svg class="deco" viewBox="-100 -100 200 200" fill="currentColor">
-            <g>
-              <ellipse cx="0" cy="-45" rx="6" ry="28"/>
-              <ellipse cx="0" cy="-45" rx="6" ry="28" transform="rotate(72)"/>
-              <ellipse cx="0" cy="-45" rx="6" ry="28" transform="rotate(144)"/>
-              <ellipse cx="0" cy="-45" rx="6" ry="28" transform="rotate(216)"/>
-              <ellipse cx="0" cy="-45" rx="6" ry="28" transform="rotate(288)"/>
-            </g>
+          <svg class="deco" viewBox="-100 -100 200 200" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 -66 L-30 -4 H2 L-14 66 L34 -2 H0 Z" fill="currentColor" stroke="none"/>
+            <path d="M-72 -46 V46" opacity="0.5"/>
+            <path d="M72 -46 V46" opacity="0.5"/>
           </svg>
-          <span class="label">Small brand &amp; web</span>
+          <span class="label">Live · Electrical engineering</span>
         </div>
         <div class="body">
-          <h3>Tiller Studio — <em>brand consultancy</em></h3>
-          <p>Quiet, slow-scroll editorial site for a three-person studio in Berlin.</p>
-          <div class="row"><span>Berlin · 2026</span><strong>4× avg. session</strong></div>
+          <h3>Power Tagun — <em>engineering group</em></h3>
+          <p>Product supply, procurement, and EPC turnkey delivery for a Myanmar electrical engineering firm.</p>
+          <div class="row"><span>Live · Myanmar</span><strong>Visit ↗</strong></div>
         </div>
-      </article>
+      </a>
+
+      <!-- KTK / Kaung Thu Kha — real, live project. Links out. -->
+      <a class="case case-ktk" href="https://ktk-umber.vercel.app/" target="_blank" rel="noopener noreferrer">
+        <div class="preview">
+          <svg class="deco" viewBox="-100 -100 200 200" fill="none" stroke="currentColor" stroke-width="9">
+            <path d="M-78 -54 H78 M-78 -18 H78 M-78 18 H78 M-78 54 H78" opacity="0.55"/>
+            <path d="M-54 -78 V78 M-18 -78 V78 M18 -78 V78 M54 -78 V78" opacity="0.9"/>
+          </svg>
+          <span class="label">Live · Industrial packaging</span>
+        </div>
+        <div class="body">
+          <h3>KTK — <em>woven packaging</em></h3>
+          <p>Cement sacks and PP woven bags for Myanmar's industrial packaging manufacturer, told through the weave.</p>
+          <div class="row"><span>Live · Myanmar</span><strong>Visit ↗</strong></div>
+        </div>
+      </a>
     </div>
 
     <!-- Closing line into the full Atelier — the studio's products,
@@ -3588,12 +3278,9 @@ body.in-bloom-zoom .ambient-petals {
       <div class="connect-col">
         <span class="eyebrow connect-col-label">Send a message</span>
         <form class="connect-form" id="contactForm" novalidate>
-          <!-- DELIVERY: paste your free Web3Forms access key (https://web3forms.com,
-               ~30s, no account) into value below to enable real email delivery.
-               Until then the form gracefully opens the visitor's email app. -->
-          <input type="hidden" name="access_key" value="REPLACE_WITH_WEB3FORMS_KEY" />
-          <input type="hidden" name="subject" value="New enquiry from the Aster site" />
-          <input type="hidden" name="from_name" value="Aster Studio website" />
+          <!-- Delivery is handled server side by /api/enquiry, so no
+               provider key is exposed here. Configure the key as an
+               environment variable in Vercel — see api/enquiry.js. -->
           <input type="checkbox" name="botcheck" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true" />
 
           <div class="field-grid-2">
@@ -3633,7 +3320,7 @@ body.in-bloom-zoom .ambient-petals {
             <strong class="receipt-code" id="receiptCode">—</strong>
             <span class="receipt-note">Keep this — enter it under “Track your message” to follow the conversation.</span>
           </div>
-          <p class="connect-alt">Prefer email? <a href="https://mail.google.com/mail/?view=cm&fs=1&to=shine10012013@gmail.com" target="_blank" rel="noopener">shine10012013@gmail.com</a></p>
+          <p class="connect-alt">Prefer email? <a href="mailto:marketing@astermade.com">marketing@astermade.com</a> <span class="alt-sep">or</span> <a href="mailto:shine@astermade.com">shine@astermade.com</a></p>
         </form>
       </div>
 
@@ -3679,39 +3366,6 @@ body.in-bloom-zoom .ambient-petals {
   </aside>
 </div>
 
-<!-- ============ STAFF (hidden — open with #staff, gated by code) ============ -->
-<div class="staff-gate" id="staffGate" aria-hidden="true">
-  <form class="staff-gate-card" id="staffGateForm" novalidate>
-    <span class="eyebrow">Aster · Staff</span>
-    <h3 class="h-sm">Authorisation</h3>
-    <p class="staff-gate-lede">Enter the staff code to view enquiries.</p>
-    <input id="staffGatePass" type="password" placeholder="Staff code" autocomplete="off" spellcheck="false" />
-    <button type="submit" class="btn btn-primary btn-block">Enter console</button>
-    <p class="staff-gate-msg" id="staffGateMsg" role="alert"></p>
-    <button type="button" class="staff-gate-close" id="staffGateClose">Cancel</button>
-  </form>
-</div>
-
-<div class="staff-panel" id="staffPanel" aria-hidden="true">
-  <div class="staff-bar">
-    <div class="staff-bar-left">
-      <img src="logo.png" width="28" height="28" alt="" decoding="async" />
-      <div><span class="word">Aster <span class="sub">Staff Console</span></span></div>
-    </div>
-    <div class="staff-bar-right">
-      <span class="staff-status"><span class="dot"></span> Local inbox</span>
-      <button class="staff-logout" id="staffLogout">Sign out</button>
-    </div>
-  </div>
-  <div class="staff-main">
-    <aside class="staff-list">
-      <div class="staff-list-head"><span class="label">Enquiries</span><span class="count" id="msgCount">00</span></div>
-      <div id="msgList"></div>
-    </aside>
-    <section class="staff-thread empty" id="staffThread">Select an enquiry to read.</section>
-  </div>
-</div>
-
 <!-- ============ FOOTER ============ -->
 <footer>
   <div class="footer-inner">
@@ -3740,7 +3394,8 @@ body.in-bloom-zoom .ambient-petals {
       <h5>Connect</h5>
       <a href="#connect">Begin a message</a>
       <a href="#connect">Retrieve a code</a>
-      <a href="https://mail.google.com/mail/?view=cm&fs=1&to=shine10012013@gmail.com" target="_blank" rel="noopener">shine10012013@gmail.com</a>
+      <a href="mailto:marketing@astermade.com">marketing@astermade.com</a>
+      <a href="mailto:shine@astermade.com">shine@astermade.com</a>
     </div>
     <div class="footer-col">
       <h5>Elsewhere</h5>
@@ -3767,73 +3422,73 @@ body.in-bloom-zoom .ambient-petals {
 </div>
 
 <!-- ============================================================
-     FIREBASE (compat) — cross-device tracking portal store.
-     Until a real config is pasted below, everything falls back to
-     this-browser localStorage, so the site always works.
-     ============================================================ -->
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
-<script>
-  /* ▼▼ PASTE YOUR FIREBASE CONFIG HERE (replace every "REPLACE_ME") ▼▼
-     console.firebase.google.com → your project → Project settings → Your apps (</>).
-     Filling these in switches the portal from this-browser-only to a real
-     cross-device database (staff sees every enquiry; clients track from anywhere). */
-  window.ASTER_FB_CONFIG = {
-    apiKey: "REPLACE_ME",
-    authDomain: "REPLACE_ME",
-    projectId: "REPLACE_ME",
-    storageBucket: "REPLACE_ME",
-    messagingSenderId: "REPLACE_ME",
-    appId: "REPLACE_ME"
-  };
-  /* ▲▲ END FIREBASE CONFIG ▲▲ */
-  window.__asterDB = null;
-  (function () {
-    try {
-      var c = window.ASTER_FB_CONFIG;
-      var ok = c && c.apiKey && c.apiKey.indexOf("REPLACE") !== 0 && c.projectId && c.projectId.indexOf("REPLACE") !== 0;
-      if (ok && window.firebase && firebase.initializeApp) {
-        firebase.initializeApp(c);
-        window.__asterDB = firebase.firestore();
-      }
-    } catch (e) { window.__asterDB = null; }
-  })();
+     ENQUIRY CLIENT — talks to /api/enquiry (a Vercel function).
 
-  // Unified data store — Firestore when configured, else this-browser localStorage.
-  window.AsterStore = (function () {
-    var COL = "threads";
-    function rnd4() { var s = ""; for (var i = 0; i < 4; i++) s += "ABCDEFGHJKLMNPQRSTUVWXYZ23456789".charAt(Math.floor(Math.random() * 32)); return s; }
-    function genCode() { return "ASTER-" + rnd4() + "-" + rnd4(); }
-    function db() { return window.__asterDB; }
-    function lsGet() { try { return JSON.parse(localStorage.getItem("aster-inbox") || "[]") || []; } catch (e) { return []; } }
-    function lsSet(a) { try { localStorage.setItem("aster-inbox", JSON.stringify(a.slice(-300))); } catch (e) {} }
+     This replaces an earlier Firebase-or-localStorage store. That
+     store never had a Firebase config filled in, so every enquiry
+     was written to the *visitor's own* browser and nothing was ever
+     sent to the studio. Delivery now happens server side, where the
+     provider key is a private env var rather than public HTML.
+     ============================================================ -->
+<script>
+  window.AsterEnquiry = (function () {
+    var ENDPOINT = "/api/enquiry";
+
+    async function readJson(response) {
+      try { return await response.json(); } catch (e) { return {}; }
+    }
+
     return {
-      mode: function () { return db() ? "firebase" : "local"; },
-      genCode: genCode,
-      create: async function (rec) {
-        var code = rec.code || genCode();
-        rec.code = code; if (!rec.time) rec.time = Date.now();
-        if (db()) { await db().collection(COL).doc(code).set(rec); }
-        else { var a = lsGet(); a.push(rec); lsSet(a); }
-        return code;
+      // Resolves { ok, code, tracking } or throws an Error carrying a
+      // human-readable .userMessage the form can show verbatim.
+      submit: async function (fields) {
+        var response, data;
+        try {
+          response = await fetch(ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(fields)
+          });
+        } catch (networkError) {
+          var offline = new Error("network");
+          offline.userMessage = "We couldn't reach the studio — check your connection and try again.";
+          throw offline;
+        }
+        data = await readJson(response);
+        if (response.ok && data.ok) return data;
+
+        var failure = new Error(data.reason || "failed");
+        failure.reason = data.reason;
+        failure.userMessage = data.error || "Something went wrong sending your message.";
+        throw failure;
       },
-      get: async function (code) {
-        code = (code || "").trim(); if (!code) return null;
-        if (db()) { var d = await db().collection(COL).doc(code.toUpperCase()).get(); return d.exists ? d.data() : null; }
-        var a = lsGet(); for (var i = a.length - 1; i >= 0; i--) { if ((a[i].code || "").toUpperCase() === code.toUpperCase()) return a[i]; } return null;
+
+      // True when code lookup is actually available. Used to decide
+      // whether to show the tracking panel, so the page never offers
+      // a feature that isn't switched on.
+      supportsTracking: async function () {
+        try {
+          var response = await fetch(ENDPOINT + "?probe=1");
+          var data = await readJson(response);
+          return Boolean(response.ok && data.tracking);
+        } catch (e) { return false; }
       },
-      list: async function () {
-        if (db()) { var q = await db().collection(COL).orderBy("time", "desc").get(); var out = []; q.forEach(function (doc) { out.push(doc.data()); }); return out; }
-        return lsGet().slice().reverse();
-      },
-      update: async function (code, patch) {
-        if (db()) { await db().collection(COL).doc(code).update(patch); return; }
-        var a = lsGet(); for (var i = 0; i < a.length; i++) { if ((a[i].code || "") === code) { Object.assign(a[i], patch); break; } } lsSet(a);
+
+      // Resolves an enquiry, null when not found, or throws with
+      // .reason === "no-storage" when lookup isn't switched on.
+      lookup: async function (code) {
+        var response = await fetch(ENDPOINT + "?code=" + encodeURIComponent(code));
+        var data = await readJson(response);
+        if (response.ok && data.ok) return data.enquiry;
+        if (response.status === 404) return null;
+        var failure = new Error(data.reason || "failed");
+        failure.reason = data.reason;
+        failure.userMessage = data.error || "Couldn't look that code up just now.";
+        throw failure;
       }
     };
   })();
 </script>
-
 <!-- ============================================================
      SCRIPT BLOCK A — VANILLA (no dependencies)
      Runs no matter what. Reveals, petal-building, forms.
@@ -4334,25 +3989,47 @@ body.in-bloom-zoom .ambient-petals {
     });
   });
 
-  // ===== Contact form → Web3Forms (with graceful mailto fallback) =====
+  // ===== Contact form → /api/enquiry =====
+  // A failed send must never look like a successful one. The previous
+  // version always reported "your message is in" — even though nothing
+  // was transmitted — so enquiries were lost with a thank-you on screen.
+  // Every path below either confirms a real delivery or hands the
+  // visitor a working way to reach the studio.
   (function () {
-    const CONTACT_EMAIL = "shine10012013@gmail.com";
+    const CONTACT_EMAILS = ["marketing@astermade.com", "shine@astermade.com"];
     const form = document.getElementById("contactForm");
     const statusEl = document.getElementById("contactStatus");
     const btn = document.getElementById("contactSend");
     const labelEl = btn ? btn.querySelector(".label") : null;
     const receiptEl = document.getElementById("contactReceipt");
     const receiptCodeEl = document.getElementById("receiptCode");
+    const receiptNoteEl = receiptEl ? receiptEl.querySelector(".receipt-note") : null;
 
     function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 
     // ---- Send a message
     if (form) {
-      const keyEl = form.querySelector('[name="access_key"]');
-      const KEY = keyEl ? (keyEl.value || "") : "";
-      const CONFIGURED = KEY && KEY.indexOf("REPLACE_WITH") !== 0;
       const val = (n) => { const el = form.querySelector('[name="' + n + '"]'); return el ? (el.value || "").trim() : ""; };
-      const setStatus = (kind, msg) => { if (statusEl) { statusEl.textContent = msg || ""; statusEl.className = "form-status" + (kind ? " is-" + kind : ""); } };
+      const setStatus = (kind, msg) => {
+        if (!statusEl) return;
+        statusEl.textContent = msg || "";
+        statusEl.className = "form-status" + (kind ? " is-" + kind : "");
+      };
+      // When the server can't take the message, say so and give them a
+      // mailto that already carries what they typed — so the effort of
+      // writing it isn't wasted.
+      const setStatusWithFallback = (msg, draft) => {
+        if (!statusEl) return;
+        statusEl.className = "form-status is-error";
+        const subject = encodeURIComponent("Enquiry from the Aster site");
+        const body = encodeURIComponent(
+          [draft.message, "", "— " + draft.name, draft.email, draft.phone].filter(Boolean).join("\n")
+        );
+        statusEl.innerHTML = esc(msg) + " Please send it straight to " +
+          CONTACT_EMAILS.map(function (address) {
+            return '<a href="mailto:' + address + '?subject=' + subject + '&body=' + body + '">' + address + "</a>";
+          }).join(" or ") + " — this link keeps what you wrote.";
+      };
       const setSending = (on) => { if (btn) btn.disabled = on; if (labelEl) labelEl.textContent = on ? "Sending…" : "Send message"; };
 
       form.addEventListener("submit", async function (e) {
@@ -4365,37 +4042,32 @@ body.in-bloom-zoom .ambient-petals {
 
         setSending(true);
         setStatus("pending", "Sending…");
-        let code = "";
+
+        let result;
         try {
-          // 1) save the enquiry to the portal (Firestore if configured, else local)
-          code = await window.AsterStore.create({
-            name: name, email: email, phone: phone, message: message,
-            status: "Received", previewUrl: "", time: Date.now()
+          result = await window.AsterEnquiry.submit({
+            name: name, email: email, phone: phone, message: message
           });
         } catch (err) {
           setSending(false);
-          setStatus("error", "Couldn't save your message — please email " + CONTACT_EMAIL + ".");
+          setStatusWithFallback(err.userMessage || "We couldn't send your message.", {
+            name: name, email: email, phone: phone, message: message
+          });
           return;
         }
 
+        // Delivered. Only now do we thank them.
+        const code = result.code;
         if (receiptCodeEl) receiptCodeEl.textContent = code;
+        if (receiptNoteEl) {
+          receiptNoteEl.textContent = result.tracking
+            ? "Keep this — enter it under “Track your message” to follow the conversation."
+            : "Keep this — quote it in any reply and we'll know exactly which note you mean.";
+        }
         if (receiptEl) receiptEl.hidden = false;
-        setStatus("ok", "Thank you, " + name.split(" ")[0] + " — your message is in. Your tracking code is " + code + ".");
+        setStatus("ok", "Thank you, " + name.split(" ")[0] + " — your message is with the studio. Your reference is " + code + ".");
         form.reset();
         setSending(false);
-
-        // 2) optional email ping to the studio via Web3Forms (silent, if a key is set)
-        if (CONFIGURED) {
-          try {
-            const data = { access_key: KEY, subject: "New enquiry " + code, from_name: "Aster site",
-              name: name, email: email, phone: phone, message: message, tracking_code: code };
-            fetch("https://api.web3forms.com/submit", {
-              method: "POST",
-              headers: { "Content-Type": "application/json", "Accept": "application/json" },
-              body: JSON.stringify(data)
-            }).catch(function () {});
-          } catch (_) {}
-        }
       });
     }
 
@@ -4408,8 +4080,21 @@ body.in-bloom-zoom .ambient-petals {
       const code = (trackInput.value || "").trim().toUpperCase();
       if (!code) { trackResult.className = "track-result is-error"; trackResult.textContent = "Enter your tracking code above."; return; }
       trackResult.className = "track-result"; trackResult.textContent = "Looking…";
-      let found = null;
-      try { found = await window.AsterStore.get(code); } catch (_) {}
+
+      let found;
+      try {
+        found = await window.AsterEnquiry.lookup(code);
+      } catch (err) {
+        trackResult.className = "track-result is-error";
+        // Distinguish "we can't look things up" from "your code is wrong",
+        // so nobody is left thinking their enquiry vanished.
+        trackResult.innerHTML = err.reason === "no-storage"
+          ? "Live tracking isn't switched on yet — your message did reach us. Email " +
+            '<a href="mailto:' + CONTACT_EMAILS[0] + '">' + CONTACT_EMAILS[0] + "</a> with your code and we'll reply."
+          : esc(err.userMessage || "Couldn't look that code up just now.");
+        return;
+      }
+
       if (found) {
         trackResult.className = "track-result is-ok";
         trackResult.innerHTML =
@@ -4426,6 +4111,23 @@ body.in-bloom-zoom .ambient-petals {
     }
     if (trackBtn) trackBtn.addEventListener("click", doTrack);
     if (trackInput) trackInput.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); doTrack(); } });
+
+    // Don't offer code tracking unless the server can actually resolve
+    // codes. Half the connect panel promising a feature that answers
+    // "not switched on" reads worse than not offering it at all.
+    (async function gateTrackingPanel() {
+      const trackCol = document.querySelector(".connect-col--track");
+      const grid = document.querySelector(".connect-grid");
+      if (!trackCol || !grid) return;
+      const available = await window.AsterEnquiry.supportsTracking();
+      if (available) return;
+      trackCol.hidden = true;
+      grid.classList.add("connect-grid--solo");
+      // The footer points at the same feature — keep the two in step.
+      document.querySelectorAll('.footer-col a[href="#connect"]').forEach(function (link) {
+        if (/retrieve a code/i.test(link.textContent || "")) link.remove();
+      });
+    })();
   })();
 
   // ============================================================
@@ -4493,155 +4195,6 @@ body.in-bloom-zoom .ambient-petals {
     }, { passive: true });
   })();
 
-  // ===== Hidden staff console (open via #staff, gated by code) =====
-  (function staffConsole() {
-    const STAFF_CODE = "Ast3r_m4de";
-    const gate = document.getElementById("staffGate");
-    const gateForm = document.getElementById("staffGateForm");
-    const gatePass = document.getElementById("staffGatePass");
-    const gateMsg = document.getElementById("staffGateMsg");
-    const gateClose = document.getElementById("staffGateClose");
-    const panel = document.getElementById("staffPanel");
-    const listEl = document.getElementById("msgList");
-    const countEl = document.getElementById("msgCount");
-    const threadEl = document.getElementById("staffThread");
-    const logoutBtn = document.getElementById("staffLogout");
-    if (!gate || !panel || !gateForm) return;
-
-    function esc(s) {
-      return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
-        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
-      });
-    }
-    function fmt(t) {
-      try { return new Date(t).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
-      catch (_) { return ""; }
-    }
-    var STATUSES = ["Received", "In design", "In build", "In review", "Launched"];
-    var cache = [];
-    var activeI = 0;
-
-    function showGate(on) {
-      gate.classList.toggle("open", on);
-      gate.setAttribute("aria-hidden", on ? "false" : "true");
-      if (on) { gateMsg.textContent = ""; setTimeout(function () { gatePass.focus(); }, 120); }
-    }
-    function openPanel() {
-      panel.classList.add("open");
-      panel.setAttribute("aria-hidden", "false");
-      document.body.style.overflow = "hidden";
-      render();
-    }
-    function closePanel() {
-      panel.classList.remove("open");
-      panel.setAttribute("aria-hidden", "true");
-      document.body.style.overflow = "";
-      if (location.hash === "#staff") history.replaceState(null, "", location.pathname + location.search);
-    }
-
-    async function render() {
-      listEl.innerHTML = '<div class="staff-empty">Loading…</div>';
-      try { cache = await window.AsterStore.list(); } catch (_) { cache = []; }
-      countEl.textContent = String(cache.length).padStart(2, "0");
-      listEl.innerHTML = "";
-      if (!cache.length) {
-        listEl.innerHTML = '<div class="staff-empty">No enquiries yet' + (window.AsterStore.mode() === "local" ? " on this device" : "") + '.</div>';
-        threadEl.className = "staff-thread empty";
-        threadEl.textContent = "New enquiries appear here.";
-        return;
-      }
-      cache.forEach(function (m, i) {
-        const item = document.createElement("div");
-        item.className = "msg";
-        item.setAttribute("data-i", String(i));
-        item.innerHTML =
-          '<div class="msg-top"><span class="msg-name">' + esc(m.name) + '</span><span class="msg-time">' + fmt(m.time) + '</span></div>' +
-          '<div class="msg-preview">' + esc(m.message) + '</div>' +
-          '<div class="msg-meta">' + (m.code ? '<span class="pill">' + esc(m.code) + '</span>' : '') + '<span>' + esc(m.email) + '</span></div>';
-        item.addEventListener("click", function () { openMsg(i); });
-        listEl.appendChild(item);
-      });
-      openMsg(activeI < cache.length ? activeI : 0);
-    }
-    function statusSelect(cur) {
-      var opts = "";
-      if (cur && STATUSES.indexOf(cur) === -1) opts += '<option selected>' + esc(cur) + '</option>';
-      STATUSES.forEach(function (s) { opts += '<option' + (s === cur ? ' selected' : '') + '>' + s + '</option>'; });
-      return '<select id="stStatus" class="thread-select">' + opts + '</select>';
-    }
-    function openMsg(i) {
-      const m = cache[i];
-      if (!m) return;
-      activeI = i;
-      listEl.querySelectorAll(".msg").forEach(function (el) {
-        el.classList.toggle("active", Number(el.getAttribute("data-i")) === i);
-      });
-      threadEl.className = "staff-thread";
-      const replyHref = "https://mail.google.com/mail/?view=cm&fs=1&to=" + encodeURIComponent(m.email) +
-        "&su=" + encodeURIComponent("Re: your note to Aster Studio" + (m.code ? " (" + m.code + ")" : "")) +
-        "&body=" + encodeURIComponent("\n\n— Aster Studio");
-      threadEl.innerHTML =
-        '<div class="thread-head"><div><h3>' + esc(m.name) + '</h3>' +
-        '<div class="sub">' + esc(m.email) + (m.phone ? " · " + esc(m.phone) : "") + " · " + fmt(m.time) + (m.code ? " · " + esc(m.code) : "") + '</div></div>' +
-        (m.code ? '<span class="pill">' + esc(m.code) + '</span>' : '') + '</div>' +
-        '<div class="thread-body"><div class="bubble in">' + esc(m.message) + '</div>' +
-          '<div class="thread-edit">' +
-            '<label class="thread-field"><span>Status</span>' + statusSelect(m.status || "Received") + '</label>' +
-            '<label class="thread-field"><span>Website in progress — link the client can open</span>' +
-              '<input id="stPreview" type="url" value="' + esc(m.previewUrl || "") + '" placeholder="https://preview.yoursite.com/…" /></label>' +
-            '<div class="thread-edit-row">' +
-              '<button class="btn btn-primary" id="stSave">Save to ' + esc(m.code || "code") + '</button>' +
-              '<a class="btn btn-ghost" href="' + replyHref + '" target="_blank" rel="noopener">Reply by email</a>' +
-              '<span class="thread-saved" id="stSaved"></span>' +
-            '</div>' +
-          '</div>' +
-        '</div>';
-      const saveBtn = document.getElementById("stSave");
-      if (saveBtn) saveBtn.addEventListener("click", async function () {
-        saveBtn.disabled = true;
-        const saved = document.getElementById("stSaved");
-        try {
-          await window.AsterStore.update(m.code, {
-            status: (document.getElementById("stStatus").value || "").trim(),
-            previewUrl: (document.getElementById("stPreview").value || "").trim()
-          });
-          if (saved) { saved.textContent = "Saved ✓"; setTimeout(function () { saved.textContent = ""; }, 2200); }
-        } catch (_) {
-          if (saved) saved.textContent = "Save failed — try again";
-        }
-        saveBtn.disabled = false;
-        render();
-      });
-    }
-
-    gateForm.addEventListener("submit", function (e) {
-      e.preventDefault();
-      if ((gatePass.value || "") === STAFF_CODE) {
-        gatePass.value = "";
-        showGate(false);
-        openPanel();
-      } else {
-        gateMsg.textContent = "Incorrect code.";
-        gatePass.select();
-      }
-    });
-    if (gateClose) gateClose.addEventListener("click", function () {
-      showGate(false);
-      if (location.hash === "#staff") history.replaceState(null, "", location.pathname + location.search);
-    });
-    if (logoutBtn) logoutBtn.addEventListener("click", closePanel);
-    document.addEventListener("keydown", function (e) {
-      if (e.key !== "Escape") return;
-      if (panel.classList.contains("open")) closePanel();
-      else if (gate.classList.contains("open")) showGate(false);
-    });
-
-    function checkHash() {
-      if (location.hash === "#staff" && !panel.classList.contains("open")) showGate(true);
-    }
-    window.addEventListener("hashchange", checkHash);
-    checkHash();
-  })();
 })();
 </script>
 

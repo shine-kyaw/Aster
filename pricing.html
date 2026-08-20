@@ -688,6 +688,27 @@ img, svg { display: block; max-width: 100%; }
 @keyframes veilCover { from { opacity: 0; } to { opacity: 1; } }
 .page-veil.covering { animation: veilCover 0.45s var(--ease) forwards; pointer-events: all; }
 @media (prefers-reduced-motion: reduce) { .page-veil { display: none; } }
+
+/* ========== Keyboard focus ==========
+   This page previously had no focus styling at all, so anyone
+   tabbing through it had no idea where they were. Only :focus-visible
+   is styled, so a mouse click never paints a ring. */
+:where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--aster-deep);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Respect a reduced-motion preference across the page, not just the
+   page veil — the tiers, reveals, and hover lifts all animate. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 </style>
 </head>
 <body>
