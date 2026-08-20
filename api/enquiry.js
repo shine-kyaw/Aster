@@ -20,42 +20,24 @@
    Configure with these environment variables in the Vercel
    dashboard (Project → Settings → Environment Variables):
 
-   Email delivery — configure ONE of these three. They are tried in
-   the order listed, so setting SMTP_* wins over the others.
-
-   1. SMTP — the studio's own Namecheap Private Email mailbox. No
-      third party sees an enquiry and no DNS change is needed, because
-      astermade.com already publishes include:spf.privateemail.com.
-        SMTP_HOST         mail.privateemail.com
-        SMTP_PORT         465 (implicit TLS) or 587 (STARTTLS)
-        SMTP_USER         the full mailbox address to send as
-        SMTP_PASS         that mailbox's password
-      Use a mailbox created purely for this (forms@astermade.com), not
-      a person's real inbox: this password sits in Vercel's env vars,
-      and unlike an API key it cannot be scoped, so anything it can
-      reach is exposed if it ever leaks. A throwaway sender mailbox
-      keeps the blast radius to sending mail.
-
-   2. RESEND_API_KEY     Resend (resend.com). Needs DNS records, but
-                         the key is scoped and revocable — the safer
-                         option if SMTP ever proves flaky.
-   3. WEB3FORMS_KEY      Web3Forms (web3forms.com). No domain setup at
-                         all. NOTE: Web3Forms decides the recipient
-                         from the key's own account, so ASTER_TO_EMAIL
-                         does NOT apply on this path — register the key
-                         against the address you want mail to land in.
+   Email delivery — set ONE of:
+     RESEND_API_KEY      Resend (resend.com). Verify astermade.com as
+                         a sending domain, then mail arrives from the
+                         studio's own address. Preferred.
+     WEB3FORMS_KEY       Web3Forms (web3forms.com). No domain setup;
+                         paste the access key and it forwards to the
+                         address you registered. Fastest to switch on.
+                         NOTE: Web3Forms decides the recipient from the
+                         key's own account, so ASTER_TO_EMAIL does NOT
+                         apply on this path — register the key against
+                         the address you want the mail to land in.
 
    Optional:
-     ASTER_TO_EMAIL      Comma-separated recipients. Applies to the
-                         SMTP and Resend paths (see the Web3Forms note
-                         above). Defaults to marketing@astermade.com
-                         and shine@astermade.com.
-     ASTER_FROM_EMAIL    The "from" address. On SMTP it must normally
-                         match SMTP_USER — most providers, Namecheap
-                         included, reject a From they didn't
-                         authenticate — so it defaults to SMTP_USER and
-                         is better left unset. On Resend it must be on
-                         a domain verified there.
+     ASTER_TO_EMAIL      Comma-separated recipients. Resend path only
+                         (see the Web3Forms note above). Defaults to
+                         marketing@astermade.com, shine@astermade.com.
+     ASTER_FROM_EMAIL    Resend "from" address. Must be on a domain
+                         verified in Resend.
      KV_REST_API_URL     Upstash/Vercel KV. Set both to persist
      KV_REST_API_TOKEN   enquiries so tracking codes resolve from any
                          device. Without them, delivery still works —
@@ -167,33 +149,6 @@ function buildEmail({ name, email, phone, message, code, meta }) {
   return { subject, text, html };
 }
 
-async function sendViaSmtp(payload) {
-  // Required lazily so the other delivery paths don't pay nodemailer's
-  // load cost on a cold start.
-  const nodemailer = require("nodemailer");
-
-  const port = Number(process.env.SMTP_PORT || 465);
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port,
-    // 465 speaks TLS from the first byte; 587 upgrades via STARTTLS.
-    secure: port === 465,
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-  });
-
-  const { subject, text, html } = buildEmail(payload);
-  await transporter.sendMail({
-    // Namecheap rejects a From it didn't authenticate, so this tracks
-    // SMTP_USER unless deliberately overridden.
-    from: process.env.ASTER_FROM_EMAIL || `Aster Studio <${process.env.SMTP_USER}>`,
-    to: TO_EMAILS.join(", "),
-    replyTo: payload.email, // so a reply reaches the enquirer, not us
-    subject,
-    text,
-    html
-  });
-}
-
 async function sendViaResend(payload) {
   const { subject, text, html } = buildEmail(payload);
   const response = await fetch("https://api.resend.com/emails", {
@@ -240,8 +195,6 @@ async function sendViaWeb3Forms(payload) {
 }
 
 function deliver(payload) {
-  const smtpReady = process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS;
-  if (smtpReady) return sendViaSmtp(payload);
   if (process.env.RESEND_API_KEY) return sendViaResend(payload);
   if (process.env.WEB3FORMS_KEY) return sendViaWeb3Forms(payload);
   return null; // nothing configured — caller reports this honestly
@@ -337,7 +290,7 @@ async function handleSubmit(req, res) {
   // reason the form exists. Storage is a convenience on top.
   const delivery = deliver(payload);
   if (!delivery) {
-    console.error("[enquiry] no delivery provider configured — set SMTP_HOST/SMTP_USER/SMTP_PASS, RESEND_API_KEY, or WEB3FORMS_KEY");
+    console.error("[enquiry] no delivery provider configured — set RESEND_API_KEY or WEB3FORMS_KEY");
     return res.status(503).json({
       ok: false,
       reason: "unconfigured",
