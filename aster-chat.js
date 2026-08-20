@@ -27,9 +27,9 @@ PRICING TIERS:
 All pricing is negotiable based on requirements.
 
 PORTFOLIO / WORK:
+• Power Tagun Engineering Co., Ltd — the studio's flagship project, and its largest engagement to date. Live corporate site for a Myanmar electrical engineering firm: electrical infrastructure product supply, procurement, and EPC turnkey delivery for utility, industrial, and commercial power projects. Part of the Asia General Holding group. Visit: powertagun.vercel.app
 • Foliyo — Live fintech web app, a clean real-time stock & portfolio tracker. Visit: foliyo-delta.vercel.app
 • Gateway Orbital Explorer — Live orbital physics simulation for NASA's Lunar Gateway. Visit: gateway-orbital-explorer.vercel.app
-• Power Tagun Engineering Co., Ltd — Live corporate site for a Myanmar electrical engineering firm: electrical infrastructure product supply, procurement, and EPC turnkey delivery for utility, industrial, and commercial power projects. Part of the Asia General Holding group. Visit: powertagun.vercel.app
 • KTK (Kaung Thu Kha Group Co., Ltd.) — Live manufacturer site for Myanmar's industrial packaging producer: cement sacks and PP woven bags made on European STARLINGER lines, plus fillers, thread, bag-closing machinery, and bearings. Visit: ktk-umber.vercel.app
 
 These four are the studio's complete public portfolio. Never invent, imply, or describe any other client, project, or result — if asked for more examples, say these are the sites currently published and invite them to get in touch.

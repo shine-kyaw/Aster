@@ -1696,57 +1696,84 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
 }
 .case .body .row strong { color: var(--aster-deep); font-weight: 500; }
 
-/* Foliyo — featured, full-width live project. Spans both columns; on
-   wider screens the preview sits left and the copy reads right.
-   It's an <a>, so the whole banner is a single click target. */
-.case-foliyo {
+/* Featured project — full-width, biggest card. Structural only, kept
+   separate from any one project's identity so the flagship spot can
+   move (e.g. to whichever engagement is the studio's largest) without
+   re-deriving this layout each time. Spans both columns; on wider
+   screens the preview sits left and the copy reads right. It's an
+   <a>, so the whole banner is a single click target. */
+.case-featured {
   grid-column: 1 / -1;
   cursor: pointer;
 }
-.case-foliyo .preview {
-  background: radial-gradient(130% 120% at 28% 22%, #0e5563 0%, #082530 38%, #05070e 100%);
-}
-.case-foliyo .body .row strong { color: #0e7490; }
-/* Foliyo's real logo, centred in its preview, with a cyan glow to match */
-.case-foliyo .preview svg.deco {
+.case-featured .preview svg.deco {
   position: absolute; inset: auto; top: 50%; left: 50%;
   width: clamp(78px, 24%, 132px); height: auto;
   transform: translate(-50%, -50%); opacity: 1;
-  filter: drop-shadow(0 10px 26px rgba(6, 182, 212, 0.30));
 }
-.case-foliyo:hover .preview svg.deco { transform: translate(-50%, -50%) scale(1.06); opacity: 1; }
-/* Gateway Orbital Explorer — deep-space preview (small grid card). */
-.case-gateway .preview {
-  background: linear-gradient(135deg, #0b1026 0%, #1f2a63 50%, #45357f 100%);
-}
-.case-gateway .preview svg.deco { color: #d9e0ff; opacity: 0.5; }
-.case-gateway .body .row strong { color: #5a6ae0; }
-
-/* Power Tagun — deep engineering navy with the firm's signal red. */
-.case-tagun .preview { background: linear-gradient(145deg, #07111d 0%, #101f33 55%, #1b2c44 100%); }
-.case-tagun .preview svg.deco { color: #e51d24; opacity: 0.62; }
-.case-tagun:hover .preview svg.deco { opacity: 0.85; }
-.case-tagun .body .row strong { color: #c0161c; }
-
-/* KTK — woven-sack umber and the group's red. */
-.case-ktk .preview { background: linear-gradient(150deg, #16130e 0%, #33291d 55%, #4d3d29 100%); }
-.case-ktk .preview svg.deco { color: #e8e2d6; opacity: 0.5; }
-.case-ktk:hover .preview svg.deco { opacity: 0.72; }
-.case-ktk .body .row strong { color: #b1341f; }
-
+.case-featured:hover .preview svg.deco { transform: translate(-50%, -50%) scale(1.06); opacity: 1; }
 @media (min-width: 760px) {
-  .case-foliyo { flex-direction: row; align-items: stretch; }
-  .case-foliyo .preview { flex: 0 0 46%; aspect-ratio: auto; min-height: 280px; }
-  .case-foliyo .body {
+  .case-featured { flex-direction: row; align-items: stretch; }
+  .case-featured .preview { flex: 0 0 46%; aspect-ratio: auto; min-height: 280px; }
+  .case-featured .body {
     flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
     padding: clamp(32px, 4vw, 52px);
   }
-  .case-foliyo .body h3 { font-size: clamp(28px, 3vw, 38px); }
-  .case-foliyo .body p { font-size: clamp(15px, 1.3vw, 18px); max-width: 46ch; }
+  .case-featured .body h3 { font-size: clamp(28px, 3vw, 38px); }
+  .case-featured .body p { font-size: clamp(15px, 1.3vw, 18px); max-width: 46ch; }
 }
+
+/* Foliyo — cyan fintech preview. */
+.case-foliyo .preview {
+  background: radial-gradient(130% 120% at 28% 22%, #0e5563 0%, #082530 38%, #05070e 100%);
+}
+.case-foliyo .body .row strong { color: #0e7490; }
+.case-foliyo .preview svg.deco { filter: drop-shadow(0 10px 26px rgba(6, 182, 212, 0.30)); }
+
+/* Gateway Orbital Explorer — deep-space preview. */
+.case-gateway .preview {
+  background: linear-gradient(135deg, #0b1026 0%, #1f2a63 50%, #45357f 100%);
+}
+.case-gateway .preview svg.deco { color: #d9e0ff; opacity: 0.5; }
+.case-gateway .body .row strong { color: #5a6ae0; }
+
+/* Power Tagun — deep engineering navy with the firm's signal red.
+   The studio's largest engagement to date, so this is the featured
+   card (see .case-featured above) — first in the grid, full width. */
+.case-tagun .preview { background: linear-gradient(145deg, #07111d 0%, #101f33 55%, #1b2c44 100%); }
+.case-tagun .body .row strong { color: #c0161c; }
+
+/* KTK — woven-sack umber and the group's red. */
+.case-ktk .preview { background: linear-gradient(150deg, #16130e 0%, #33291d 55%, #4d3d29 100%); }
+.case-ktk .body .row strong { color: #b1341f; }
+
+/* Real client wordmarks (Power Tagun, KTK) — centred, not stretched
+   to fill the frame the way the abstract decorative marks are. */
+.case .preview .logo-plate {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.4s var(--ease);
+}
+.case:hover .preview .logo-plate { transform: translate(-50%, -50%) scale(1.05); }
+.logo-plate img { display: block; }
+.case-tagun .logo-plate img {
+  width: clamp(130px, 40%, 220px); height: auto;
+  filter: drop-shadow(0 10px 26px rgba(229, 29, 36, 0.32));
+}
+.case-featured.case-tagun .logo-plate img { width: clamp(190px, 40%, 360px); }
+/* KTK's source file is opaque white, so it sits on a white plate
+   rather than floating a stray white box on the dark preview. */
+.case-ktk .logo-plate {
+  background: #fdfaf3;
+  padding: 18px 28px;
+  border-radius: 16px;
+  box-shadow: 0 16px 32px -14px rgba(0, 0, 0, 0.5);
+}
+.case-ktk .logo-plate img { width: clamp(160px, 82%, 300px); height: auto; }
 
 /* Closing line that leads from the sites grid into the full Atelier */
 .work-atelier-line {
@@ -3053,7 +3080,21 @@ body.in-bloom-zoom .ambient-petals {
       <a href="atelier.html" class="btn btn-ghost reveal glow-track">Enter the Atelier →</a>
     </div>
     <div class="work-grid reveal-stagger">
-      <!-- Foliyo — real, live project. Featured full-width, links out. -->
+      <!-- Power Tagun Engineering — real, live project, and the studio's
+           largest engagement to date, so it leads as the featured card. -->
+      <a class="case case-featured case-tagun" href="https://powertagun.vercel.app/" target="_blank" rel="noopener noreferrer">
+        <div class="preview">
+          <div class="logo-plate"><img src="assets/logos/powertagun-logo.png" alt="Power Tagun Engineering Co., Ltd" loading="lazy" /></div>
+          <span class="label">Live · Flagship project · Electrical engineering</span>
+        </div>
+        <div class="body">
+          <h3>Power Tagun — <em>engineering group</em></h3>
+          <p>Our largest build to date — a full corporate site for a Myanmar electrical engineering group: product supply, procurement, and EPC turnkey delivery, with a project-reference library buyers can search.</p>
+          <div class="row"><span>Live · Myanmar</span><strong>Visit Power Tagun ↗</strong></div>
+        </div>
+      </a>
+
+      <!-- Foliyo — real, live project. -->
       <a class="case case-foliyo" href="https://foliyo-delta.vercel.app/" target="_blank" rel="noopener noreferrer">
         <div class="preview">
           <svg class="deco" viewBox="0 0 40 40" fill="none">
@@ -3071,7 +3112,7 @@ body.in-bloom-zoom .ambient-petals {
         </div>
       </a>
 
-      <!-- Gateway Orbital Explorer — real, live project. Small grid card, links out. -->
+      <!-- Gateway Orbital Explorer — real, live project. -->
       <a class="case case-gateway" href="https://gateway-orbital-explorer.vercel.app/" target="_blank" rel="noopener noreferrer">
         <div class="preview">
           <svg class="deco" viewBox="-100 -100 200 200" fill="none" stroke="currentColor">
@@ -3089,30 +3130,11 @@ body.in-bloom-zoom .ambient-petals {
           <div class="row"><span>Live · Artemis</span><strong>Launch ↗</strong></div>
         </div>
       </a>
-      <!-- Power Tagun Engineering — real, live project. Links out. -->
-      <a class="case case-tagun" href="https://powertagun.vercel.app/" target="_blank" rel="noopener noreferrer">
-        <div class="preview">
-          <svg class="deco" viewBox="-100 -100 200 200" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 -66 L-30 -4 H2 L-14 66 L34 -2 H0 Z" fill="currentColor" stroke="none"/>
-            <path d="M-72 -46 V46" opacity="0.5"/>
-            <path d="M72 -46 V46" opacity="0.5"/>
-          </svg>
-          <span class="label">Live · Electrical engineering</span>
-        </div>
-        <div class="body">
-          <h3>Power Tagun — <em>engineering group</em></h3>
-          <p>Product supply, procurement, and EPC turnkey delivery for a Myanmar electrical engineering firm.</p>
-          <div class="row"><span>Live · Myanmar</span><strong>Visit ↗</strong></div>
-        </div>
-      </a>
 
-      <!-- KTK / Kaung Thu Kha — real, live project. Links out. -->
+      <!-- KTK / Kaung Thu Kha — real, live project. -->
       <a class="case case-ktk" href="https://ktk-umber.vercel.app/" target="_blank" rel="noopener noreferrer">
         <div class="preview">
-          <svg class="deco" viewBox="-100 -100 200 200" fill="none" stroke="currentColor" stroke-width="9">
-            <path d="M-78 -54 H78 M-78 -18 H78 M-78 18 H78 M-78 54 H78" opacity="0.55"/>
-            <path d="M-54 -78 V78 M-18 -78 V78 M18 -78 V78 M54 -78 V78" opacity="0.9"/>
-          </svg>
+          <div class="logo-plate"><img src="assets/logos/ktk-logo.png" alt="Kaung Thu Kha Group Co., Ltd." loading="lazy" /></div>
           <span class="label">Live · Industrial packaging</span>
         </div>
         <div class="body">
