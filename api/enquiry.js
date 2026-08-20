@@ -27,9 +27,14 @@
      WEB3FORMS_KEY       Web3Forms (web3forms.com). No domain setup;
                          paste the access key and it forwards to the
                          address you registered. Fastest to switch on.
+                         NOTE: Web3Forms decides the recipient from the
+                         key's own account, so ASTER_TO_EMAIL does NOT
+                         apply on this path — register the key against
+                         the address you want the mail to land in.
 
    Optional:
-     ASTER_TO_EMAIL      Comma-separated recipients. Defaults to
+     ASTER_TO_EMAIL      Comma-separated recipients. Resend path only
+                         (see the Web3Forms note above). Defaults to
                          marketing@astermade.com, shine@astermade.com.
      ASTER_FROM_EMAIL    Resend "from" address. Must be on a domain
                          verified in Resend.
