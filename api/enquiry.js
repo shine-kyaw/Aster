@@ -35,7 +35,11 @@
    Optional:
      ASTER_TO_EMAIL      Comma-separated recipients. Resend path only
                          (see the Web3Forms note above). Defaults to
-                         marketing@astermade.com, shine@astermade.com.
+                         marketing@astermade.com alone, because that
+                         address is an alias that already forwards to
+                         shine@ — listing both would deliver two copies
+                         of every enquiry to the same inbox. Add more
+                         addresses here once they are real mailboxes.
      ASTER_FROM_EMAIL    Resend "from" address. Must be on a domain
                          verified in Resend.
      KV_REST_API_URL     Upstash/Vercel KV. Set both to persist
@@ -45,7 +49,7 @@
    ============================================================ */
 
 const TO_EMAILS = (process.env.ASTER_TO_EMAIL ||
-  "marketing@astermade.com,shine@astermade.com")
+  "marketing@astermade.com")
   .split(",").map(s => s.trim()).filter(Boolean);
 
 const FROM_EMAIL = process.env.ASTER_FROM_EMAIL ||
