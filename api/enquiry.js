@@ -65,17 +65,14 @@
                          authenticate — so it defaults to SMTP_USER and
                          is better left unset. On Resend it must be on
                          a domain verified there.
-     KV_REST_API_URL       Upstash Redis (Vercel Storage tab → Add →
-     KV_REST_API_TOKEN     look for "Upstash", not "KV" — Vercel
-                           retired the first-party KV product; connect
-                           an Upstash Redis database via the Marketplace
-                           instead). Set both to persist enquiries so
-     -- or, if the integration names them this way instead --
-     UPSTASH_REDIS_REST_URL     tracking codes resolve from any device.
-     UPSTASH_REDIS_REST_TOKEN   Either naming works (see lib/kv.js).
-                                Without these, delivery still works —
-                                only lookup and the staff console are
-                                unavailable.
+     DATABASE_URL        Neon Postgres connection string (Neon project
+                         dashboard → Connection Details). Persists
+                         enquiries so tracking codes resolve from any
+                         device, and backs the staff console at
+                         /staff.html. The table is created
+                         automatically on first use — see lib/db.js.
+                         Without this, delivery still works — only
+                         lookup and the staff console are unavailable.
    ============================================================ */
 
 const TO_EMAILS = (process.env.ASTER_TO_EMAIL ||
@@ -110,9 +107,9 @@ function looksLikeEmail(value) {
   return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value);
 }
 
-/* ---------- optional persistence (Upstash Redis via Vercel Storage) ---------- */
+/* ---------- optional persistence (Neon Postgres) ---------- */
 // Shared with api/admin/enquiries.js — see lib/kv.js.
-const { kvEnabled, saveEnquiry, loadEnquiry } = require("../lib/kv");
+const { dbEnabled, saveEnquiry, loadEnquiry } = require("../lib/db");
 
 /* ---------- email delivery ---------- */
 
@@ -250,13 +247,13 @@ async function handleLookup(req, res) {
   // code tracking at all, so it never advertises a feature that is
   // switched off. Reveals nothing beyond "is lookup available".
   if (query.probe) {
-    return res.status(200).json({ ok: true, tracking: kvEnabled });
+    return res.status(200).json({ ok: true, tracking: dbEnabled });
   }
 
   const code = String(query.code || "").trim().toUpperCase();
   if (!code) return res.status(400).json({ ok: false, error: "Missing code." });
 
-  if (!kvEnabled) {
+  if (!dbEnabled) {
     return res.status(501).json({
       ok: false,
       reason: "no-storage",
@@ -274,6 +271,7 @@ async function handleLookup(req, res) {
         code: found.code,
         status: found.status || "Received",
         message: found.message,
+        reply: found.reply || "",
         previewUrl: found.previewUrl || "",
         time: found.time
       }
@@ -324,7 +322,7 @@ async function handleSubmit(req, res) {
   // a mail hiccup must not also make the enquiry invisible. A storage
   // failure here is logged but never blocks a visitor who's about to
   // get a real email anyway.
-  if (kvEnabled) {
+  if (dbEnabled) {
     try { await saveEnquiry(record); }
     catch (error) { console.error("[enquiry] stored copy failed:", error); }
   }
@@ -352,5 +350,5 @@ async function handleSubmit(req, res) {
     });
   }
 
-  return res.status(200).json({ ok: true, code, tracking: kvEnabled });
+  return res.status(200).json({ ok: true, code, tracking: dbEnabled });
 }

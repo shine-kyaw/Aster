@@ -63,10 +63,34 @@
   .card .contact { font-size: 13px; color: var(--ink-soft); margin-bottom: 14px; }
   .card .contact a { color: var(--aster-deep); }
   .card .msg-body { font-size: 14.5px; line-height: 1.6; white-space: pre-wrap; margin-bottom: 14px; }
-  .card .bottom { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; border-top: 1px solid var(--line-soft); padding-top: 12px; }
+  .card .bottom { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; border-top: 1px solid var(--line-soft); padding-top: 12px; margin-bottom: 14px; }
   .card .code { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: .04em; color: var(--ink-mute); background: rgba(0,0,0,0.045); padding: 4px 10px; border-radius: 999px; }
-  .card .reply { font-size: 13px; color: var(--aster-deep); text-decoration: none; border-bottom: 1px solid transparent; }
-  .card .reply:hover { border-color: var(--aster-deep); }
+  .card .reply-link { font-size: 13px; color: var(--aster-deep); text-decoration: none; border-bottom: 1px solid transparent; }
+  .card .reply-link:hover { border-color: var(--aster-deep); }
+
+  .reply-box { border-top: 1px solid var(--line-soft); padding-top: 14px; }
+  .reply-box.has-reply { background: rgba(94,61,138,0.05); margin: 0 -24px -22px; padding: 14px 24px 20px; border-radius: 0 0 16px 16px; border-top-color: rgba(94,61,138,0.18); }
+  .reply-box .sent-label { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--aster-deep); margin-bottom: 6px; }
+  .reply-box .sent-text { font-size: 13.5px; line-height: 1.55; white-space: pre-wrap; margin-bottom: 10px; }
+  .reply-box textarea {
+    width: 100%; min-height: 64px; resize: vertical; font-family: inherit; font-size: 13.5px;
+    padding: 10px 12px; border: 1px solid var(--line-soft); border-radius: 10px;
+    background: var(--paper); color: var(--ink); outline: none; margin-bottom: 10px;
+  }
+  .reply-box textarea:focus { border-color: var(--aster-deep); }
+  .reply-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .reply-row select {
+    font-family: inherit; font-size: 13px; padding: 8px 10px; border: 1px solid var(--line-soft);
+    border-radius: 8px; background: var(--paper); color: var(--ink);
+  }
+  .reply-row button {
+    font-family: inherit; font-size: 13px; font-weight: 500; padding: 9px 18px; border: 0;
+    border-radius: 999px; background: var(--aster-deep); color: var(--paper); cursor: pointer;
+  }
+  .reply-row button:hover { background: #4a2f6f; }
+  .reply-row button:disabled { opacity: 0.6; cursor: default; }
+  .reply-row .saved-msg { font-size: 12px; color: #3f5c3a; }
+  .reply-row .error-msg { font-size: 12px; color: var(--err); }
 </style>
 </head>
 <body>
@@ -105,6 +129,8 @@
   var signOutBtn = document.getElementById("signOut");
   var listEl = document.getElementById("list");
   var countEl = document.getElementById("count");
+  var currentKey = "";
+  var lastEnquiries = [];
 
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
@@ -123,12 +149,49 @@
     signOutBtn.style.display = on ? "inline-block" : "none";
   }
 
+  var STATUSES = ["Received", "In progress", "Replied", "Closed"];
+
+  function statusOptions(current) {
+    return STATUSES.map(function (s) {
+      return '<option value="' + esc(s) + '"' + (s === current ? " selected" : "") + '>' + esc(s) + '</option>';
+    }).join("");
+  }
+
+  // A saved reply is shown as a settled note, not another input box —
+  // editing it is one click away (data-edit), but the default view
+  // reads like something that already went out, not a draft.
+  function renderReplyBox(m) {
+    var code = esc(m.code || "");
+    if (m.reply && !m.editing) {
+      return (
+        '<div class="reply-box has-reply">' +
+          '<div class="sent-label">Sent as your reply</div>' +
+          '<div class="sent-text">' + esc(m.reply) + '</div>' +
+          '<div class="reply-row">' +
+            '<button type="button" class="edit-reply" data-code="' + code + '">Edit</button>' +
+          '</div>' +
+        '</div>'
+      );
+    }
+    return (
+      '<div class="reply-box">' +
+        '<textarea class="reply-input" data-code="' + code + '" placeholder="Write a reply the sender will see when they enter their tracking code…">' + esc(m.reply || "") + '</textarea>' +
+        '<div class="reply-row">' +
+          '<select class="status-input" data-code="' + code + '">' + statusOptions(m.status || "Received") + '</select>' +
+          '<button type="button" class="save-reply" data-code="' + code + '">Save reply</button>' +
+          '<span class="reply-feedback" data-code="' + code + '"></span>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
   function render(enquiries) {
     countEl.textContent = String(enquiries.length).padStart(2, "0");
     if (!enquiries.length) {
       listEl.innerHTML = '<div class="empty">No enquiries yet.</div>';
       return;
     }
+    lastEnquiries = enquiries;
     listEl.innerHTML = enquiries.map(function (m) {
       var subject = encodeURIComponent("Re: your enquiry" + (m.code ? " " + m.code : ""));
       var mailto = "mailto:" + encodeURIComponent(m.email || "") + "?subject=" + subject;
@@ -142,8 +205,9 @@
           '<div class="msg-body">' + esc(m.message) + '</div>' +
           '<div class="bottom">' +
             '<span class="code">' + esc(m.code || '') + '</span>' +
-            '<a class="reply" href="' + mailto + '">Reply by email ↗</a>' +
+            '<a class="reply-link" href="' + mailto + '">Reply by email ↗</a>' +
           '</div>' +
+          renderReplyBox(m) +
         '</div>'
       );
     }).join("");
@@ -155,11 +219,13 @@
       .then(function (r) { return r.json().then(function (data) { return { status: r.status, data: data }; }); })
       .then(function (res) {
         if (res.status === 200 && res.data.ok) {
+          currentKey = key;
           try { sessionStorage.setItem(STORAGE_KEY, key); } catch (e) {}
           showApp(true);
           render(res.data.enquiries || []);
           return true;
         }
+        currentKey = "";
         try { sessionStorage.removeItem(STORAGE_KEY); } catch (e) {}
         showApp(false);
         gateMsg.textContent = res.data.error || "Couldn't load enquiries.";
@@ -171,6 +237,57 @@
       });
   }
 
+  function findEnquiry(code) {
+    for (var i = 0; i < lastEnquiries.length; i++) {
+      if (lastEnquiries[i].code === code) return lastEnquiries[i];
+    }
+    return null;
+  }
+
+  // Delegated so newly rendered cards (after every reply save) don't
+  // need their own listeners rebound.
+  listEl.addEventListener("click", function (e) {
+    var editBtn = e.target.closest(".edit-reply");
+    if (editBtn) {
+      var editing = findEnquiry(editBtn.getAttribute("data-code"));
+      if (editing) { editing.editing = true; render(lastEnquiries); }
+      return;
+    }
+
+    var saveBtn = e.target.closest(".save-reply");
+    if (!saveBtn) return;
+    var code = saveBtn.getAttribute("data-code");
+    var textarea = listEl.querySelector('.reply-input[data-code="' + CSS.escape(code) + '"]');
+    var select = listEl.querySelector('.status-input[data-code="' + CSS.escape(code) + '"]');
+    var feedback = listEl.querySelector('.reply-feedback[data-code="' + CSS.escape(code) + '"]');
+    var reply = (textarea.value || "").trim();
+    var status = select.value;
+
+    saveBtn.disabled = true;
+    if (feedback) { feedback.textContent = ""; feedback.className = "reply-feedback"; }
+
+    fetch("/api/admin/enquiries", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", "x-admin-key": currentKey },
+      body: JSON.stringify({ code: code, reply: reply, status: status })
+    })
+      .then(function (r) { return r.json().then(function (data) { return { status: r.status, data: data }; }); })
+      .then(function (res) {
+        saveBtn.disabled = false;
+        if (res.status === 200 && res.data.ok) {
+          var updated = findEnquiry(code);
+          if (updated) Object.assign(updated, res.data.enquiry, { editing: false });
+          render(lastEnquiries);
+          return;
+        }
+        if (feedback) { feedback.textContent = res.data.error || "Couldn't save."; feedback.className = "reply-feedback error-msg"; }
+      })
+      .catch(function () {
+        saveBtn.disabled = false;
+        if (feedback) { feedback.textContent = "Couldn't reach the server."; feedback.className = "reply-feedback error-msg"; }
+      });
+  });
+
   unlockBtn.addEventListener("click", function () {
     var key = (keyInput.value || "").trim();
     if (!key) { gateMsg.textContent = "Enter the staff key."; return; }
@@ -181,6 +298,7 @@
     if (e.key === "Enter") unlockBtn.click();
   });
   signOutBtn.addEventListener("click", function () {
+    currentKey = "";
     try { sessionStorage.removeItem(STORAGE_KEY); } catch (e) {}
     keyInput.value = "";
     showApp(false);

@@ -1167,6 +1167,26 @@ button:focus-visible,
 .track-result .track-status { font-family: var(--sans); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--aster-deep); margin-bottom: 8px; }
 .track-result .track-msg { font-family: var(--serif); font-style: italic; font-size: 17px; color: var(--ink); line-height: 1.5; }
 .track-result .track-meta { margin-top: 8px; font-size: 12px; color: var(--ink-mute); }
+.track-reply {
+  margin-top: 14px;
+  padding: 14px 16px;
+  background: var(--aster-mist);
+  border: 1px solid var(--aster-light);
+  border-radius: 12px;
+  font-family: var(--sans);
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--ink);
+  white-space: pre-wrap;
+}
+.track-reply-label {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--aster-deep);
+  margin-bottom: 6px;
+}
 .track-preview {
   display: inline-flex; align-items: center; margin-top: 14px;
   font-family: var(--sans); font-size: 13px; letter-spacing: 0.02em;
@@ -4122,10 +4142,14 @@ body.in-bloom-zoom .ambient-petals {
         trackResult.innerHTML =
           '<div class="track-status">' + esc(found.status || "Received") + '</div>' +
           '<div class="track-msg">“' + esc(found.message) + '”</div>' +
+          (found.reply
+            ? '<div class="track-reply"><span class="track-reply-label">Studio’s reply</span>' + esc(found.reply) + '</div>'
+            : '') +
           (found.previewUrl
             ? '<a class="track-preview" href="' + esc(found.previewUrl) + '" target="_blank" rel="noopener">View your site in progress ↗</a>'
             : '') +
-          '<div class="track-meta">Sent ' + new Date(found.time).toLocaleDateString() + ' · we reply within a day.</div>';
+          '<div class="track-meta">Sent ' + new Date(found.time).toLocaleDateString() +
+          (found.reply ? '' : ' · we reply within a day.') + '</div>';
       } else {
         trackResult.className = "track-result is-error";
         trackResult.textContent = "No message found for that code.";
