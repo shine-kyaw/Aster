@@ -1,0 +1,10 @@
+{
+  "name": "astermade",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Aster Studio site. Static HTML/CSS/JS with one Vercel serverless function (api/enquiry.js) for contact enquiries.",
+  "comment": "There is deliberately no build script. The pages are flat static files served as-is; this manifest exists only so Vercel installs nodemailer for the enquiry function. Adding a build step here would change how the whole site deploys.",
+  "dependencies": {
+    "nodemailer": "^6.9.14"
+  }
+}
