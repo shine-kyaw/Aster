@@ -17,8 +17,10 @@
                           wouldn't mind typing on a shared screen but
                           couldn't be guessed — this is the only lock
                           on the door.
-     KV_REST_API_URL      Same Upstash/Vercel KV as api/enquiry.js —
-     KV_REST_API_TOKEN    without these, there is nothing to list yet.
+     KV_REST_API_URL / UPSTASH_REDIS_REST_URL      Same Upstash Redis
+     KV_REST_API_TOKEN / UPSTASH_REDIS_REST_TOKEN  store as api/enquiry.js
+                          (either naming works — see lib/kv.js). Without
+                          these, there is nothing to list yet.
    ============================================================ */
 
 const crypto = require("crypto");
@@ -53,7 +55,7 @@ module.exports = async function handler(req, res) {
   if (!kvEnabled) {
     return res.status(501).json({
       ok: false,
-      error: "Storage isn't switched on yet — connect Vercel KV to the project to enable the staff console."
+      error: "Storage isn't switched on yet — connect an Upstash Redis database via Vercel's Storage tab to enable the staff console."
     });
   }
 

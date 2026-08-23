@@ -65,10 +65,17 @@
                          authenticate — so it defaults to SMTP_USER and
                          is better left unset. On Resend it must be on
                          a domain verified there.
-     KV_REST_API_URL     Upstash/Vercel KV. Set both to persist
-     KV_REST_API_TOKEN   enquiries so tracking codes resolve from any
-                         device. Without them, delivery still works —
-                         only lookup is unavailable.
+     KV_REST_API_URL       Upstash Redis (Vercel Storage tab → Add →
+     KV_REST_API_TOKEN     look for "Upstash", not "KV" — Vercel
+                           retired the first-party KV product; connect
+                           an Upstash Redis database via the Marketplace
+                           instead). Set both to persist enquiries so
+     -- or, if the integration names them this way instead --
+     UPSTASH_REDIS_REST_URL     tracking codes resolve from any device.
+     UPSTASH_REDIS_REST_TOKEN   Either naming works (see lib/kv.js).
+                                Without these, delivery still works —
+                                only lookup and the staff console are
+                                unavailable.
    ============================================================ */
 
 const TO_EMAILS = (process.env.ASTER_TO_EMAIL ||
@@ -103,7 +110,7 @@ function looksLikeEmail(value) {
   return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value);
 }
 
-/* ---------- optional persistence (Upstash / Vercel KV REST) ---------- */
+/* ---------- optional persistence (Upstash Redis via Vercel Storage) ---------- */
 // Shared with api/admin/enquiries.js — see lib/kv.js.
 const { kvEnabled, saveEnquiry, loadEnquiry } = require("../lib/kv");
 
