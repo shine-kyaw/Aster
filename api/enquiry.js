@@ -104,37 +104,8 @@ function looksLikeEmail(value) {
 }
 
 /* ---------- optional persistence (Upstash / Vercel KV REST) ---------- */
-
-const KV_URL = process.env.KV_REST_API_URL;
-const KV_TOKEN = process.env.KV_REST_API_TOKEN;
-const kvEnabled = Boolean(KV_URL && KV_TOKEN);
-
-async function kvCommand(command) {
-  const response = await fetch(KV_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${KV_TOKEN}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(command)
-  });
-  if (!response.ok) throw new Error(`KV ${response.status}`);
-  return response.json();
-}
-
-async function saveEnquiry(record) {
-  // Keep the record under its code, and push the code onto a list so
-  // an admin view can page through recent enquiries later.
-  await kvCommand(["SET", `enquiry:${record.code}`, JSON.stringify(record)]);
-  await kvCommand(["LPUSH", "enquiry:index", record.code]);
-  await kvCommand(["LTRIM", "enquiry:index", 0, 999]);
-}
-
-async function loadEnquiry(code) {
-  const result = await kvCommand(["GET", `enquiry:${code}`]);
-  if (!result || !result.result) return null;
-  return JSON.parse(result.result);
-}
+// Shared with api/admin/enquiries.js — see lib/kv.js.
+const { kvEnabled, saveEnquiry, loadEnquiry } = require("../lib/kv");
 
 /* ---------- email delivery ---------- */
 
@@ -342,8 +313,17 @@ async function handleSubmit(req, res) {
     meta: { receivedAt: new Date(record.time).toUTCString() }
   };
 
-  // Delivery is the part that must not fail quietly — it is the only
-  // reason the form exists. Storage is a convenience on top.
+  // Store first. The staff console reads this record, not the inbox —
+  // a mail hiccup must not also make the enquiry invisible. A storage
+  // failure here is logged but never blocks a visitor who's about to
+  // get a real email anyway.
+  if (kvEnabled) {
+    try { await saveEnquiry(record); }
+    catch (error) { console.error("[enquiry] stored copy failed:", error); }
+  }
+
+  // Delivery is what the visitor is told about — it's the only signal
+  // they get that someone will read this.
   const delivery = deliver(payload);
   if (!delivery) {
     console.error("[enquiry] no delivery provider configured — set SMTP_HOST/SMTP_USER/SMTP_PASS, RESEND_API_KEY, or WEB3FORMS_KEY");
@@ -363,13 +343,6 @@ async function handleSubmit(req, res) {
       reason: "delivery-failed",
       error: "We couldn't get your message through."
     });
-  }
-
-  // The enquiry is safely in the studio's inbox from here. A storage
-  // failure must not turn a delivered message into an error page.
-  if (kvEnabled) {
-    try { await saveEnquiry(record); }
-    catch (error) { console.error("[enquiry] stored copy failed:", error); }
   }
 
   return res.status(200).json({ ok: true, code, tracking: kvEnabled });

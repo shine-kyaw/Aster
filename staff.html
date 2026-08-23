@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Staff — Aster Studio</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<link rel="icon" href="favicon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --cream: #f5ede0; --ink: #1f1d18; --ink-soft: #4a463c; --ink-mute: #807961;
+    --paper: #fdf9f1; --line-soft: #e3dac3;
+    --aster-deep: #5e3d8a; --err: #a14a3a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; background: var(--cream); color: var(--ink);
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 48px 24px 80px; }
+  header.top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 36px; }
+  .brand { font-family: "Playfair Display", serif; font-size: 20px; }
+  .brand .sub { font-family: "Inter"; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-mute); margin-left: 8px; }
+  #signOut {
+    display: none; background: none; border: 1px solid var(--line-soft); color: var(--ink-soft);
+    padding: 8px 16px; border-radius: 999px; font-size: 13px; cursor: pointer; font-family: inherit;
+  }
+  #signOut:hover { border-color: var(--aster-deep); color: var(--aster-deep); }
+
+  .gate { max-width: 380px; margin: 12vh auto 0; text-align: center; }
+  .gate h1 { font-family: "Playfair Display", serif; font-weight: 400; font-size: 28px; margin: 0 0 8px; }
+  .gate p { color: var(--ink-mute); font-size: 14px; margin: 0 0 24px; }
+  .gate input {
+    width: 100%; font-family: "JetBrains Mono", monospace; font-size: 15px;
+    padding: 14px 16px; border: 1px solid var(--line-soft); border-radius: 12px;
+    background: var(--paper); color: var(--ink); outline: none; margin-bottom: 14px;
+  }
+  .gate input:focus { border-color: var(--aster-deep); }
+  .gate button {
+    width: 100%; padding: 14px; border: 0; border-radius: 999px; cursor: pointer;
+    background: var(--ink); color: var(--paper); font-size: 14px; font-weight: 500;
+    font-family: inherit; transition: background .2s;
+  }
+  .gate button:hover { background: var(--aster-deep); }
+  .gate button:disabled { opacity: 0.6; cursor: default; }
+  .gate .msg { min-height: 1.2em; font-size: 13px; color: var(--err); margin-top: 12px; }
+
+  #app { display: none; }
+  .meta-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 24px; }
+  .meta-row h1 { font-family: "Playfair Display", serif; font-weight: 400; font-size: 26px; margin: 0; }
+  .meta-row .count { font-family: "JetBrains Mono", monospace; font-size: 13px; color: var(--ink-mute); }
+
+  .empty, .notice { padding: 40px 24px; text-align: center; color: var(--ink-mute); font-style: italic; border: 1px dashed var(--line-soft); border-radius: 16px; }
+
+  .card { background: var(--paper); border: 1px solid var(--line-soft); border-radius: 16px; padding: 22px 24px; margin-bottom: 16px; }
+  .card .top { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 10px; }
+  .card .who { font-weight: 600; font-size: 15px; }
+  .card .when { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--ink-mute); white-space: nowrap; }
+  .card .contact { font-size: 13px; color: var(--ink-soft); margin-bottom: 14px; }
+  .card .contact a { color: var(--aster-deep); }
+  .card .msg-body { font-size: 14.5px; line-height: 1.6; white-space: pre-wrap; margin-bottom: 14px; }
+  .card .bottom { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; border-top: 1px solid var(--line-soft); padding-top: 12px; }
+  .card .code { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: .04em; color: var(--ink-mute); background: rgba(0,0,0,0.045); padding: 4px 10px; border-radius: 999px; }
+  .card .reply { font-size: 13px; color: var(--aster-deep); text-decoration: none; border-bottom: 1px solid transparent; }
+  .card .reply:hover { border-color: var(--aster-deep); }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">Aster <span class="sub">Staff</span></div>
+    <button id="signOut">Sign out</button>
+  </header>
+
+  <div class="gate" id="gate">
+    <h1>Enquiries</h1>
+    <p>Enter the staff key to view messages.</p>
+    <input id="keyInput" type="password" placeholder="Staff key" autocomplete="off" spellcheck="false" />
+    <button id="unlockBtn">Unlock</button>
+    <p class="msg" id="gateMsg"></p>
+  </div>
+
+  <div id="app">
+    <div class="meta-row">
+      <h1>Enquiries</h1>
+      <span class="count" id="count">—</span>
+    </div>
+    <div id="list"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var STORAGE_KEY = "aster-staff-key";
+  var gate = document.getElementById("gate");
+  var app = document.getElementById("app");
+  var keyInput = document.getElementById("keyInput");
+  var unlockBtn = document.getElementById("unlockBtn");
+  var gateMsg = document.getElementById("gateMsg");
+  var signOutBtn = document.getElementById("signOut");
+  var listEl = document.getElementById("list");
+  var countEl = document.getElementById("count");
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+
+  function fmtTime(ms) {
+    try { return new Date(ms).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }); }
+    catch (e) { return ""; }
+  }
+
+  function showApp(on) {
+    gate.style.display = on ? "none" : "block";
+    app.style.display = on ? "block" : "none";
+    signOutBtn.style.display = on ? "inline-block" : "none";
+  }
+
+  function render(enquiries) {
+    countEl.textContent = String(enquiries.length).padStart(2, "0");
+    if (!enquiries.length) {
+      listEl.innerHTML = '<div class="empty">No enquiries yet.</div>';
+      return;
+    }
+    listEl.innerHTML = enquiries.map(function (m) {
+      var subject = encodeURIComponent("Re: your enquiry" + (m.code ? " " + m.code : ""));
+      var mailto = "mailto:" + encodeURIComponent(m.email || "") + "?subject=" + subject;
+      return (
+        '<div class="card">' +
+          '<div class="top">' +
+            '<span class="who">' + esc(m.name) + '</span>' +
+            '<span class="when">' + esc(fmtTime(m.time)) + '</span>' +
+          '</div>' +
+          '<div class="contact">' + esc(m.email) + (m.phone ? ' · ' + esc(m.phone) : '') + '</div>' +
+          '<div class="msg-body">' + esc(m.message) + '</div>' +
+          '<div class="bottom">' +
+            '<span class="code">' + esc(m.code || '') + '</span>' +
+            '<a class="reply" href="' + mailto + '">Reply by email ↗</a>' +
+          '</div>' +
+        '</div>'
+      );
+    }).join("");
+  }
+
+  function load(key) {
+    gateMsg.textContent = "";
+    return fetch("/api/admin/enquiries", { headers: { "x-admin-key": key } })
+      .then(function (r) { return r.json().then(function (data) { return { status: r.status, data: data }; }); })
+      .then(function (res) {
+        if (res.status === 200 && res.data.ok) {
+          try { sessionStorage.setItem(STORAGE_KEY, key); } catch (e) {}
+          showApp(true);
+          render(res.data.enquiries || []);
+          return true;
+        }
+        try { sessionStorage.removeItem(STORAGE_KEY); } catch (e) {}
+        showApp(false);
+        gateMsg.textContent = res.data.error || "Couldn't load enquiries.";
+        return false;
+      })
+      .catch(function () {
+        gateMsg.textContent = "Couldn't reach the server.";
+        return false;
+      });
+  }
+
+  unlockBtn.addEventListener("click", function () {
+    var key = (keyInput.value || "").trim();
+    if (!key) { gateMsg.textContent = "Enter the staff key."; return; }
+    unlockBtn.disabled = true;
+    load(key).then(function () { unlockBtn.disabled = false; });
+  });
+  keyInput.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") unlockBtn.click();
+  });
+  signOutBtn.addEventListener("click", function () {
+    try { sessionStorage.removeItem(STORAGE_KEY); } catch (e) {}
+    keyInput.value = "";
+    showApp(false);
+  });
+
+  // A session-only key means it survives reloads in this tab but is
+  // gone the moment the tab closes — no lingering credential on a
+  // shared machine.
+  var saved;
+  try { saved = sessionStorage.getItem(STORAGE_KEY); } catch (e) { saved = null; }
+  if (saved) load(saved);
+})();
+</script>
+</body>
+</html>
