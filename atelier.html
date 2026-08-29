@@ -22,7 +22,7 @@
   --paper: #fbf6ea;
   --ink: #1f1d18;
   --ink-soft: #4a4640;
-  --ink-mute: #7e786c;
+  --ink-mute: #6b6456; /* darkened from #7e786c → 5.04:1 on cream for WCAG AA on 11px labels */
   --line: #d8cfb8;
   --line-soft: #e3dac3;
 
@@ -500,6 +500,23 @@ img, svg { display: block; max-width: 100%; }
   .make-card:hover, .case:hover { transform: none; box-shadow: none; }
 }
 
+/* Skip link — first thing in the tab order, hidden until focused. */
+.skip-link {
+  position: fixed; top: 0; left: 50%;
+  transform: translate(-50%, -120%);
+  z-index: 100001;
+  background: var(--ink); color: var(--cream);
+  font-family: var(--sans); font-size: 14px;
+  padding: 12px 22px; border-radius: 0 0 12px 12px;
+  text-decoration: none;
+  transition: transform 0.22s var(--ease);
+}
+.skip-link:focus-visible {
+  transform: translate(-50%, 0);
+  outline: 2px solid var(--aster-light); outline-offset: -4px;
+}
+#main:focus { outline: none; }
+
 /* ===== Page transition — smooth cream cross-fade between pages ===== */
 .page-veil {
   position: fixed; inset: 0;
@@ -550,6 +567,8 @@ img, svg { display: block; max-width: 100%; }
 </head>
 <body>
 
+<a class="skip-link" href="#main">Skip to content</a>
+
 <!-- Page-transition veil (cream cross-fade between pages) -->
 <div class="page-veil" aria-hidden="true"></div>
 
@@ -568,6 +587,8 @@ img, svg { display: block; max-width: 100%; }
     </div>
   </div>
 </nav>
+
+<main id="main" tabindex="-1">
 
 <!-- ============ HERO ============ -->
 <section class="hero">
@@ -593,7 +614,7 @@ img, svg { display: block; max-width: 100%; }
         </svg>
         <h3>Landing <em>pages</em></h3>
         <p>A single, tailored page — built fast and built well. For campaigns, launches, and brave small starts.</p>
-        <span class="mk-meta">Seed · from $300</span>
+        <span class="mk-meta">Seed · from $350</span>
       </article>
       <article class="make-card">
         <svg class="mk-flower" viewBox="-30 -30 60 60" fill="currentColor" aria-hidden="true">
@@ -607,7 +628,7 @@ img, svg { display: block; max-width: 100%; }
         </svg>
         <h3>Multi-page <em>sites</em></h3>
         <p>A presence in full sway — premium multi-page experiences with bespoke motion and a considered system.</p>
-        <span class="mk-meta">Blossom · from $1,000</span>
+        <span class="mk-meta">Blossom · from $1,500</span>
       </article>
       <article class="make-card">
         <svg class="mk-flower" viewBox="-30 -30 60 60" fill="currentColor" aria-hidden="true">
@@ -625,7 +646,7 @@ img, svg { display: block; max-width: 100%; }
         </svg>
         <h3>Brand <em>systems</em></h3>
         <p>A bespoke garden, fully tended — complete identity, component library, motion language, and long-form handover.</p>
-        <span class="mk-meta">Bloom · from $2,000</span>
+        <span class="mk-meta">Bloom · from $3,000</span>
       </article>
     </div>
   </div>
@@ -757,6 +778,8 @@ img, svg { display: block; max-width: 100%; }
 </section>
 
 <!-- ============ FOOTER ============ -->
+</main>
+
 <footer class="footer">
   <div class="wrap">© Aster Studio — Hand-built, hand-tended.</div>
 </footer>

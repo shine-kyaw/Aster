@@ -1061,7 +1061,11 @@ button:focus-visible,
 }
 .field input, .field textarea {
   font-family: var(--sans);
-  font-size: 15px;
+  /* Must stay >= 16px: iOS Safari auto-zooms on focus for anything smaller
+     and does not zoom back out, which strands mobile visitors mid-form on
+     the primary conversion path. The previous 16px guard targeted
+     .portal-card, a class that exists in CSS but never in the markup. */
+  font-size: 16px;
   color: var(--ink);
   background: transparent;
   border: 0;
@@ -2227,6 +2231,11 @@ body.in-bloom-zoom .ambient-petals {
 /* Each phase reveal emerges inside the ovule in sequence; GSAP owns the
    transform so we use top/left only — xPercent/yPercent centers in JS.
    A soft warm halo behind the text keeps it legible at any zoom depth. */
+/* Semantic wrapper for the four process phases. Deliberately unpositioned
+   and zero-size so the absolutely-positioned .ovule-reveal children keep
+   resolving against the .bloom-zoom stage exactly as before — this element
+   adds meaning for assistive tech and nothing else. */
+.ovule-phases { list-style: none; margin: 0; padding: 0; }
 .ovule-reveal {
   position: absolute;
   top: 50%;
@@ -2741,6 +2750,31 @@ body.in-bloom-zoom .ambient-petals {
    cream instead of hard-cutting. Both pages share the cream base,
    so the cross-fade is seamless.
    ============================================================ */
+
+/* Skip link — first thing in the tab order, visually hidden until focused.
+   Uses transform rather than display:none so it stays focusable. */
+.skip-link {
+  position: fixed;
+  top: 0; left: 50%;
+  transform: translate(-50%, -120%);
+  z-index: 100001;            /* above the page veil */
+  background: var(--ink);
+  color: var(--cream);
+  font-family: var(--sans);
+  font-size: 14px;
+  padding: 12px 22px;
+  border-radius: 0 0 12px 12px;
+  text-decoration: none;
+  transition: transform 0.22s var(--ease);
+}
+.skip-link:focus-visible {
+  transform: translate(-50%, 0);
+  outline: 2px solid var(--aster-light);
+  outline-offset: -4px;
+}
+/* Focus target shouldn't paint a ring when focused programmatically. */
+#main:focus { outline: none; }
+
 .page-veil {
   position: fixed;
   inset: 0;
@@ -2773,6 +2807,8 @@ body.in-bloom-zoom .ambient-petals {
 </style>
 </head>
 <body>
+
+<a class="skip-link" href="#main">Skip to content</a>
 
 <!-- Page-transition veil (cream cross-fade between pages) -->
 <div class="page-veil" aria-hidden="true"></div>
@@ -2814,6 +2850,8 @@ body.in-bloom-zoom .ambient-petals {
 </nav>
 
 <!-- ============ HERO ============ -->
+<main id="main" tabindex="-1">
+
 <header class="hero wrap">
 
   <!-- Old-European garden archway with climbing vines (decorative) -->
@@ -3029,27 +3067,33 @@ body.in-bloom-zoom .ambient-petals {
         </g>
       </svg>
 
-      <!-- All four phase reveals emerge from the ovule, one by one. -->
-      <div class="ovule-reveal" data-phase="1" aria-hidden="true">
+      <!-- All four phase reveals emerge from the ovule, one by one.
+           These are the studio's whole process narrative, so they are real
+           list content, not decoration. They were previously aria-hidden,
+           which made the entire "bulb to full bloom" story invisible to
+           screen readers even though it is the page's central idea. -->
+      <ol class="ovule-phases">
+      <li class="ovule-reveal" data-phase="1">
         <span class="ovule-label">Phase 01 · Bulb</span>
         <h3 class="ovule-title">Discovery <em>— the quiet seed.</em></h3>
         <p class="ovule-body">Listen first. Map the terrain.</p>
-      </div>
-      <div class="ovule-reveal" data-phase="2" aria-hidden="true">
+      </li>
+      <li class="ovule-reveal" data-phase="2">
         <span class="ovule-label">Phase 02 · Sprouting</span>
         <h3 class="ovule-title">Blueprint <em>— roots take hold.</em></h3>
         <p class="ovule-body">Architecture. Wireframes. Direction.</p>
-      </div>
-      <div class="ovule-reveal" data-phase="3" aria-hidden="true">
+      </li>
+      <li class="ovule-reveal" data-phase="3">
         <span class="ovule-label">Phase 03 · Budding</span>
         <h3 class="ovule-title">Craft <em>— the form emerges.</em></h3>
         <p class="ovule-body">Pixel-perfect UI. Meticulous engineering.</p>
-      </div>
-      <div class="ovule-reveal" data-phase="4" aria-hidden="true">
+      </li>
+      <li class="ovule-reveal" data-phase="4">
         <span class="ovule-label">Phase 04 · Full Bloom</span>
         <h3 class="ovule-title">Launch <em>— your identity, alive.</em></h3>
         <p class="ovule-body">Staged launch. Tuned. Handed over.</p>
-      </div>
+      </li>
+      </ol>
 
       <div class="zoom-vignette" aria-hidden="true"></div>
     </div>
@@ -3407,6 +3451,8 @@ body.in-bloom-zoom .ambient-petals {
     </a>
   </aside>
 </div>
+
+</main>
 
 <!-- ============ FOOTER ============ -->
 <footer>
@@ -4250,7 +4296,11 @@ body.in-bloom-zoom .ambient-petals {
      ============================================================ -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-<script src="https://unpkg.com/lenis@1.0.42/dist/lenis.min.js"></script>
+<!-- Lenis 1.3.26. Was pinned to 1.0.42, which does not exist on npm at all —
+     unpkg returned 404 for the whole package, so window.Lenis was never
+     defined and the `typeof window.Lenis !== "undefined"` guard below meant
+     the entire smooth-scroll layer silently no-opped in production. -->
+<script src="https://unpkg.com/lenis@1.3.26/dist/lenis.min.js"></script>
 
 <!-- Three.js — used only for the interactive 3D aster that replaces
      the cyclical philosophy ring. -->
@@ -4290,12 +4340,18 @@ body.in-bloom-zoom .ambient-petals {
     // Lenis (optional enhancement on top of GSAP)
     // Exposed on `window.__asterLenis` so the bloom-zoom replay can
     // initiate a smooth scroll-to back to the start of the section.
-    if (typeof window.Lenis !== "undefined") {
+    // Smooth scroll is an enhancement, never a requirement: if the visitor
+    // asks for reduced motion we leave native scrolling alone entirely.
+    // A CSS `animation-duration: 0.01ms` rule cannot reach Lenis or GSAP's
+    // inline transforms, so the gate has to live here in JS.
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (typeof window.Lenis !== "undefined" && !prefersReducedMotion) {
       const lenis = new Lenis({
         duration: 1.2,
         easing: function (t) { return Math.min(1, 1.001 - Math.pow(2, -10 * t)); },
         smoothWheel: true,
-        smoothTouch: false,
+        syncTouch: false,   // renamed from smoothTouch in Lenis 1.1; native touch scrolling
       });
       window.__asterLenis = lenis;
       if (window.ScrollTrigger) lenis.on("scroll", ScrollTrigger.update);
