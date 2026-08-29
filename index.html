@@ -49,6 +49,41 @@
   --pad-section: clamp(96px, 14vw, 200px);
   --max: 1320px;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* ==========================================================
+     TYPE SCALE
+     ----------------------------------------------------------
+     Every step interpolates linearly between 320px and 1440px
+     viewport, written as clamp(min, intercept + slope, max).
+
+     The important property is that the ramp is monotonic at
+     BOTH ends — 38>34>29>24>20 at 320px, 150>96>68>44>30 at
+     1440px — so two steps can never cross as the window
+     resizes. The old set could: three separate sizes all began
+     at 34px with 4.2vw, 4.4vw and 5.2vw slopes, which made them
+     identical on mobile and reordered them on desktop.
+
+     Display tops out at 150px rather than the old 135px, and
+     the hero is the only thing allowed to use it.
+     ========================================================== */
+  --fs-display: clamp(38px,  6.00px + 10.00vw, 150px);
+  --fs-h1:      clamp(34px, 16.29px +  5.54vw,  96px);
+  --fs-h2:      clamp(29px, 17.86px +  3.48vw,  68px);
+  --fs-h3:      clamp(24px, 18.29px +  1.79vw,  44px);
+  --fs-h4:      clamp(20px, 17.14px +  0.89vw,  30px);
+  --fs-lede:    clamp(17px, 15.57px +  0.45vw,  22px);
+  --fs-body:    clamp(16px, 15.71px +  0.09vw,  17px);
+  --fs-small:   clamp(14px, 13.71px +  0.09vw,  15px);
+  --fs-micro:   clamp(11px, 10.71px +  0.09vw,  12px);
+
+  /* Optical line-height and tracking: large type needs to sit
+     tighter, small type needs to breathe. */
+  --lh-display: 0.92;  --tr-display: -0.032em;
+  --lh-h1:      0.98;  --tr-h1:      -0.026em;
+  --lh-h2:      1.04;  --tr-h2:      -0.02em;
+  --lh-h3:      1.12;  --tr-h3:      -0.015em;
+  --lh-h4:      1.18;  --tr-h4:      -0.01em;
+  --lh-body:    1.6;
 }
 
 /* ============================================================
@@ -75,8 +110,8 @@
   --ink-soft: #cdc3ad;
   --ink-mute: #9a927e;       /* 6.1:1 on #16150f — passes AA */
 
-  --line: rgba(242, 233, 217, 0.16);
-  --line-soft: rgba(242, 233, 217, 0.09);
+  --line: rgba(242, 233, 217, 0.13);
+  --line-soft: rgba(242, 233, 217, 0.07);
 
   /* Accents lift a step so they don't sink into the ground. */
   --aster: #b98fe4;
@@ -87,9 +122,61 @@
   --sage: #8fae86;
   --sage-deep: #a7c09a;
 
-  background: var(--cream);
   color: var(--ink);
+
+  /* A flat fill is what makes most dark sections look cheap — it reads
+     as an absence of light rather than a lit room. Three stacked layers
+     instead:
+
+       1. a soft aster-lavender ambience entering from above,
+       2. a fainter terracotta warmth rising from below,
+       3. a base that is deliberately NOT neutral black — #17150f is a
+          warm olive-brown near-black, so it sits in the same family as
+          the cream it alternates with.
+
+     Total deviation is only a few percent luminance; the point is that
+     the eye reads depth and a light source, not a painted rectangle. */
+  background:
+    /* Fine grain on top. Luxury print has tooth; screens are perfectly
+       smooth, which is part of why flat dark reads synthetic. A ~400-byte
+       inline SVG turbulence, barely perceptible, that also stops these
+       large dark fields from colour-banding on 8-bit displays. */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.22'/%3E%3C/svg%3E"),
+    radial-gradient(130% 90% at 50% -10%, rgba(196, 165, 224, 0.075) 0%, transparent 62%),
+    radial-gradient(100% 70% at 50% 108%, rgba(232, 154, 124, 0.05) 0%, transparent 66%),
+    linear-gradient(180deg, #17150f 0%, #121009 52%, #17150f 100%);
+  background-repeat: repeat, no-repeat, no-repeat, no-repeat;
+  /* Declared AFTER the shorthand, which would otherwise reset it to
+     transparent. Without an explicit ground, a failed gradient paint
+     shows the cream body through a section whose text is now light. */
+  background-color: #17150f;
 }
+
+/* ── Raised surfaces on ink ──────────────────────────────────
+   A card on a dark ground looks pasted on if it is simply a
+   lighter rectangle. Real materials catch light along their top
+   edge and drop a soft, wide shadow. The inset hairline is the
+   whole trick — one pixel of warm light along the top edge is
+   what separates "panel" from "surface".
+   ------------------------------------------------------------ */
+.on-ink .case {
+  background: linear-gradient(180deg, #262219 0%, #1e1b14 100%);
+  border-color: rgba(242, 233, 217, 0.10);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 248, 235, 0.055),
+    0 34px 60px -34px rgba(0, 0, 0, 0.9);
+}
+.on-ink .case:hover {
+  border-color: rgba(196, 165, 224, 0.34);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 248, 235, 0.09),
+    0 44px 74px -34px rgba(0, 0, 0, 0.95);
+}
+
+/* Small caps labels get a touch more tracking on dark. Light type on
+   a dark ground optically tightens, so the extra air keeps the
+   eyebrow feeling deliberate rather than cramped. */
+.on-ink .eyebrow { letter-spacing: 0.24em; }
 
 /* Focus rings need the light accent to stay visible on ink —
    --aster-deep on near-black is only ~2:1, under the 3:1 floor. */
@@ -200,10 +287,10 @@ button:focus-visible,
   line-height: 0.96;
   color: var(--ink);
 }
-.h-xl { font-family: var(--serif); font-weight: 400; font-size: clamp(45px, 9vw, 135px); line-height: 0.96; letter-spacing: -0.025em; }
-.h-lg { font-family: var(--serif); font-weight: 400; font-size: clamp(44px, 6vw, 96px); line-height: 1.0; letter-spacing: -0.02em; }
-.h-md { font-family: var(--serif); font-weight: 400; font-size: clamp(28px, 3.4vw, 48px); line-height: 1.1; letter-spacing: -0.015em; }
-.h-sm { font-family: var(--serif); font-weight: 400; font-size: clamp(22px, 2vw, 30px); line-height: 1.15; letter-spacing: -0.01em; }
+.h-xl { font-family: var(--serif); font-weight: 400; font-size: var(--fs-display); line-height: var(--lh-display); letter-spacing: var(--tr-display); }
+.h-lg { font-family: var(--serif); font-weight: 400; font-size: var(--fs-h1); line-height: var(--lh-h1); letter-spacing: var(--tr-h1); }
+.h-md { font-family: var(--serif); font-weight: 400; font-size: var(--fs-h2); line-height: var(--lh-h2); letter-spacing: var(--tr-h2); }
+.h-sm { font-family: var(--serif); font-weight: 400; font-size: var(--fs-h3); line-height: var(--lh-h3); letter-spacing: var(--tr-h3); }
 .italic { font-style: italic; font-weight: 400; color: var(--aster-deep); }
 .lede {
   font-family: var(--sans);
@@ -754,9 +841,9 @@ button:focus-visible,
   margin: 0 0 28px;
   font-family: var(--serif);
   font-weight: 400;
-  font-size: clamp(40px, 5.2vw, 78px);
-  line-height: 1.0;
-  letter-spacing: -0.022em;
+  font-size: var(--fs-h2);
+  line-height: var(--lh-h2);
+  letter-spacing: var(--tr-h2);
 }
 .philosophy-copy p {
   font-size: 17px;
@@ -912,8 +999,8 @@ button:focus-visible,
 .cyclical-center .word {
   font-family: var(--serif);
   font-style: italic;
-  font-size: clamp(28px, 3.4vw, 44px);
-  line-height: 1.1;
+  font-size: var(--fs-h3);
+  line-height: var(--lh-h3);
   color: var(--ink);
 }
 .cyclical-center .word em {
@@ -1696,8 +1783,8 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
 .work .head h2 {
   font-family: var(--serif);
   font-weight: 400;
-  font-size: clamp(36px, 5vw, 64px);
-  line-height: 1;
+  font-size: var(--fs-h2);
+  line-height: var(--lh-h2);
   letter-spacing: -0.022em;
   margin: 16px 0 0;
 }
@@ -2177,8 +2264,10 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
 .callout-line {
   font-family: var(--serif);
   font-weight: 400;
-  font-size: clamp(40px, 7vw, 104px);
-  line-height: 0.98;
+  /* One step below display: this is the page's second-loudest voice,
+     and it must never out-shout the hero (it used to, at 320px). */
+  font-size: var(--fs-h1);
+  line-height: var(--lh-h1);
   letter-spacing: -0.025em;
   margin: 0;
   color: var(--ink);
@@ -2384,9 +2473,9 @@ body.in-bloom-zoom .ambient-petals {
 .ovule-title {
   font-family: var(--serif);
   font-weight: 500;
-  font-size: clamp(34px, 5.2vw, 72px);
-  line-height: 1.0;
-  letter-spacing: -0.02em;
+  font-size: var(--fs-h2);
+  line-height: var(--lh-h2);
+  letter-spacing: var(--tr-h2);
   color: #f7f0e2;
   margin: 0 0 clamp(14px, 1.6vw, 22px);
   text-shadow: 0 2px 18px rgba(10, 8, 5, 0.9);
@@ -2817,7 +2906,12 @@ body.in-bloom-zoom .ambient-petals {
   :root { --pad-x: 18px; }
 
   .hero { padding-top: 100px; }
-  .hero-title { font-size: clamp(36px, 12vw, 52px); }
+  /* The hero used to be overridden to clamp(36px, 12vw, 52px) below
+     480px, which resolved to 38.4px at 320 while the .h-lg headings
+     under it held a 44px floor — the page's H1 rendered smaller than
+     its H2. --fs-display already has a 38px floor tuned for the 320px
+     column, so the override is no longer needed and its removal
+     restores the hierarchy. */
   .hero-eyebrow { font-size: 10px; letter-spacing: 0.26em; }
   .hero-lede { font-size: 15px; }
   .hero-motto { font-size: 16px; }
@@ -3058,12 +3152,34 @@ body.in-bloom-zoom .ambient-petals {
     <div class="hero-flower">
       <div class="hero-flower-halo"></div>
       <svg viewBox="0 0 400 400" aria-hidden="true" id="heroFlower">
+        <defs>
+          <!-- Petals were flat single-colour fills, which is most of why
+               the hero flower read as a graphic starburst rather than a
+               bloom. A gradient down each blade gives it a light side and
+               a shadow side. Own defs rather than borrowing the bloom-zoom
+               ones, so the hero doesn't depend on another section's markup. -->
+          <linearGradient id="heroPetalOuter" x1="50%" y1="0%" x2="50%" y2="100%">
+            <stop offset="0%"   stop-color="#efe4f8"/>
+            <stop offset="55%"  stop-color="#c4a5e0"/>
+            <stop offset="100%" stop-color="#9b78c4"/>
+          </linearGradient>
+          <linearGradient id="heroPetalInner" x1="50%" y1="0%" x2="50%" y2="100%">
+            <stop offset="0%"   stop-color="#b98fe4"/>
+            <stop offset="55%"  stop-color="#8b5fbf"/>
+            <stop offset="100%" stop-color="#63408f"/>
+          </linearGradient>
+          <radialGradient id="heroDisc" cx="38%" cy="34%" r="70%">
+            <stop offset="0%"   stop-color="#f0b48c"/>
+            <stop offset="55%"  stop-color="#c87a4e"/>
+            <stop offset="100%" stop-color="#9c5734"/>
+          </radialGradient>
+        </defs>
         <g transform="translate(200 200)">
           <g id="heroOuter"></g>
           <g id="heroInner"></g>
-          <circle r="22" fill="#b8714e"/>
-          <circle r="14" fill="#d97757"/>
-          <circle r="6" fill="#e89a7c"/>
+          <circle r="22" fill="url(#heroDisc)"/>
+          <circle r="13" fill="#a8603a" fill-opacity="0.55"/>
+          <circle r="6"  fill="#efb083"/>
         </g>
       </svg>
     </div>
@@ -3735,24 +3851,72 @@ body.in-bloom-zoom .ambient-petals {
     });
   })();
 
-  function buildPetals(container, count, length, width, fill, offsetDeg) {
+  /* Seeded PRNG. The irregularity below has to be *designed*, not
+     re-rolled on every load — a flower that reshuffles itself each
+     refresh reads as a glitch, not as nature. Same seed, same bloom. */
+  function seededRandom(seed) {
+    let s = seed >>> 0;
+    return function () {
+      s = (s * 1664525 + 1013904223) >>> 0;
+      return s / 4294967296;
+    };
+  }
+
+  /* Every petal used to be the identical symmetric lozenge at a
+     perfectly even angle, flat-filled. That is precisely what makes a
+     radial arrangement read as a machined starburst rather than a
+     flower, and it sat directly beside the hero headline.
+
+     Four things fix it, all cheap:
+       · angular jitter, so the spacing is not metronomic
+       · per-petal length and width variance
+       · an asymmetric outline with a lean and a rounded tip, rather
+         than a mirror-image point
+       · a per-petal opacity spread, which reads as depth
+
+     The `.petal` / `.petal-rotator` class names are load-bearing —
+     the GSAP hero bloom targets them — so they stay. */
+  function buildPetals(container, count, length, width, fill, offsetDeg, seed) {
     if (!container) return;
     offsetDeg = offsetDeg || 0;
+    const rnd = seededRandom(seed || (count * 7919 + Math.round(length) * 104729));
+    const step = 360 / count;
     const frag = document.createDocumentFragment();
+
     for (let i = 0; i < count; i++) {
-      const angle = offsetDeg + (360 / count) * i;
+      // Up to ±28% of one step — enough to break the grid, not enough
+      // to look like petals have fallen off.
+      const jitter = (rnd() - 0.5) * step * 0.56;
+      const angle = offsetDeg + step * i + jitter;
+
+      const L = length * (0.88 + rnd() * 0.24);   // 0.88–1.12
+      const W = width  * (0.82 + rnd() * 0.36);   // 0.82–1.18
+      const lean = (rnd() - 0.5) * W * 1.5;       // tip drifts off-axis
+      const tipR = W * 0.34;                      // rounded, not a spike
+
       const g = document.createElementNS(ns, "g");
-      g.setAttribute("transform", "rotate(" + angle + ")");
+      g.setAttribute("transform", "rotate(" + angle.toFixed(2) + ")");
       g.classList.add("petal-rotator");
+
       const inner = document.createElementNS(ns, "g");
       inner.classList.add("petal");
+
       const path = document.createElementNS(ns, "path");
-      path.setAttribute(
-        "d",
-        "M 0 0 Q " + (-width) + " " + (-length * 0.45) + " 0 " + (-length) +
-        " Q " + width + " " + (-length * 0.45) + " 0 0 Z"
+      // Asymmetric: the two edges use different control weights, so the
+      // blade curves rather than mirroring itself.
+      path.setAttribute("d",
+        "M 0 0 " +
+        "C " + (-W * 1.02).toFixed(2) + " " + (-L * 0.30).toFixed(2) + ", " +
+               (-W * 0.72 + lean).toFixed(2) + " " + (-L * 0.78).toFixed(2) + ", " +
+               (lean - tipR).toFixed(2) + " " + (-L + tipR).toFixed(2) + " " +
+        "Q " + lean.toFixed(2) + " " + (-L).toFixed(2) + ", " +
+               (lean + tipR).toFixed(2) + " " + (-L + tipR).toFixed(2) + " " +
+        "C " + (W * 0.78 + lean).toFixed(2) + " " + (-L * 0.74).toFixed(2) + ", " +
+               (W * 0.94).toFixed(2) + " " + (-L * 0.28).toFixed(2) + ", " +
+               "0 0 Z"
       );
       path.setAttribute("fill", fill);
+      path.setAttribute("fill-opacity", (0.82 + rnd() * 0.18).toFixed(3));
       inner.appendChild(path);
       g.appendChild(inner);
       frag.appendChild(g);
@@ -3763,8 +3927,11 @@ body.in-bloom-zoom .ambient-petals {
   // Build all flowers
   buildPetals(document.getElementById("brand-petals"), 12, 22, 4, "#c4a5e0");
   buildPetals(document.getElementById("footerPetals"), 12, 22, 4, "#c4a5e0");
-  buildPetals(document.getElementById("heroOuter"), 14, 165, 12, "#c4a5e0");
-  buildPetals(document.getElementById("heroInner"), 12, 105, 9, "#8b5fbf", 15);
+  // Real asters carry far more, narrower rays than 14 — the low count
+  // was another reason this read as a star. Seeds are fixed so the
+  // bloom is the same considered shape on every load.
+  buildPetals(document.getElementById("heroOuter"), 21, 165, 9, "url(#heroPetalOuter)", 0,  20260829);
+  buildPetals(document.getElementById("heroInner"), 16, 108, 7, "url(#heroPetalInner)", 11, 77345201);
   buildPetals(document.getElementById("petalsOuter"), 14, 155, 12, "#c4a5e0");
   buildPetals(document.getElementById("petalsInner"), 12, 95, 9, "#8b5fbf", 15);
   buildPetals(document.getElementById("philOuter"), 12, 95, 7, "#c4a5e0");
