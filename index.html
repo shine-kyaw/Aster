@@ -51,6 +51,90 @@
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* ============================================================
+   DARK ENVIRONMENTS
+   ------------------------------------------------------------
+   The page used to sit inside a 3% luminance band from hero to
+   footer — every section the same cream, so nothing read as a
+   scene change and the work had no stage to stand on.
+
+   `.on-ink` re-maps the semantic tokens rather than restyling
+   components. Anything already written in terms of --ink /
+   --paper / --line therefore inverts on its own, which keeps a
+   dark section from becoming a second copy of the stylesheet.
+   Raise a surface with --paper as before and it comes out as
+   lifted charcoal instead of lifted cream.
+   ============================================================ */
+.on-ink {
+  --cream: #16150f;
+  --cream-deep: #100f0b;
+  --cream-soft: #1c1a14;
+  --paper: #24211a;          /* raised surface, not page ground */
+
+  --ink: #f2e9d9;            /* body text, now light */
+  --ink-soft: #cdc3ad;
+  --ink-mute: #9a927e;       /* 6.1:1 on #16150f — passes AA */
+
+  --line: rgba(242, 233, 217, 0.16);
+  --line-soft: rgba(242, 233, 217, 0.09);
+
+  /* Accents lift a step so they don't sink into the ground. */
+  --aster: #b98fe4;
+  --aster-deep: #c4a5e0;
+  --aster-mist: rgba(196, 165, 224, 0.14);
+  --bloom: #f0a98c;
+  --bloom-deep: #e89a7c;
+  --sage: #8fae86;
+  --sage-deep: #a7c09a;
+
+  background: var(--cream);
+  color: var(--ink);
+}
+
+/* Focus rings need the light accent to stay visible on ink —
+   --aster-deep on near-black is only ~2:1, under the 3:1 floor. */
+.on-ink :where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline-color: var(--aster-light);
+}
+
+/* Long dark stretches read better with a softer rendering. */
+.on-ink { -webkit-font-smoothing: antialiased; }
+
+/* ── Light → dark seams ──────────────────────────────────────
+   A hard edge between cream and ink reads as two pages stapled
+   together. These pseudo-element gradients let each dark section
+   bleed into the light one before it and out into the light one
+   after, so the eye reads one continuous descent rather than a
+   cut. They sit above the section ground but below its content,
+   and are inert to pointer and assistive tech.
+   ------------------------------------------------------------ */
+.on-ink { position: relative; }
+.on-ink::before,
+.on-ink::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0;
+  height: clamp(70px, 9vw, 150px);
+  pointer-events: none;
+  z-index: 0;
+}
+.on-ink::before {
+  top: 0;
+  transform: translateY(-100%);
+  background: linear-gradient(to bottom, transparent, var(--cream));
+}
+.on-ink::after {
+  bottom: 0;
+  transform: translateY(100%);
+  background: linear-gradient(to top, transparent, var(--cream));
+}
+/* Consecutive dark sections form one act — no seam between them. */
+.on-ink + .on-ink::before { display: none; }
+.on-ink:has(+ .on-ink)::after { display: none; }
+
+/* Content must ride above the seam gradients. */
+.on-ink > * { position: relative; z-index: 1; }
+
 *, *::before, *::after { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body {
@@ -1774,6 +1858,15 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
 .case-ktk .preview { background: linear-gradient(150deg, #16130e 0%, #33291d 55%, #4d3d29 100%); }
 .case-ktk .body .row strong { color: #b1341f; }
 
+/* Each project's CTA carries that client's own accent, which was tuned
+   against a cream card. On the ink card those land at 2.6–3.5:1, under
+   the 4.5:1 floor, so the dark environment gets a lifted tint of the
+   same hue — the brand association survives, the legibility comes back. */
+.on-ink .case-tagun   .body .row strong { color: #ff8f85; }
+.on-ink .case-foliyo  .body .row strong { color: #5cc9e8; }
+.on-ink .case-gateway .body .row strong { color: #a3adf7; }
+.on-ink .case-ktk     .body .row strong { color: #ff9a7b; }
+
 /* Real client wordmarks (Power Tagun, KTK) — centred, not stretched
    to fill the frame the way the abstract decorative marks are. */
 .case .preview .logo-plate {
@@ -2236,6 +2329,21 @@ body.in-bloom-zoom .ambient-petals {
    resolving against the .bloom-zoom stage exactly as before — this element
    adds meaning for assistive tech and nothing else. */
 .ovule-phases { list-style: none; margin: 0; padding: 0; }
+
+/* Soft radial scrim behind each phase title. Sits under the text but
+   over the flower artwork, so the copy stays readable at every point of
+   the zoom without needing a solid plate that would hide the bloom. */
+.ovule-reveal::before {
+  content: "";
+  position: absolute;
+  inset: -18% -12%;
+  background: radial-gradient(ellipse at center,
+              rgba(12, 10, 7, 0.82) 0%,
+              rgba(12, 10, 7, 0.62) 45%,
+              rgba(12, 10, 7, 0) 78%);
+  z-index: -1;
+  pointer-events: none;
+}
 .ovule-reveal {
   position: absolute;
   top: 50%;
@@ -2252,16 +2360,26 @@ body.in-bloom-zoom .ambient-petals {
     radial-gradient(ellipse at center, rgba(255, 248, 235, 0.78) 0%, rgba(255, 240, 220, 0.45) 55%, rgba(255, 240, 220, 0) 80%);
   border-radius: 50%;
 }
+/* These four titles sit over the zoom artwork, not over a flat ground —
+   at peak zoom the backdrop is the flower's warm amber centre, at the
+   edges it's lavender petals, and beyond that the ink stage. They were
+   previously hardcoded dark browns with a cream text-shadow, which
+   reached 1.01:1 once the section became a dark environment.
+
+   Rather than swap one hardcoded colour for another, each phase now
+   carries its own soft scrim (see .ovule-reveal::before below), so the
+   type is legible against petal, centre or ground alike — the standard
+   cinematic title-over-image treatment. */
 .ovule-label {
   font-family: var(--sans);
   font-weight: 600;
   font-size: clamp(12px, 1.1vw, 15px);
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: #4a2410;
+  color: var(--aster-light);
   margin-bottom: clamp(14px, 1.8vw, 22px);
   display: block;
-  text-shadow: 0 1px 0 rgba(255, 248, 235, 0.7);
+  text-shadow: 0 1px 8px rgba(10, 8, 5, 0.85);
 }
 .ovule-title {
   font-family: var(--serif);
@@ -2269,23 +2387,23 @@ body.in-bloom-zoom .ambient-petals {
   font-size: clamp(34px, 5.2vw, 72px);
   line-height: 1.0;
   letter-spacing: -0.02em;
-  color: #1a0d05;
+  color: #f7f0e2;
   margin: 0 0 clamp(14px, 1.6vw, 22px);
-  text-shadow: 0 1px 2px rgba(255, 248, 235, 0.55);
+  text-shadow: 0 2px 18px rgba(10, 8, 5, 0.9);
 }
 .ovule-title em {
   font-style: italic;
-  color: #7a3d18;
+  color: #e8c9a6;
 }
 .ovule-body {
   font-family: var(--sans);
   font-size: clamp(15px, 1.4vw, 20px);
   font-weight: 500;
-  color: #2a160a;
+  color: #ddd2bd;
   margin: 0;
   line-height: 1.5;
   opacity: 1;
-  text-shadow: 0 1px 0 rgba(255, 248, 235, 0.6);
+  text-shadow: 0 1px 10px rgba(10, 8, 5, 0.9);
 }
 /* ── Mobile tuning ──
    Taller scroll runway (480vh) so the now tightly-coupled animation
@@ -2984,7 +3102,7 @@ body.in-bloom-zoom .ambient-petals {
 </section>
 
 <!-- ============ PROCESS ============ -->
-<section class="section process" id="process">
+<section class="section process on-ink" id="process">
   <div class="wrap">
     <div class="process-intro process-intro--centered reveal">
       <h2 class="h-lg">From <em class="italic">bulb</em> to full bloom.</h2>
@@ -3105,7 +3223,7 @@ body.in-bloom-zoom .ambient-petals {
 </section>
 
 <!-- ============ PHILOSOPHY ============ -->
-<section class="section philosophy" id="philosophy">
+<section class="section philosophy on-ink" id="philosophy">
   <div class="wrap">
     <div class="philosophy-grid">
       <div class="philosophy-copy reveal">
@@ -3134,7 +3252,7 @@ body.in-bloom-zoom .ambient-petals {
 <div class="fine-divide"></div>
 
 <!-- ============ WORK · SELECTED GARDENS ============ -->
-<section class="section work" id="work">
+<section class="section work on-ink" id="work">
   <div class="wrap">
     <div class="head">
       <div>
@@ -3322,7 +3440,7 @@ body.in-bloom-zoom .ambient-petals {
 </section>
 
 <!-- ============ EDITORIAL CALLOUT ============ -->
-<section class="callout" aria-label="Aster promise">
+<section class="callout on-ink" aria-label="Aster promise">
   <div class="callout-inner reveal">
     <svg class="callout-mark" viewBox="-15 -15 30 30" fill="currentColor" aria-hidden="true">
       <g>
