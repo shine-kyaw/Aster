@@ -25,3 +25,4 @@ build/
 # Claude / agent scratch
 .claude/
 .babel-tmp/
+assets/incoming/

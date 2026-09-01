@@ -50,7 +50,14 @@
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
-  background: var(--cream);
+  /* Same cotton-rag ground as the homepage. The design system living only in
+     index.html and never reaching here is what made this read as three sites
+     wearing one skin. The tile is a mirror quilt, so it repeats seamlessly. */
+  background-color: var(--cream);
+  background-image: url("assets/env/paper-grain.jpg");
+  background-size: 380px;
+  background-repeat: repeat;
+  background-blend-mode: soft-light;
   color: var(--ink);
   font-family: var(--sans);
   font-weight: 400;

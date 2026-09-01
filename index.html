@@ -124,32 +124,140 @@
 
   color: var(--ink);
 
-  /* A flat fill is what makes most dark sections look cheap — it reads
-     as an absence of light rather than a lit room. Three stacked layers
-     instead:
+  /* A flat fill is what makes most dark sections look cheap — it reads as an
+     absence of light rather than a lit room. So these are lit rooms: the
+     ground is a photographed candlelit plaster wall, scrimmed back until it
+     is atmosphere rather than picture.
 
-       1. a soft aster-lavender ambience entering from above,
-       2. a fainter terracotta warmth rising from below,
-       3. a base that is deliberately NOT neutral black — #17150f is a
-          warm olive-brown near-black, so it sits in the same family as
-          the cream it alternates with.
+     The layer order, top to bottom:
 
-     Total deviation is only a few percent luminance; the point is that
-     the eye reads depth and a light source, not a painted rectangle. */
+       1. film grain, soft-light, so it adds tooth without shifting level;
+       2. aster-lavender ambience entering from above;
+       3. terracotta warmth rising from below;
+       4. a scrim that holds the plate down to a legible level — this is the
+          layer doing the contrast work, and it is deliberately heavy;
+       5. the plate itself, `cover` so it can never tile or leave a gap.
+
+     `cover` crops to the centre band on tall sections, which is the glowing
+     part of the wall — it degrades toward "warm dark" rather than toward
+     anything broken. Measured worst case (brightest region of the plate,
+     under the scrim) is 8.4:1 against --ink; the average is nearer 11:1. */
   background:
-    /* Fine grain on top. Luxury print has tooth; screens are perfectly
-       smooth, which is part of why flat dark reads synthetic. A ~400-byte
-       inline SVG turbulence, barely perceptible, that also stops these
-       large dark fields from colour-banding on 8-bit displays. */
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.22'/%3E%3C/svg%3E"),
-    radial-gradient(130% 90% at 50% -10%, rgba(196, 165, 224, 0.075) 0%, transparent 62%),
-    radial-gradient(100% 70% at 50% 108%, rgba(232, 154, 124, 0.05) 0%, transparent 66%),
-    linear-gradient(180deg, #17150f 0%, #121009 52%, #17150f 100%);
-  background-repeat: repeat, no-repeat, no-repeat, no-repeat;
+    url("assets/env/dark-grain.jpg"),
+    radial-gradient(130% 90% at 50% -10%, rgba(196, 165, 224, 0.085) 0%, transparent 62%),
+    radial-gradient(100% 70% at 50% 108%, rgba(232, 154, 124, 0.055) 0%, transparent 66%),
+    linear-gradient(180deg, rgba(20, 18, 12, 0.60) 0%, rgba(15, 13, 9, 0.74) 54%, rgba(20, 18, 12, 0.64) 100%),
+    url("assets/env/wall-candlelit.jpg");
+  background-size: 300px, auto, auto, auto, cover;
+  background-position: center, center, center, center, center center;
+  background-repeat: repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+  background-blend-mode: soft-light, screen, screen, normal, normal;
   /* Declared AFTER the shorthand, which would otherwise reset it to
-     transparent. Without an explicit ground, a failed gradient paint
-     shows the cream body through a section whose text is now light. */
+     transparent. Without an explicit ground, a failed image load shows the
+     cream body through a section whose text is now light. */
   background-color: #17150f;
+}
+
+/* ── The stage ───────────────────────────────────────────────
+   The work section gets a different room: an actual empty screening room,
+   photographed straight on, with the projector pool on the far wall. Its
+   centre came back deliberately bare so real project screenshots can hang
+   there. This is the one section where the environment is the point. */
+.on-ink--stage {
+  background:
+    url("assets/env/dark-grain.jpg"),
+    radial-gradient(120% 80% at 50% -6%, rgba(196, 165, 224, 0.065) 0%, transparent 58%),
+    linear-gradient(180deg, rgba(14, 13, 9, 0.72) 0%, rgba(11, 10, 7, 0.60) 42%, rgba(14, 13, 9, 0.80) 100%),
+    url("assets/env/stage-dark.jpg");
+  background-size: 300px, auto, auto, cover;
+  background-position: center, center, center, center top;
+  background-repeat: repeat, no-repeat, no-repeat, no-repeat;
+  background-blend-mode: soft-light, screen, normal, normal;
+  background-color: #100e09;
+}
+
+/* ── The pointer as a light source ───────────────────────────
+   A warm falloff that follows the cursor through the dark sections, so a
+   flat dark panel becomes a room you are holding a lamp in. This is the
+   highest feel-per-line item on the whole site.
+
+   It is a separate element moved by `transform` rather than a gradient
+   painted into the section background: transform is composited, so the lamp
+   costs no repaint as it moves. `screen` makes it add light instead of
+   veiling, and z-index keeps it behind the type — light falls on the wall,
+   never across the words. */
+.on-ink > .lamp {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 760px;
+  height: 760px;
+  margin: -380px 0 0 -380px;
+  z-index: 0;                 /* beats `.on-ink > *` — two classes to one */
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 520ms var(--ease);
+  mix-blend-mode: screen;
+  background: radial-gradient(closest-side,
+    rgba(255, 228, 182, 0.115) 0%,
+    rgba(255, 214, 164, 0.062) 32%,
+    rgba(232, 154, 124, 0.026) 58%,
+    transparent 100%);
+  will-change: transform;
+}
+.on-ink > .lamp.lit { opacity: 1; }
+
+/* ── One room, walked through ─────────────────────────────────
+   Work, process and philosophy run consecutively, and until now all three
+   set their own flat fill — which silently overrode the whole layered stack
+   above (same specificity, declared later in the sheet). With those removed,
+   varying only the plate's vertical position gives each section a different
+   part of the same wall, so the run reads as one continuous space rather
+   than three identical dark panels.
+
+   Five positions because the shorthand has five layers; only the last one,
+   the plate, actually differs. */
+.philosophy.on-ink { background-position: center, center, center, center, center 20%; }
+.callout.on-ink    { background-position: center, center, center, center, center 72%; }
+
+/* ── The promise, lit from behind ─────────────────────────────
+   The one place the warm bloom plate earns its weight. "Give us the seed.
+   We'll make it bloom." is the line on this page that should look lit rather
+   than printed.
+
+   Two classes in the selector so z-index: 0 beats `.on-ink > *`'s z-index: 1
+   — the glow needs to sit under the type, and `.callout-inner` is a sibling
+   holding that 1. `screen` means the plate's black ground costs nothing. */
+.callout > .callout-glow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(820px, 132%);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  pointer-events: none;
+  background: url("assets/env/glow-warm.jpg") center / contain no-repeat;
+  mix-blend-mode: screen;
+  opacity: 0.40;
+  /* The plate's own falloff is tighter than a lamp through fog really is —
+     this mask does the softening the generation didn't. */
+  -webkit-mask-image: radial-gradient(circle, #000 24%, rgba(0, 0, 0, 0.42) 52%, transparent 74%);
+          mask-image: radial-gradient(circle, #000 24%, rgba(0, 0, 0, 0.42) 52%, transparent 74%);
+}
+
+/* ── The seed, before the form ────────────────────────────────
+   Masked top and bottom so it dissolves out of the dark callout and into the
+   cream of the contact section rather than butting against either. */
+.seed-band {
+  height: clamp(140px, 24vh, 280px);
+  background: url("assets/botanical/seed-macro.jpg") center 44% / cover no-repeat;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 28%, #000 72%, transparent 100%);
+          mask-image: linear-gradient(180deg, transparent 0%, #000 28%, #000 72%, transparent 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .on-ink > .lamp { display: none; }
 }
 
 /* ── Raised surfaces on ink ──────────────────────────────────
@@ -226,7 +334,21 @@
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
-  background: var(--cream);
+  /* Real scanned cotton-rag instead of a flat fill.
+     Two processing steps, both necessary. The tile is a 2×2 mirror quilt so
+     its edges match and it repeats without a seam — but mirroring a plate
+     that carries its own luminance drift turns that drift into a visible
+     chevron, which showed up as horizontal banding across the hero. So the
+     tile is also high-passed: the low-frequency drift is subtracted out and
+     only the fine grain survives, centred on neutral grey.
+     `soft-light` against --cream then adds tooth without moving the ground
+     off its exact brand value — which matters, because --ink-mute clears AA
+     on cream with only about 0.35 to spare. */
+  background-color: var(--cream);
+  background-image: url("assets/env/paper-grain.jpg");
+  background-size: 380px;
+  background-repeat: repeat;
+  background-blend-mode: soft-light;
   color: var(--ink);
   font-family: var(--sans);
   font-weight: 400;
@@ -547,18 +669,29 @@ button:focus-visible,
 .hero-title {
   margin: 0 0 18px;                    /* lede sits closer to the title */
 }
-/* padding-bottom gives descenders ("y", comma) room inside the reveal mask so
-   they aren't clipped; negative margin keeps the tight line spacing. The
-   initial translate is deepened to 130% so the line still hides fully. */
-.hero-title .l { display: block; overflow: hidden; padding-bottom: 0.2em; margin-bottom: -0.12em; }
+/* A masked translateY(130%) slide-up is the single most-used headline reveal
+   on the internet. This settles instead — a short rise out of a deep blur,
+   which is the treatment that actually reads as expensive. Dropping the mask
+   also drops the descender hack it needed (padding-bottom + negative margin
+   to stop "y" and commas being clipped). */
+.hero-title .l { display: block; }
 .hero-title .l > span {
   display: block;
-  transform: translateY(130%);
-  transition: transform 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+  opacity: 0;
+  transform: translateY(0.34em) scale(0.985);
+  filter: blur(16px);
+  transition:
+    opacity   1.15s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 1.25s cubic-bezier(0.16, 1, 0.30, 1),
+    filter    1.05s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.loaded .hero-title .l > span { transform: translateY(0); }
-.hero-title .l:nth-child(2) > span { transition-delay: 0.12s; }
-.hero-title .l:nth-child(3) > span { transition-delay: 0.24s; }
+.loaded .hero-title .l > span {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+}
+.hero-title .l:nth-child(2) > span { transition-delay: 0.14s; }
+.hero-title .l:nth-child(3) > span { transition-delay: 0.28s; }
 
 .hero-lede {
   margin: 0 0 44px;
@@ -664,12 +797,16 @@ button:focus-visible,
 }
 .hero-flower-halo {
   position: absolute;
-  width: 110%;
-  height: 110%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(196, 165, 224, 0.35), transparent 65%);
-  filter: blur(20px);
+  width: 172%;
+  height: 172%;
+  left: -36%;
+  top: -36%;
   pointer-events: none;
+  /* A soft radial mask rather than border-radius. A hard circle edge is
+     exactly what made this read as a coloured disc parked behind the
+     flower instead of light in the air around it. */
+  -webkit-mask-image: radial-gradient(circle closest-side, #000 10%, rgba(0, 0, 0, 0.46) 38%, rgba(0, 0, 0, 0.14) 64%, transparent 88%);
+          mask-image: radial-gradient(circle closest-side, #000 10%, rgba(0, 0, 0, 0.46) 38%, rgba(0, 0, 0, 0.14) 64%, transparent 88%);
 }
 
 /* ========== Section divider ========== */
@@ -682,7 +819,6 @@ button:focus-visible,
 
 /* ========== Process section ========== */
 .process {
-  background: var(--cream-soft);
   position: relative;
   /* `clip` not `hidden` — `hidden` would break the sticky bloom-zoom stage
      by creating a scroll-clipping context on this ancestor. */
@@ -820,7 +956,6 @@ button:focus-visible,
 /* ========== Philosophy (cyclical) ========== */
 .philosophy {
   text-align: center;
-  background: var(--cream);
   position: relative;
   overflow: hidden;
 }
@@ -1513,13 +1648,40 @@ footer {
 .reveal-stagger.in > *:nth-child(3) { transition-delay: 0.28s; }
 .reveal-stagger.in > *:nth-child(4) { transition-delay: 0.38s; }
 
+/* Blur-to-sharp, reserved for headings. Deliberately NOT folded into
+   `.reveal` — that class is on dozens of elements and blurring all of them
+   at once is a real compositing cost for a effect nobody reads on body copy.
+   Headings are where the treatment is legible, so headings are where it goes. */
+.reveal-type {
+  opacity: 0;
+  transform: translateY(0.22em) scale(0.99);
+  filter: blur(13px);
+  transition:
+    opacity   1.05s var(--ease),
+    transform 1.15s cubic-bezier(0.16, 1, 0.30, 1),
+    filter    0.95s var(--ease);
+}
+.reveal-type.in {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
-  .reveal, .reveal-stagger > * { opacity: 1 !important; transform: none !important; }
-  .hero-title .l > span { transform: translateY(0) !important; }
+  .reveal, .reveal-stagger > *, .reveal-type {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+  .hero-title .l > span {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
 }
 
 /* small phone tightening */
@@ -1792,19 +1954,74 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
 /* Three columns so the featured Foliyo card (which spans the full row)
    is followed by an even row of the three remaining projects — four
    real projects divide as 1 + 3, never leaving one card orphaned. */
+/* Two columns, not three. The two projects with real screen captures take a
+   full-width row each; the two without share the last row. That split is the
+   hierarchy — proof gets the space, and it reads as editing rather than as
+   four cards of which two happen to be thinner. */
 .work-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: clamp(20px, 2.4vw, 28px);
 }
-/* At two columns the 1 + 3 split would leave a lone card on the last
-   row, so the final card widens to fill it. */
-@media (min-width: 881px) and (max-width: 1080px) {
-  .work-grid { grid-template-columns: 1fr 1fr; }
-  .work-grid > .case:last-child { grid-column: 1 / -1; }
-  .work-grid > .case:last-child .preview { aspect-ratio: 24 / 7; }
-}
 @media (max-width: 880px) { .work-grid { grid-template-columns: 1fr; } }
+
+/* ── Projected work ──────────────────────────────────────────
+   The 601 Inc composition: the room is dark, so the work is the only lit
+   thing in it. One capture, hung on the wall inside a warm pool.
+
+   One and not two. The overlapping laptop-plus-phone composite is the agency
+   template — and here the phone capture is actually *taller* than the desktop
+   one, so it covered the work rather than framing it. Instead the `<picture>`
+   serves the capture that matches the visitor's own device: you see the site
+   as it looks on the thing you are holding. Same two assets, no overlay, and
+   it makes the responsive claim by demonstration rather than by diagram. */
+.preview--shot {
+  aspect-ratio: auto;
+  display: grid;
+  place-items: center;
+  padding: clamp(26px, 3.2vw, 46px) clamp(20px, 2.6vw, 38px);
+  background:
+    radial-gradient(74% 60% at 50% 40%, rgba(255, 226, 178, 0.10) 0%, transparent 70%),
+    linear-gradient(180deg, #15130d 0%, #0c0b07 100%);
+}
+.shot-stack {
+  display: block;
+  width: 100%;
+  max-width: 620px;
+  /* Momentum, spent in exactly one place. `--vel` runs −1…1 off Lenis, so at
+     full tilt this is 0.55° of skew and 1.4% of vertical stretch: enough to
+     feel the page has weight, far too little to register as an effect. Only
+     two elements carry it, which is the whole point — a page-wide skew is the
+     version of this that looks broken. */
+  transform: skewY(calc(var(--vel, 0) * 0.55deg)) scaleY(calc(1 + var(--vel, 0) * 0.014));
+  will-change: transform;
+}
+.shot-stack img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 7px;
+  border: 1px solid rgba(242, 233, 217, 0.11);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 248, 235, 0.07),
+    0 30px 64px -26px rgba(0, 0, 0, 0.94),
+    0 5px 16px -7px rgba(0, 0, 0, 0.72);
+  transition: transform 0.75s var(--ease);
+}
+.case:hover .shot-stack img { transform: translateY(-5px) scale(1.014); }
+
+/* Below 700px the <source> swaps in the portrait phone capture, so the frame
+   has to stop being a landscape plate or the card becomes a column of
+   screenshot. Narrower box, phone-sized corner radius. */
+@media (max-width: 700px) {
+  .shot-stack { max-width: 244px; }
+  .shot-stack img { border-radius: 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shot-stack { transform: none; will-change: auto; }
+  .case:hover .shot-stack img { transform: none; }
+}
 .case {
   background: var(--paper);
   border: 1px solid var(--line-soft);
@@ -1910,6 +2127,12 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
 @media (min-width: 760px) {
   .case-featured { flex-direction: row; align-items: stretch; }
   .case-featured .preview { flex: 0 0 46%; aspect-ratio: auto; min-height: 280px; }
+  /* Shot cards give the capture more room than a logo needed — the screenshot
+     is the argument, so it gets to be the larger half. */
+  .case-featured .preview--shot { flex: 0 0 55%; min-height: 340px; }
+  /* Alternating sides down the column, so two stacked full-width cards read
+     as a spread rather than as the same card twice. */
+  .case-featured--flip { flex-direction: row-reverse; }
   .case-featured .body {
     flex: 1;
     display: flex;
@@ -2228,7 +2451,6 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
   padding-bottom: var(--pad-section);
   position: relative;
   text-align: center;
-  background: var(--paper);
   border-top: 1px solid var(--line-soft);
   border-bottom: 1px solid var(--line-soft);
   overflow: hidden;
@@ -2418,6 +2640,27 @@ body.in-bloom-zoom .ambient-petals {
    resolving against the .bloom-zoom stage exactly as before — this element
    adds meaning for assistive tech and nothing else. */
 .ovule-phases { list-style: none; margin: 0; padding: 0; }
+
+/* Each phase now carries its actual botanical stage — seed, bud, half-open,
+   full bloom — drawn as a real specimen plate, rather than four labels
+   describing a flower the visitor never gets to see. All four came out of one
+   generation session so the line weight and palette match across the set.
+
+   They were drawn on pure white, so `multiply` against the warm halo knocks
+   the paper out for free: no alpha channel needed, and a JPEG does the job.
+   The halo is a warm cream, so the ink and the muted violet both survive it. */
+.ovule-plate {
+  display: block;
+  width: clamp(62px, 8.4vw, 102px);
+  height: auto;
+  margin: 0 auto clamp(8px, 1.3vw, 16px);
+  mix-blend-mode: multiply;
+  opacity: 0.94;
+}
+@media (max-width: 560px) {
+  /* At this size the plate would crowd the phase copy inside the ovule. */
+  .ovule-plate { display: none; }
+}
 
 /* Soft radial scrim behind each phase title. Sits under the text but
    over the flower artwork, so the copy stays readable at every point of
@@ -2785,12 +3028,25 @@ body.in-bloom-zoom .ambient-petals {
    MTK · Hero halo breathing
    ============================================================ */
 @keyframes heroBreathe {
-  0%, 100% { transform: scale(1);    opacity: 0.7; }
-  50%      { transform: scale(1.08); opacity: 1; }
+  0%, 100% { transform: scale(1);    opacity: 0.34; }
+  50%      { transform: scale(1.06); opacity: 0.50; }
 }
 .hero-flower-halo {
   animation: heroBreathe 6s ease-in-out infinite;
-  background: radial-gradient(circle, rgba(196, 165, 224, 0.40), transparent 65%);
+  /* The painted pigment bleed with the violet lamp screened over it. Both are
+     real plates: the wash carries watercolour bleed and paper tooth that no
+     CSS radial can fake, and `screen` lets the lamp add light rather than
+     veil — its black ground disappears for free, so no alpha channel and a
+     JPEG does the job.
+
+     This lives inside the flower's own grid cell, never behind body copy,
+     and that is deliberate rather than incidental: --ink-mute clears AA on
+     cream with only ~0.35 to spare, so tinting the ground under any text
+     would break it. In this cell there is no text at any viewport width. */
+  background:
+    url("assets/env/glow-aster.jpg") center / 58% 58% no-repeat,
+    url("assets/env/hero-wash.jpg") center / cover no-repeat;
+  background-blend-mode: screen, normal;
   will-change: transform, opacity;
 }
 
@@ -3047,6 +3303,7 @@ body.in-bloom-zoom .ambient-petals {
 <!-- Full-screen menu (opened by the hamburger) -->
 <div class="nav-menu" id="navMenu" aria-hidden="true">
   <nav class="nav-menu-inner" aria-label="Primary">
+    <a href="#work">Work</a>
     <a href="#process">Process</a>
     <a href="atelier.html">Atelier</a>
     <a href="#pricing">Pricing</a>
@@ -3056,6 +3313,7 @@ body.in-bloom-zoom .ambient-petals {
 
 <!-- ============ PERSISTENT SIDE RAIL ============ -->
 <nav class="side-rail" aria-label="Section navigation">
+  <a href="#work" data-section="work">Work</a>
   <a href="#process" data-section="process">Process</a>
   <a href="#pricing" data-section="pricing">Pricing</a>
   <a href="#connect" data-section="connect">Connect</a>
@@ -3158,15 +3416,22 @@ body.in-bloom-zoom .ambient-petals {
                bloom. A gradient down each blade gives it a light side and
                a shadow side. Own defs rather than borrowing the bloom-zoom
                ones, so the hero doesn't depend on another section's markup. -->
+          <!-- These run tip (0%) → base (100%), because the gradient resolves
+               against each petal's own bounding box before rotation and the
+               petals are drawn pointing up. The old ramp started at #efe4f8 —
+               near-white — so every single ray had a white tip, which is what
+               a spark looks like. An aster's rays are deepest at the tip and
+               pale toward the disc, so the ramp is now that way round and
+               stays inside the violet family the whole way. -->
           <linearGradient id="heroPetalOuter" x1="50%" y1="0%" x2="50%" y2="100%">
-            <stop offset="0%"   stop-color="#efe4f8"/>
-            <stop offset="55%"  stop-color="#c4a5e0"/>
-            <stop offset="100%" stop-color="#9b78c4"/>
+            <stop offset="0%"   stop-color="#a77fd2"/>
+            <stop offset="52%"  stop-color="#bd9ade"/>
+            <stop offset="100%" stop-color="#dbc9ed"/>
           </linearGradient>
           <linearGradient id="heroPetalInner" x1="50%" y1="0%" x2="50%" y2="100%">
-            <stop offset="0%"   stop-color="#b98fe4"/>
-            <stop offset="55%"  stop-color="#8b5fbf"/>
-            <stop offset="100%" stop-color="#63408f"/>
+            <stop offset="0%"   stop-color="#7c50b0"/>
+            <stop offset="52%"  stop-color="#8b5fbf"/>
+            <stop offset="100%" stop-color="#a97fd1"/>
           </linearGradient>
           <radialGradient id="heroDisc" cx="38%" cy="34%" r="70%">
             <stop offset="0%"   stop-color="#f0b48c"/>
@@ -3217,11 +3482,105 @@ body.in-bloom-zoom .ambient-petals {
   </div>
 </section>
 
+<!-- ============ WORK · SELECTED GARDENS ============ -->
+<section class="section work on-ink on-ink--stage" id="work">
+  <div class="wrap">
+    <div class="head">
+      <div>
+        <span class="eyebrow reveal">Selected gardens</span>
+        <h2 class="reveal-type">Sites we've grown <em>this year.</em></h2>
+      </div>
+      <a href="atelier.html" class="btn btn-ghost reveal glow-track">Enter the Atelier →</a>
+    </div>
+    <div class="work-grid reveal-stagger">
+      <!-- Power Tagun Engineering — real, live project, and the studio's
+           largest engagement to date, so it leads as the featured card. -->
+      <a class="case case-featured case-tagun" href="https://powertagun.vercel.app/" target="_blank" rel="noopener noreferrer">
+        <div class="preview preview--shot">
+          <picture class="shot-stack">
+            <source media="(max-width: 700px)" srcset="assets/work/powertagun-mobile.jpg" width="620" height="1176" />
+            <img src="assets/work/powertagun-desktop.jpg" width="1440" height="497" loading="lazy" decoding="async"
+                 alt="The Power Tagun Engineering site: a power transformer render above the headline Built to international standards." />
+          </picture>
+          <span class="label">Live · Flagship project · Electrical engineering</span>
+        </div>
+        <div class="body">
+          <h3>Power Tagun — <em>engineering group</em></h3>
+          <p>Our largest build to date — a full corporate site for a Myanmar electrical engineering group: product supply, procurement, and EPC turnkey delivery, with a project-reference library buyers can search.</p>
+          <div class="row"><span>Live · Myanmar</span><strong>Visit Power Tagun ↗</strong></div>
+        </div>
+      </a>
+
+      <!-- KTK / Kaung Thu Kha — real, live project. -->
+      <a class="case case-featured case-featured--flip case-ktk" href="https://ktk-umber.vercel.app/" target="_blank" rel="noopener noreferrer">
+        <div class="preview preview--shot">
+          <picture class="shot-stack">
+            <source media="(max-width: 700px)" srcset="assets/work/ktk-mobile.jpg" width="620" height="1163" />
+            <img src="assets/work/ktk-desktop.jpg" width="1440" height="645" loading="lazy" decoding="async"
+                 alt="The KTK site: a woven cement sack lit against black beside the headline Strength, woven in." />
+          </picture>
+          <span class="label">Live · Industrial packaging</span>
+        </div>
+        <div class="body">
+          <h3>KTK — <em>woven packaging</em></h3>
+          <p>Cement sacks and PP woven bags for Myanmar's industrial packaging manufacturer, told through the weave.</p>
+          <div class="row"><span>Live · Myanmar</span><strong>Visit ↗</strong></div>
+        </div>
+      </a>
+
+      <!-- Foliyo — real, live project. -->
+      <a class="case case-foliyo" href="https://foliyo-delta.vercel.app/" target="_blank" rel="noopener noreferrer">
+        <div class="preview">
+          <svg class="deco" viewBox="0 0 40 40" fill="none">
+            <rect width="40" height="40" rx="10" fill="#05070e"/>
+            <rect x="7"  y="24" width="7" height="9"  rx="2.5" fill="#06b6d4" opacity="0.45"/>
+            <rect x="17" y="17" width="7" height="16" rx="2.5" fill="#06b6d4" opacity="0.72"/>
+            <rect x="27" y="9"  width="7" height="24" rx="2.5" fill="#06b6d4"/>
+          </svg>
+          <span class="label">Live · Fintech web app</span>
+        </div>
+        <div class="body">
+          <h3>Foliyo — <em>stock app</em></h3>
+          <p>Markets found nowhere else — a clean, real-time stock &amp; portfolio tracker that keeps them calm, focused, and legible.</p>
+          <div class="row"><span>Live site</span><strong>Visit Foliyo ↗</strong></div>
+        </div>
+      </a>
+
+      <!-- Gateway Orbital Explorer — real, live project. -->
+      <a class="case case-gateway" href="https://gateway-orbital-explorer.vercel.app/" target="_blank" rel="noopener noreferrer">
+        <div class="preview">
+          <svg class="deco" viewBox="-100 -100 200 200" fill="none" stroke="currentColor">
+            <ellipse cx="0" cy="0" rx="80" ry="30" stroke-width="3"/>
+            <ellipse cx="0" cy="0" rx="56" ry="56" stroke-width="3" transform="rotate(28)"/>
+            <ellipse cx="0" cy="0" rx="40" ry="74" stroke-width="3" transform="rotate(-22)"/>
+            <circle cx="0" cy="0" r="11" fill="currentColor" stroke="none"/>
+            <circle cx="80" cy="0" r="6" fill="currentColor" stroke="none"/>
+          </svg>
+          <span class="label">Live · Orbital physics sim</span>
+        </div>
+        <div class="body">
+          <h3>Gateway Orbital — <em>physics sim</em></h3>
+          <p>A mission-control simulator for NASA's Lunar Gateway orbit.</p>
+          <div class="row"><span>Live · Artemis</span><strong>Launch ↗</strong></div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Closing line into the full Atelier — the studio's products,
+         process, and the complete set of sites we've created. -->
+    <p class="work-atelier-line reveal">
+      See what else we make, how we work, and every garden we've grown —
+      <a href="atelier.html">step inside the Atelier →</a>
+    </p>
+  </div>
+</section>
+
+<div class="fine-divide"></div>
 <!-- ============ PROCESS ============ -->
 <section class="section process on-ink" id="process">
   <div class="wrap">
     <div class="process-intro process-intro--centered reveal">
-      <h2 class="h-lg">From <em class="italic">bulb</em> to full bloom.</h2>
+      <h2 class="h-lg reveal-type">From <em class="italic">bulb</em> to full bloom.</h2>
     </div>
   </div>
 
@@ -3308,21 +3667,25 @@ body.in-bloom-zoom .ambient-petals {
            screen readers even though it is the page's central idea. -->
       <ol class="ovule-phases">
       <li class="ovule-reveal" data-phase="1">
+        <img class="ovule-plate" src="assets/botanical/plate-01-seed.jpg" alt="" width="560" height="747" loading="lazy" decoding="async" />
         <span class="ovule-label">Phase 01 · Bulb</span>
         <h3 class="ovule-title">Discovery <em>— the quiet seed.</em></h3>
         <p class="ovule-body">Listen first. Map the terrain.</p>
       </li>
       <li class="ovule-reveal" data-phase="2">
+        <img class="ovule-plate" src="assets/botanical/plate-02-bud.jpg" alt="" width="560" height="747" loading="lazy" decoding="async" />
         <span class="ovule-label">Phase 02 · Sprouting</span>
         <h3 class="ovule-title">Blueprint <em>— roots take hold.</em></h3>
         <p class="ovule-body">Architecture. Wireframes. Direction.</p>
       </li>
       <li class="ovule-reveal" data-phase="3">
+        <img class="ovule-plate" src="assets/botanical/plate-03-half.jpg" alt="" width="560" height="747" loading="lazy" decoding="async" />
         <span class="ovule-label">Phase 03 · Budding</span>
         <h3 class="ovule-title">Craft <em>— the form emerges.</em></h3>
         <p class="ovule-body">Pixel-perfect UI. Meticulous engineering.</p>
       </li>
       <li class="ovule-reveal" data-phase="4">
+        <img class="ovule-plate" src="assets/botanical/plate-04-bloom.jpg" alt="" width="560" height="747" loading="lazy" decoding="async" />
         <span class="ovule-label">Phase 04 · Full Bloom</span>
         <h3 class="ovule-title">Launch <em>— your identity, alive.</em></h3>
         <p class="ovule-body">Staged launch. Tuned. Handed over.</p>
@@ -3344,7 +3707,7 @@ body.in-bloom-zoom .ambient-petals {
     <div class="philosophy-grid">
       <div class="philosophy-copy reveal">
         <span class="eyebrow">The Aster, alive</span>
-        <h2>Feel the bloom <em class="italic">in your hands.</em></h2>
+        <h2 class="reveal-type">Feel the bloom <em class="italic">in your hands.</em></h2>
         <p>Every Aster is shaped by hand — nothing borrowed, nothing templated. Take this one and turn it in the light.</p>
         <div class="philosophy-tags">
           <span class="tag glow-track">Handcrafted</span>
@@ -3367,99 +3730,12 @@ body.in-bloom-zoom .ambient-petals {
 
 <div class="fine-divide"></div>
 
-<!-- ============ WORK · SELECTED GARDENS ============ -->
-<section class="section work on-ink" id="work">
-  <div class="wrap">
-    <div class="head">
-      <div>
-        <span class="eyebrow reveal">Selected gardens</span>
-        <h2 class="reveal">Sites we've grown <em>this year.</em></h2>
-      </div>
-      <a href="atelier.html" class="btn btn-ghost reveal glow-track">Enter the Atelier →</a>
-    </div>
-    <div class="work-grid reveal-stagger">
-      <!-- Power Tagun Engineering — real, live project, and the studio's
-           largest engagement to date, so it leads as the featured card. -->
-      <a class="case case-featured case-tagun" href="https://powertagun.vercel.app/" target="_blank" rel="noopener noreferrer">
-        <div class="preview">
-          <div class="logo-plate"><img src="assets/logos/powertagun-logo.png" alt="Power Tagun Engineering Co., Ltd" loading="lazy" /></div>
-          <span class="label">Live · Flagship project · Electrical engineering</span>
-        </div>
-        <div class="body">
-          <h3>Power Tagun — <em>engineering group</em></h3>
-          <p>Our largest build to date — a full corporate site for a Myanmar electrical engineering group: product supply, procurement, and EPC turnkey delivery, with a project-reference library buyers can search.</p>
-          <div class="row"><span>Live · Myanmar</span><strong>Visit Power Tagun ↗</strong></div>
-        </div>
-      </a>
-
-      <!-- Foliyo — real, live project. -->
-      <a class="case case-foliyo" href="https://foliyo-delta.vercel.app/" target="_blank" rel="noopener noreferrer">
-        <div class="preview">
-          <svg class="deco" viewBox="0 0 40 40" fill="none">
-            <rect width="40" height="40" rx="10" fill="#05070e"/>
-            <rect x="7"  y="24" width="7" height="9"  rx="2.5" fill="#06b6d4" opacity="0.45"/>
-            <rect x="17" y="17" width="7" height="16" rx="2.5" fill="#06b6d4" opacity="0.72"/>
-            <rect x="27" y="9"  width="7" height="24" rx="2.5" fill="#06b6d4"/>
-          </svg>
-          <span class="label">Live · Fintech web app</span>
-        </div>
-        <div class="body">
-          <h3>Foliyo — <em>stock app</em></h3>
-          <p>Markets found nowhere else — a clean, real-time stock &amp; portfolio tracker that keeps them calm, focused, and legible.</p>
-          <div class="row"><span>Live site</span><strong>Visit Foliyo ↗</strong></div>
-        </div>
-      </a>
-
-      <!-- Gateway Orbital Explorer — real, live project. -->
-      <a class="case case-gateway" href="https://gateway-orbital-explorer.vercel.app/" target="_blank" rel="noopener noreferrer">
-        <div class="preview">
-          <svg class="deco" viewBox="-100 -100 200 200" fill="none" stroke="currentColor">
-            <ellipse cx="0" cy="0" rx="80" ry="30" stroke-width="3"/>
-            <ellipse cx="0" cy="0" rx="56" ry="56" stroke-width="3" transform="rotate(28)"/>
-            <ellipse cx="0" cy="0" rx="40" ry="74" stroke-width="3" transform="rotate(-22)"/>
-            <circle cx="0" cy="0" r="11" fill="currentColor" stroke="none"/>
-            <circle cx="80" cy="0" r="6" fill="currentColor" stroke="none"/>
-          </svg>
-          <span class="label">Live · Orbital physics sim</span>
-        </div>
-        <div class="body">
-          <h3>Gateway Orbital — <em>physics sim</em></h3>
-          <p>A mission-control simulator for NASA's Lunar Gateway orbit.</p>
-          <div class="row"><span>Live · Artemis</span><strong>Launch ↗</strong></div>
-        </div>
-      </a>
-
-      <!-- KTK / Kaung Thu Kha — real, live project. -->
-      <a class="case case-ktk" href="https://ktk-umber.vercel.app/" target="_blank" rel="noopener noreferrer">
-        <div class="preview">
-          <div class="logo-plate"><img src="assets/logos/ktk-logo.png" alt="Kaung Thu Kha Group Co., Ltd." loading="lazy" /></div>
-          <span class="label">Live · Industrial packaging</span>
-        </div>
-        <div class="body">
-          <h3>KTK — <em>woven packaging</em></h3>
-          <p>Cement sacks and PP woven bags for Myanmar's industrial packaging manufacturer, told through the weave.</p>
-          <div class="row"><span>Live · Myanmar</span><strong>Visit ↗</strong></div>
-        </div>
-      </a>
-    </div>
-
-    <!-- Closing line into the full Atelier — the studio's products,
-         process, and the complete set of sites we've created. -->
-    <p class="work-atelier-line reveal">
-      See what else we make, how we work, and every garden we've grown —
-      <a href="atelier.html">step inside the Atelier →</a>
-    </p>
-  </div>
-</section>
-
-<div class="fine-divide"></div>
-
 <!-- ============ PRICING ============ -->
 <section class="section pricing" id="pricing">
   <div class="wrap">
     <div class="pricing-intro reveal">
       <span class="eyebrow">Tiers of the Bloom</span>
-      <h2 class="h-lg">Three quiet ways to begin.</h2>
+      <h2 class="h-lg reveal-type">Three quiet ways to begin.</h2>
       <p class="lede">Choose your depth of bloom.</p>
     </div>
 
@@ -3557,6 +3833,7 @@ body.in-bloom-zoom .ambient-petals {
 
 <!-- ============ EDITORIAL CALLOUT ============ -->
 <section class="callout on-ink" aria-label="Aster promise">
+  <div class="callout-glow" aria-hidden="true"></div>
   <div class="callout-inner reveal">
     <svg class="callout-mark" viewBox="-15 -15 30 30" fill="currentColor" aria-hidden="true">
       <g>
@@ -3574,6 +3851,12 @@ body.in-bloom-zoom .ambient-petals {
   </div>
 </section>
 
+<!-- A beat of quiet between the promise and the form: one seed on paper.
+     The botanical narrative's payoff lands exactly where the visitor is
+     deciding whether to write to you, and there is no text over it, so it
+     costs nothing in contrast. -->
+<div class="seed-band" aria-hidden="true"></div>
+
 <!-- ============ PORTAL ============ -->
 <section class="section portal" id="connect">
   <div class="portal-petals" aria-hidden="true">
@@ -3589,7 +3872,7 @@ body.in-bloom-zoom .ambient-petals {
   <div class="wrap">
     <div class="connect-intro reveal">
       <span class="eyebrow">Begin a conversation</span>
-      <h2 class="h-lg">Tell us about<br /><em class="italic">your brand.</em></h2>
+      <h2 class="h-lg reveal-type">Tell us about<br /><em class="italic">your brand.</em></h2>
       <p class="lede">Share where you are and where you'd like to bloom. We read every note by hand and reply within a day.</p>
     </div>
 
@@ -3708,6 +3991,7 @@ body.in-bloom-zoom .ambient-petals {
     </div>
     <div class="footer-col">
       <h5>Studio</h5>
+      <a href="#work">Work</a>
       <a href="#process">Process</a>
       <a href="#philosophy">Philosophy</a>
       <a href="#pricing">Pricing</a>
@@ -3892,7 +4176,6 @@ body.in-bloom-zoom .ambient-petals {
       const L = length * (0.88 + rnd() * 0.24);   // 0.88–1.12
       const W = width  * (0.82 + rnd() * 0.36);   // 0.82–1.18
       const lean = (rnd() - 0.5) * W * 1.5;       // tip drifts off-axis
-      const tipR = W * 0.34;                      // rounded, not a spike
 
       const g = document.createElementNS(ns, "g");
       g.setAttribute("transform", "rotate(" + angle.toFixed(2) + ")");
@@ -3902,18 +4185,31 @@ body.in-bloom-zoom .ambient-petals {
       inner.classList.add("petal");
 
       const path = document.createElementNS(ns, "path");
-      // Asymmetric: the two edges use different control weights, so the
-      // blade curves rather than mirroring itself.
+      // A ray floret is a STRAP, not a needle. The previous outline ran from a
+      // single point at the centre out to a point at the tip, which is the
+      // definition of a ray of light — and with an 18:1 length-to-width ratio
+      // that is exactly why the whole thing read as a starburst however much
+      // angular jitter was thrown at it.
+      //
+      // So: a narrow but real base, widening to full width by about a quarter
+      // of the way out, holding near-constant along the middle, then rounding
+      // off at the tip. Still asymmetric — the two edges carry different
+      // control weights and the tip leans off-axis — so no petal mirrors
+      // itself and no two are the same blade.
+      const baseW = W * 0.34;
+      const n = function (v) { return v.toFixed(2); };
       path.setAttribute("d",
-        "M 0 0 " +
-        "C " + (-W * 1.02).toFixed(2) + " " + (-L * 0.30).toFixed(2) + ", " +
-               (-W * 0.72 + lean).toFixed(2) + " " + (-L * 0.78).toFixed(2) + ", " +
-               (lean - tipR).toFixed(2) + " " + (-L + tipR).toFixed(2) + " " +
-        "Q " + lean.toFixed(2) + " " + (-L).toFixed(2) + ", " +
-               (lean + tipR).toFixed(2) + " " + (-L + tipR).toFixed(2) + " " +
-        "C " + (W * 0.78 + lean).toFixed(2) + " " + (-L * 0.74).toFixed(2) + ", " +
-               (W * 0.94).toFixed(2) + " " + (-L * 0.28).toFixed(2) + ", " +
-               "0 0 Z"
+        "M " + n(-baseW) + " 0 " +
+        "C " + n(-W * 1.00) + " " + n(-L * 0.24) + ", " +
+               n(-W * 0.98 + lean * 0.35) + " " + n(-L * 0.60) + ", " +
+               n(-W * 0.78 + lean) + " " + n(-L * 0.87) + " " +
+        "Q " + n(-W * 0.58 + lean) + " " + n(-L) + ", " +
+               n(lean) + " " + n(-L) + " " +
+        "Q " + n(W * 0.60 + lean) + " " + n(-L) + ", " +
+               n(W * 0.80 + lean) + " " + n(-L * 0.86) + " " +
+        "C " + n(W * 0.94 + lean * 0.35) + " " + n(-L * 0.58) + ", " +
+               n(W * 1.02) + " " + n(-L * 0.22) + ", " +
+               n(baseW) + " 0 Z"
       );
       path.setAttribute("fill", fill);
       path.setAttribute("fill-opacity", (0.82 + rnd() * 0.18).toFixed(3));
@@ -3930,8 +4226,12 @@ body.in-bloom-zoom .ambient-petals {
   // Real asters carry far more, narrower rays than 14 — the low count
   // was another reason this read as a star. Seeds are fixed so the
   // bloom is the same considered shape on every load.
-  buildPetals(document.getElementById("heroOuter"), 21, 165, 9, "url(#heroPetalOuter)", 0,  20260829);
-  buildPetals(document.getElementById("heroInner"), 16, 108, 7, "url(#heroPetalInner)", 11, 77345201);
+  // Width was 9 against a length of 165 — an 18:1 needle. Real aster rays sit
+  // nearer 9:1, and overlapping neighbours are correct rather than a mistake:
+  // the crowding at the base is what a composite flower head actually looks
+  // like, and the disc covers it.
+  buildPetals(document.getElementById("heroOuter"), 19, 165, 17, "url(#heroPetalOuter)", 0,  20260829);
+  buildPetals(document.getElementById("heroInner"), 14, 106, 14, "url(#heroPetalInner)", 11, 77345201);
   buildPetals(document.getElementById("petalsOuter"), 14, 155, 12, "#c4a5e0");
   buildPetals(document.getElementById("petalsInner"), 12, 95, 9, "#8b5fbf", 15);
   buildPetals(document.getElementById("philOuter"), 12, 95, 7, "#c4a5e0");
@@ -4052,9 +4352,28 @@ body.in-bloom-zoom .ambient-petals {
   requestAnimationFrame(function () {
     document.body.classList.add("loaded");
   });
+  // Belt and braces. The headline now arrives out of a 16px blur, so if
+  // `.loaded` never lands the most important element on the page is
+  // permanently unreadable rather than merely un-animated. rAF not firing is
+  // exactly the failure this site has hit before in a non-compositing host.
+  window.setTimeout(function () {
+    document.body.classList.add("loaded");
+  }, 1200);
+
+  // `will-change` is a standing promise to the compositor, not a throwaway
+  // hint. Held after the animation it keeps a GPU layer — and its memory —
+  // alive for every revealed element on the page, and there were ~38 of them
+  // that never released. `filter: blur(0)` also still establishes a filter
+  // context, so that gets dropped outright once the type has settled.
+  function releaseLayer(el) {
+    window.setTimeout(function () {
+      el.style.willChange = "auto";
+      if (el.classList.contains("reveal-type")) el.style.filter = "none";
+    }, 1600);
+  }
 
   // Reveal observer
-  const reveals = document.querySelectorAll(".reveal, .reveal-stagger");
+  const reveals = document.querySelectorAll(".reveal, .reveal-stagger, .reveal-type");
   if ("IntersectionObserver" in window) {
     const io = new IntersectionObserver(
       function (entries) {
@@ -4062,6 +4381,7 @@ body.in-bloom-zoom .ambient-petals {
           if (e.isIntersecting) {
             e.target.classList.add("in");
             io.unobserve(e.target);
+            releaseLayer(e.target);
           }
         });
       },
@@ -4069,7 +4389,7 @@ body.in-bloom-zoom .ambient-petals {
     );
     reveals.forEach(function (el) { io.observe(el); });
   } else {
-    reveals.forEach(function (el) { el.classList.add("in"); });
+    reveals.forEach(function (el) { el.classList.add("in"); releaseLayer(el); });
   }
 
   // SAFETY NET: if for any reason reveals haven't fired after 1.5s, force-show.
@@ -4649,17 +4969,39 @@ body.in-bloom-zoom .ambient-petals {
     const heroOuter = document.querySelectorAll("#heroOuter .petal");
     const heroInner = document.querySelectorAll("#heroInner .petal");
     if (heroOuter.length && heroInner.length) {
-      gsap.set(heroOuter, { scale: 0, transformOrigin: "0px 0px" });
-      gsap.set(heroInner, { scale: 0, transformOrigin: "0px 0px" });
+      // Petals begin *tucked*, not shrunk: short along their length, rolled
+      // narrow, and tilted in toward the centre the way a bud holds them.
+      // Opening then reads as an unfurl — the blade extends and widens as it
+      // untucks — rather than a uniform scale-up, which is the thing that
+      // made this look like a starburst popping open.
+      gsap.set(heroOuter, { scaleY: 0.06, scaleX: 0.50, rotation: -16, transformOrigin: "0px 0px" });
+      gsap.set(heroInner, { scaleY: 0.08, scaleX: 0.55, rotation: -12, transformOrigin: "0px 0px" });
       gsap.set("#heroFlower circle", { scale: 0, transformOrigin: "200px 200px" });
 
-      // MTK's signature overshoot bloom ease
-      const heroBloomEase = "cubic-bezier(0.34, 1.32, 0.64, 1)";
+      // Was `"cubic-bezier(0.34, 1.32, 0.64, 1)"` — not a registered GSAP
+      // ease, and CustomEase isn't loaded, so every one of the 37 petals
+      // silently fell back to power1.out. The bloom had no overshoot at all,
+      // which is most of why it read as mechanical. `back.out` ships in core.
+      const unfurl = "back.out(1.6)";
 
-      gsap.timeline({ delay: 0.48 })
-        .to(heroInner, { scale: 1, duration: 1.1, stagger: 0.06, ease: heroBloomEase })
-        .to(heroOuter, { scale: 1, duration: 1.3, stagger: 0.05, ease: heroBloomEase }, "-=0.95")
-        .to("#heroFlower circle", { scale: 1, duration: 0.6, stagger: 0.08, ease: heroBloomEase }, "-=1.05");
+      // `from: "random"` matters as much as the ease: sequential stagger
+      // opens the ring like a clock hand sweeping round. Real blooms don't
+      // have an index order.
+      gsap.timeline({ delay: 0.42 })
+        .to(heroInner, {
+          scaleY: 1, scaleX: 1, rotation: 0,
+          duration: 1.25, ease: unfurl,
+          stagger: { each: 0.05, from: "random" },
+        })
+        .to(heroOuter, {
+          scaleY: 1, scaleX: 1, rotation: 0,
+          duration: 1.45, ease: unfurl,
+          stagger: { each: 0.042, from: "random" },
+        }, "-=1.05")
+        .to("#heroFlower circle", {
+          scale: 1, duration: 0.7, ease: "back.out(2)",
+          stagger: { each: 0.07, from: "center" },
+        }, "-=1.15");
 
       // Slow continuous rotation (replaces the prior sway)
       gsap.to("#heroFlower", {
@@ -4672,244 +5014,6 @@ body.in-bloom-zoom .ambient-petals {
       });
     }
 
-    // ===== PROCESS flower bloom timeline (scroll-coupled) =====
-    // Guarded: the old stem-growth flower + .step cards were removed so all
-    // four phases live inside the bloom-zoom ovule. If the targets aren't
-    // present we skip this entire block — no console errors, no orphan tweens.
-    if (window.ScrollTrigger && document.getElementById("processFlower") && document.querySelectorAll(".step").length) {
-      const outerPetals = document.querySelectorAll("#petalsOuter .petal");
-      const innerPetals = document.querySelectorAll("#petalsInner .petal");
-
-      // --- Initial states: tightly held, slightly curled ---
-      // Each petal begins at scale 0 with a small inward tilt, so it can
-      // unfurl into its open position rather than just popping outward.
-      // ────────── INITIAL STATES ──────────
-      // Phase 1 begins with everything hidden EXCEPT the seed, which
-      // fades in during the first beat. The plant then grows upward
-      // through Phases 2–4.
-      gsap.set(outerPetals, {
-        scale: 0, rotation: -6,
-        transformOrigin: "0px 0px",
-      });
-      gsap.set(innerPetals, {
-        scale: 0, rotation: -5,
-        transformOrigin: "0px 0px",
-      });
-      gsap.set("#bud", {
-        x: 200, y: 316,            // spawn at the stem tip's end-of-Phase-3 location
-        opacity: 0, scale: 0,
-        transformOrigin: "0 0",    // pivot at the bud's local center after translate
-      });
-      gsap.set("#centerDisc", {
-        scale: 0, opacity: 0,
-        transformOrigin: "0px 0px",
-      });
-      gsap.set("#leafL", {
-        scale: 0, rotation: -10,
-        transformOrigin: "200px 440px",
-      });
-      gsap.set("#leafR", {
-        scale: 0, rotation: 10,
-        transformOrigin: "200px 370px",
-      });
-      gsap.set("#stem", { strokeDashoffset: 100 });
-      gsap.set("#stemTip", { opacity: 0, attr: { cy: 540 } });
-      gsap.set("#seed", {
-        opacity: 0, scale: 0,
-        transformOrigin: "200px 545px",
-      });
-      gsap.set("#cotyledons", {
-        opacity: 0, scale: 0,
-        transformOrigin: "200px 530px",
-      });
-
-      // Whole-plant subtle grow — runs across all four phases
-      gsap.set("#processFlower", {
-        scale: 0.94,
-        transformOrigin: "200px 540px",
-      });
-
-      // Trigger spans from "step 1 entering" to "step 4 centered" so the
-      // bloom resolves exactly when the user lands on Full Bloom.
-      const steps = document.querySelectorAll(".step");
-      const lastStep = steps[steps.length - 1];
-
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: steps[0],
-          start: "top 78%",
-          endTrigger: lastStep,
-          end: "center center",
-          scrub: 1.1,            // buttery lag — silken with Lenis
-          invalidateOnRefresh: true,
-        },
-      });
-
-      // ═══════════════════════════════════════════════════════════
-      //  ONE CONTINUOUS GROWTH TIMELINE — 4 phases, 4 milestones.
-      //  The timeline is divided into 4 units of "scroll time", one
-      //  per step. Growth milestones land cleanly at each boundary:
-      //
-      //     Unit 0 → 1   PHASE 1 · SEED       (   0% growth )
-      //     Unit 1 → 2   PHASE 2 · SPROUT     (  35% growth )
-      //     Unit 2 → 3   PHASE 3 · BUD        (  70% growth )
-      //     Unit 3 → 4   PHASE 4 · FULL BLOOM ( 100% growth )
-      // ═══════════════════════════════════════════════════════════
-
-      // ───── PHASE 1 · SEED (units 0 → 1) · 0% growth ─────
-      // The plant exists only as an idea — a single, quiet seed.
-      // No stem, no leaves, no bud. Just presence.
-      tl.to("#seed", {
-        opacity: 1, scale: 1,
-        ease: "power2.out", duration: 0.55,
-      }, 0.10);
-
-      // ───── PHASE 2 · SPROUT (units 1 → 2) · 0% → 35% growth ─────
-      // Cotyledons emerge from the seed. The stem begins its climb
-      // upward, drawing linearly so its growth is felt at every scroll
-      // pixel. The first true leaf unfurls when the stem reaches it.
-      tl.to("#cotyledons", {
-        opacity: 1, scale: 1,
-        ease: "power2.out", duration: 0.5,
-      }, 1.0);
-
-      tl.to("#stem", {
-        strokeDashoffset: 65,     // 100 → 65  (35% drawn)
-        ease: "none", duration: 1,
-      }, 1.0);
-
-      // The tip glow rises with the stem's leading edge
-      tl.to("#stemTip", { opacity: 1, duration: 0.25 }, 1.0);
-      tl.to("#stemTip", {
-        attr: { cy: 428 },        // y at 35% growth: 540 − 320 × 0.35
-        ease: "none", duration: 1,
-      }, 1.0);
-
-      // Whole-plant subtle scale-up runs from sprout through bloom
-      tl.to("#processFlower", {
-        scale: 1, ease: "power1.inOut", duration: 3,
-      }, 1.0);
-
-      // leafL (y=440) emerges when the stem touches it (~31% growth → unit 1.88)
-      tl.to("#leafL", {
-        scale: 1, rotation: 0,
-        ease: "power3.out", duration: 0.55,
-      }, 1.88);
-
-      // ───── PHASE 3 · BUD (units 2 → 3) · 35% → 70% growth ─────
-      // The stem matures further. The second leaf unfurls. A closed
-      // bud forms at the top — promise, not yet bloom.
-      tl.to("#stem", {
-        strokeDashoffset: 30,     // 65 → 30  (70% drawn)
-        ease: "none", duration: 1,
-      }, 2.0);
-      tl.to("#stemTip", {
-        attr: { cy: 316 },        // y at 70% growth: 540 − 320 × 0.70
-        ease: "none", duration: 1,
-      }, 2.0);
-
-      // leafR (y=370) emerges when the stem reaches it (~53% growth → unit 2.51)
-      tl.to("#leafR", {
-        scale: 1, rotation: 0,
-        ease: "power3.out", duration: 0.55,
-      }, 2.50);
-
-      // Cotyledons soften — they belong to the early stage
-      tl.to("#cotyledons", {
-        opacity: 0.4,
-        ease: "power1.inOut", duration: 0.6,
-      }, 2.5);
-
-      // Bud forms quietly at the top in late phase 3
-      tl.to("#bud", {
-        opacity: 1, scale: 1,
-        ease: "power2.out", duration: 0.5,
-      }, 2.75);
-
-      // ───── PHASE 4 · FULL BLOOM (units 3 → 4) · 70% → 100% growth ─────
-      // The stem completes its climb in the first beat of phase 4.
-      // The bud holds, swells, then dissolves as the Aster unfurls —
-      // inner petals first, center disc, outer petals.
-      tl.to("#stem", {
-        strokeDashoffset: 0,      // 30 → 0   (100% drawn)
-        ease: "none", duration: 0.35,
-      }, 3.0);
-      tl.to("#stemTip", {
-        attr: { cy: 220 },        // arrives at the flower head
-        ease: "none", duration: 0.35,
-      }, 3.0);
-      tl.to("#stemTip", { opacity: 0, duration: 0.3 }, 3.30);
-
-      // Bud rides the stem tip from y=316 up to y=220 as the stem completes —
-      // keeping the bud visually at the apex of the growing stem.
-      tl.to("#bud", {
-        y: 220,
-        ease: "none", duration: 0.35,
-      }, 3.0);
-
-      // Once it has arrived at the flower-head position, the bud breathes,
-      // then dissolves so the petals can unfurl in its place.
-      tl.to("#bud", {
-        scale: 1.1,
-        ease: "sine.inOut", duration: 0.2,
-      }, 3.35);
-      tl.to("#bud", {
-        scale: 0, opacity: 0,
-        ease: "power2.in", duration: 0.3,
-      }, 3.50);
-
-      // Inner petals unfurl — a soft sequential ripple, beginning as
-      // the bud dissolves so the petals seem to emerge from within.
-      tl.to(innerPetals, {
-        scale: 1, rotation: 0,
-        stagger: { each: 0.035, from: "start" },
-        ease: "power3.out", duration: 0.8,
-      }, 3.55);
-
-      // Center disc emerges as the inner ring opens
-      tl.to("#centerDisc", {
-        scale: 0.55, opacity: 1,
-        ease: "power2.out", duration: 0.45,
-      }, 3.68);
-
-      // Outer petals unfurl — the final reach
-      tl.to(outerPetals, {
-        scale: 1, rotation: 0,
-        stagger: { each: 0.04, from: "start" },
-        ease: "power3.out", duration: 0.95,
-      }, 3.68);
-
-      // Center disc resolves
-      tl.to("#centerDisc", {
-        scale: 1,
-        ease: "power2.out", duration: 0.4,
-      }, 3.95);
-
-      // Seed & cotyledons gracefully recede to let the bloom hold focus
-      tl.to("#seed", {
-        opacity: 0.5,
-        ease: "power1.inOut", duration: 0.5,
-      }, 3.5);
-      tl.to("#cotyledons", {
-        opacity: 0.22,
-        ease: "power1.inOut", duration: 0.5,
-      }, 3.5);
-
-      // ───── Final breath ─────
-      // A hold at full bloom so the final state lingers as the user
-      // settles on Step 4 — the moment feels intentional, not rushed.
-      tl.to({}, { duration: 0.5 }, 4.0);
-
-      // Gentle decorative sway — only rotation, so it composes cleanly
-      // with the scroll-tied scale on #processFlower.
-      gsap.to("#processFlower", {
-        rotation: 1.2, yoyo: true, repeat: -1,
-        duration: 5.5, ease: "sine.inOut",
-        transformOrigin: "200px 540px",
-      });
-
-      window.addEventListener("load", function () { ScrollTrigger.refresh(); });
-    }
 
     // ═══════════════════════════════════════════════════════════════════
     //  CINEMATIC BLOOM ZOOM — one continuous scroll-linked journey
@@ -5269,6 +5373,109 @@ body.in-bloom-zoom .ambient-petals {
     // Any GSAP error: silently degrade. The page still works without it.
     console.warn("Aster motion layer skipped:", err);
   }
+})();
+</script>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   ATMOSPHERE
+   ─────────────────────────────────────────────────────────────────
+   Two systems, both self-contained, both no-ops if their prerequisites
+   are missing. Between them they carry most of what reads as expensive.
+
+   1. THE POINTER AS A LIGHT SOURCE. In the dark sections the cursor
+      carries a warm falloff, so a flat dark panel becomes a room you
+      are walking through with a lamp. The lamp is moved by `transform`
+      — composited, so it costs no repaint — rather than by repainting a
+      gradient into the section background, which is the obvious
+      implementation and the expensive one.
+
+   2. SCROLL VELOCITY, NOT SCROLL POSITION. Every reveal on this page is
+      position-driven, which is exactly why scrolling fast and scrolling
+      slowly feel identical. Lenis exposes velocity; spending it on a CSS
+      variable lets the page lean into movement and settle when you stop.
+      This is the honest answer to "decouple the animation from raw
+      scroll speed" — nothing is being scrubbed, the page simply knows
+      how hard it is being pushed. Deliberately spent in one place only:
+      the project cards. A page-wide skew is the version of this effect
+      that looks broken.
+   ═══════════════════════════════════════════════════════════════════ */
+(function () {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  /* ---------- 1. the lamp ---------- */
+  // Hover + fine pointer only: there is no cursor to follow on a touch
+  // screen, and a lamp stuck wherever you last tapped looks like a bug.
+  if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+    document.querySelectorAll(".on-ink").forEach(function (stage) {
+      const lamp = document.createElement("div");
+      lamp.className = "lamp";
+      lamp.setAttribute("aria-hidden", "true");
+      stage.appendChild(lamp);
+
+      let queued = false;
+      let cx = 0;
+      let cy = 0;
+
+      stage.addEventListener("pointermove", function (e) {
+        cx = e.clientX;
+        cy = e.clientY;
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(function () {
+          queued = false;
+          // One rect read per frame, and only while the pointer is
+          // actually inside a dark section. Reading all of them every
+          // frame — the naive version — is four forced layouts a frame.
+          const r = stage.getBoundingClientRect();
+          lamp.style.transform =
+            "translate3d(" + (cx - r.left).toFixed(1) + "px," +
+                             (cy - r.top).toFixed(1) + "px,0)";
+          lamp.classList.add("lit");
+        });
+      }, { passive: true });
+
+      stage.addEventListener("pointerleave", function () {
+        lamp.classList.remove("lit");
+      }, { passive: true });
+    });
+  }
+
+  /* ---------- 2. velocity ---------- */
+  const lenis = window.__asterLenis;
+  if (!lenis || typeof lenis.on !== "function") return;
+
+  const root = document.documentElement;
+  let current = 0;
+  let target = 0;
+  let raf = null;
+
+  function tick() {
+    // Spring toward the target, and decay the target toward rest. The
+    // decay is what gives the settle weight — without it the page snaps
+    // back to neutral the instant the wheel stops, which reads as a
+    // glitch rather than as momentum.
+    current += (target - current) * 0.12;
+    target *= 0.90;
+    root.style.setProperty("--vel", current.toFixed(4));
+
+    if (Math.abs(current) > 0.001 || Math.abs(target) > 0.001) {
+      raf = requestAnimationFrame(tick);
+    } else {
+      current = 0;
+      target = 0;
+      root.style.setProperty("--vel", "0");
+      raf = null;
+    }
+  }
+
+  lenis.on("scroll", function (e) {
+    // Lenis velocity is roughly px/frame. Clamped hard: past about 42 the
+    // lean stops reading as momentum and starts reading as a broken page.
+    const v = Math.max(-42, Math.min(42, e.velocity || 0));
+    target = v / 42;
+    if (raf === null) raf = requestAnimationFrame(tick);
+  });
 })();
 </script>
 
