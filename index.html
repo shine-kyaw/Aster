@@ -455,6 +455,35 @@ button:focus-visible,
   background: rgba(245, 237, 224, 0.78);
   border-bottom: 1px solid var(--line-soft);
 }
+
+/* ── The nav crosses into the dark rooms ─────────────────────
+   A cream bar with dark type floating over a dark section is the single most
+   common tell that a page was built section by section rather than as one
+   continuous space. Apple flips its chrome per section; so does this.
+
+   It re-maps the tokens rather than restyling each child, exactly as `.on-ink`
+   does — so the brand word, the subtitle and the toggle bars all follow from
+   the same three declarations, and anything added to the nav later inherits
+   the behaviour for free. */
+.nav.on-dark {
+  --ink: #f2e9d9;
+  --ink-soft: #cdc3ad;
+  --ink-mute: #9a927e;
+  --line-soft: rgba(242, 233, 217, 0.09);
+  color: var(--ink);
+  background: linear-gradient(180deg, rgba(19, 17, 11, 0.88), rgba(19, 17, 11, 0));
+}
+.nav.on-dark.scrolled {
+  background: rgba(17, 15, 10, 0.84);
+}
+/* Custom properties do not transition without @property, but `color` does —
+   and these children resolve their colour *through* the tokens, so giving them
+   a colour transition is what makes the flip a crossfade instead of a cut. */
+.nav .brand-word,
+.nav .brand-sub,
+.nav .nav-toggle-bar {
+  transition: color 0.45s var(--ease), background-color 0.45s var(--ease);
+}
 .brand {
   display: flex;
   align-items: center;
@@ -1978,6 +2007,80 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
   .work-grid > .case:not(.case-featured) .preview { aspect-ratio: 16 / 9; }
 }
 
+/* ── The gallery rail ────────────────────────────────────────
+   The four projects stop stacking and travel sideways instead. Scrolling down
+   moves the gallery across, so a visitor covers the whole body of work in one
+   gesture without ever deciding to — which is the entire argument for the
+   pattern on a portfolio.
+
+   The hierarchy survives the change: the two projects with real captures stay
+   roughly twice the width of the two without, so the rail reads as edited
+   rather than as four equal tiles. */
+.work-rail {
+  position: relative;
+  margin-top: clamp(28px, 3.6vw, 48px);
+  /* The rail is the window the track slides behind. Without this the track's
+     full max-content width (measured live at 3432px against a 1303px viewport)
+     spills past the right edge — cards three and four sit visible out in the
+     margin before the pin has even engaged, and the document reports a
+     horizontal scroll width more than twice the viewport. */
+  overflow: hidden;
+}
+.work-track {
+  display: flex;                 /* overrides .work-grid's `display: grid` */
+  align-items: stretch;
+  gap: clamp(20px, 2.6vw, 40px);
+  padding: 0 var(--pad-x);
+  width: max-content;
+}
+.work-track > .case {
+  flex: 0 0 auto;
+  grid-column: auto;             /* .case-featured's `1 / -1` is meaningless here */
+}
+.work-track > .case-featured { width: min(82vw, 1040px); }
+.work-track > .case:not(.case-featured) { width: min(46vw, 560px); }
+
+/* No pinning on touch, and none for reduced motion. Hijacking vertical scroll
+   to drive horizontal movement is genuinely unpleasant on a phone, and a
+   native swipe with snap points is the better interaction there regardless —
+   so the rail becomes an ordinary scroll container and the JS below skips it. */
+@media (max-width: 880px), (prefers-reduced-motion: reduce) {
+  .work-rail {
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .work-rail::-webkit-scrollbar { display: none; }
+  .work-track { width: max-content; }
+  .work-track > .case,
+  .work-track > .case-featured,
+  .work-track > .case:not(.case-featured) {
+    width: min(84vw, 520px);
+    scroll-snap-align: center;
+  }
+  /* Stacked again at this width, so the featured pair drops its row layout. */
+  .work-track > .case-featured { flex-direction: column; }
+}
+
+/* A quiet instruction, shown only where the rail is actually swipeable. */
+.work-rail-hint {
+  display: none;
+  margin: 18px auto 0;
+  text-align: center;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+@media (max-width: 880px) {
+  .work-rail-hint { display: block; }
+}
+
 /* ── Projected work ──────────────────────────────────────────
    The 601 Inc composition: the room is dark, so the work is the only lit
    thing in it. One capture, hung on the wall inside a warm pool.
@@ -2813,6 +2916,16 @@ body.in-bloom-zoom .ambient-petals {
   pointer-events: auto;
 }
 .side-rail.visible:hover { opacity: 1; }
+/* Same token re-map as the nav — the rail is fixed, so it crosses the same
+   rooms and has the same problem. Its links and dots resolve through --ink-soft
+   and --ink-mute, so three declarations flip the whole component. */
+.side-rail.on-dark {
+  --ink: #f2e9d9;
+  --ink-soft: #cdc3ad;
+  --ink-mute: #9a927e;
+  --line: rgba(242, 233, 217, 0.20);
+}
+.side-rail.on-dark.visible { opacity: 0.55; }
 .side-rail a {
   font-family: var(--sans);
   font-size: 11px;
@@ -3533,7 +3646,12 @@ body.in-bloom-zoom .ambient-petals {
         <h2 class="reveal-type">Sites we've grown <em>this year.</em></h2>
       </div>
     </div>
-    <div class="work-grid reveal-stagger">
+  </div>
+
+  <!-- The rail sits OUTSIDE .wrap so the gallery runs full-bleed, and so it
+       can be pinned on its own without taking the heading and outro with it. -->
+  <div class="work-rail">
+    <div class="work-grid work-track reveal-stagger">
       <!-- Power Tagun Engineering — real, live project, and the studio's
            largest engagement to date, so it leads as the featured card. -->
       <a class="case case-featured case-tagun" href="https://powertagun.vercel.app/" target="_blank" rel="noopener noreferrer">
@@ -3609,6 +3727,11 @@ body.in-bloom-zoom .ambient-petals {
 
     <!-- Closing line into the full Atelier — the studio's products,
          process, and the complete set of sites we've created. -->
+  </div>
+
+  <div class="wrap">
+    <p class="work-rail-hint" aria-hidden="true">Swipe to explore →</p>
+
     <!-- The Atelier link used to sit top-right in the section head, competing
          with the headline and asking visitors to leave before they had seen a
          single project. It belongs here: after the proof, as the next step. -->
@@ -5562,6 +5685,161 @@ body.in-bloom-zoom .ambient-petals {
     target = v / 42;
     if (raf === null) raf = requestAnimationFrame(tick);
   });
+})();
+</script>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   CONTINUITY — the page as one space rather than a stack of sections.
+
+   1. The nav flips to light chrome whenever it is over a dark room.
+   2. The hero moves at three depths instead of one.
+
+   Both are ScrollTrigger, which is already loaded, and both are
+   transform/opacity only.
+   ═══════════════════════════════════════════════════════════════════ */
+(function () {
+  if (typeof window.gsap === "undefined" || !window.ScrollTrigger) return;
+
+  // ScrollTrigger caches every start/end at creation time. This page's type is
+  // webfont-set and reflows when the fonts land, which measured live as the
+  // nav flip firing a WHOLE SECTION late — it went dark over pricing, which is
+  // a cream section, and stayed cream over work, which is not. Anything that
+  // changes layout after triggers exist has to be followed by a refresh.
+  const refresh = function () { ScrollTrigger.refresh(); };
+  window.addEventListener("load", refresh);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(refresh);
+
+  const nav = document.getElementById("nav");
+  const rail = document.querySelector(".side-rail");
+  const stages = document.querySelectorAll(".on-ink");
+
+  /* ---------- 1. nav chrome follows the room ---------- */
+  if (nav && stages.length) {
+    // A counter, not a boolean. Dark sections sit directly against each other
+    // in places, so during a handoff the nav is briefly inside two triggers at
+    // once; a boolean flag gets cleared by whichever fires second and the nav
+    // flashes cream for a frame in the middle of a dark run.
+    let overDark = 0;
+
+    const apply = function () {
+      const on = overDark > 0;
+      nav.classList.toggle("on-dark", on);
+      if (rail) rail.classList.toggle("on-dark", on);
+    };
+
+    stages.forEach(function (stage) {
+      ScrollTrigger.create({
+        trigger: stage,
+        // Measured against the nav's own band rather than the viewport top, so
+        // the flip happens when the bar actually overlaps the dark ground.
+        start: "top 64px",
+        end: "bottom 64px",
+        onToggle: function (self) {
+          overDark += self.isActive ? 1 : -1;
+          if (overDark < 0) overDark = 0;
+          apply();
+        },
+      });
+    });
+  }
+
+  /* ---------- 2. the gallery travels sideways ---------- */
+  const workRail = document.querySelector(".work-rail");
+  const workTrack = document.querySelector(".work-track");
+  const canPin =
+    window.matchMedia("(min-width: 881px)").matches &&
+    !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (workRail && workTrack && canPin) {
+    // Recomputed rather than captured, because it depends on both the track's
+    // content width and the viewport — and `invalidateOnRefresh` re-runs these
+    // on every resize and font load. A captured constant would leave the last
+    // card stranded off-screen after any reflow.
+    const travel = function () {
+      return Math.max(0, workTrack.scrollWidth - window.innerWidth);
+    };
+
+    gsap.to(workTrack, {
+      x: function () { return -travel(); },
+      ease: "none",
+      scrollTrigger: {
+        trigger: workRail,
+        // Pins once the rail is centred, so the gallery locks into the middle
+        // of the screen rather than jumping to the top edge.
+        start: "center center",
+        // Scroll distance equals travel distance: one pixel down is one pixel
+        // across, which keeps the gesture feeling direct rather than geared.
+        end: function () { return "+=" + travel(); },
+        pin: true,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        // Same lag as the hero. This is the whole difference between a gallery
+        // that glides and one that is welded to the wheel.
+        scrub: 0.9,
+      },
+    });
+  }
+
+  /* ---------- 3. hero depth ---------- */
+  // One plane moving at one rate is a backdrop; three planes at different
+  // rates is a space. The numbers are deliberately small — this should be
+  // felt as depth on the way past, never noticed as an effect.
+  const hero = document.querySelector(".hero");
+  if (hero && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const layers = [
+      [".hero-arch", 34, 0.55],       // furthest back, drifts most
+      [".hero-flower", -46, 1],       // rises against the scroll
+      [".hero-headline", 16, 1],      // nearly still: the anchor
+    ];
+
+    layers.forEach(function (spec) {
+      const el = document.querySelector(spec[0]);
+      if (!el) return;
+      gsap.to(el, {
+        y: spec[1],
+        opacity: spec[2] < 1 ? spec[2] : undefined,
+        ease: "none",
+        scrollTrigger: {
+          trigger: hero,
+          start: "top top",
+          end: "bottom top",
+          // The lag that separates "cinematic" from "welded to my trackpad".
+          // `scrub: true` is 1:1 with the wheel; a number is seconds of
+          // catch-up, so the layers keep easing after you stop.
+          scrub: 0.8,
+        },
+      });
+    });
+
+    // A second act for the flower, this one scrubbed. The bloom still plays on
+    // load rather than on scroll: a scroll-driven bloom leaves the hero looking
+    // half-built for anyone who lands and reads before touching the wheel, and
+    // the arrival moment is worth more than the interaction. But from then on
+    // the head answers the scroll — the rings counter-rotate and spread as the
+    // page pulls away, which reads as moving THROUGH the flower rather than
+    // past a picture of one.
+    //
+    // The parent <g> is translated to (200 200), so each ring's own origin is
+    // already the centre of the head — hence 0,0 rather than 200,200.
+    [["#heroOuter", 13, 1.11], ["#heroInner", -10, 1.06], ["#heroCore", 7, 1.03]]
+      .forEach(function (spec) {
+        const ring = document.querySelector(spec[0]);
+        if (!ring) return;
+        gsap.to(ring, {
+          rotation: spec[1],
+          scale: spec[2],
+          transformOrigin: "0px 0px",
+          ease: "none",
+          scrollTrigger: {
+            trigger: hero,
+            start: "top top",
+            end: "bottom top",
+            scrub: 0.8,
+          },
+        });
+      });
+  }
 })();
 </script>
 
