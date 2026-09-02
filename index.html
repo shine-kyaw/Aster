@@ -5178,9 +5178,13 @@ body.in-bloom-zoom .ambient-petals {
       // Opening then reads as an unfurl — the blade extends and widens as it
       // untucks — rather than a uniform scale-up, which is the thing that
       // made this look like a starburst popping open.
-      gsap.set(heroOuter, { scaleY: 0.06, scaleX: 0.50, rotation: -16, transformOrigin: "0px 0px" });
-      gsap.set(heroInner, { scaleY: 0.08, scaleX: 0.55, rotation: -12, transformOrigin: "0px 0px" });
-      gsap.set(heroCore,  { scaleY: 0.10, scaleX: 0.60, rotation: -9,  transformOrigin: "0px 0px" });
+      // A visible tight bud, twisted closed, with the inner rings wound
+      // further than the outer so opening unwinds them past each other. Near-
+      // zero scaleY would make the flower appear out of nothing, which reads
+      // as growing rather than opening.
+      gsap.set(heroOuter, { scaleY: 0.20, scaleX: 0.34, rotation: -17, transformOrigin: "0px 0px" });
+      gsap.set(heroInner, { scaleY: 0.20, scaleX: 0.34, rotation: -24, transformOrigin: "0px 0px" });
+      gsap.set(heroCore,  { scaleY: 0.22, scaleX: 0.38, rotation: -31, transformOrigin: "0px 0px" });
       gsap.set("#heroFlower circle", { scale: 0, transformOrigin: "200px 200px" });
 
       // Was `"cubic-bezier(0.34, 1.32, 0.64, 1)"` — not a registered GSAP
@@ -5195,26 +5199,23 @@ body.in-bloom-zoom .ambient-petals {
       // Innermost first, then outward: a real head opens from the disc, and
       // the order is legible even at 1.4s because the rings are different
       // lengths.
-      gsap.timeline({ delay: 0.42 })
-        .to(heroCore, {
-          scaleY: 1, scaleX: 1, rotation: 0,
-          duration: 1.0, ease: unfurl,
-          stagger: { each: 0.045, from: "random" },
-        })
-        .to(heroInner, {
-          scaleY: 1, scaleX: 1, rotation: 0,
-          duration: 1.25, ease: unfurl,
-          stagger: { each: 0.05, from: "random" },
-        }, "-=0.78")
-        .to(heroOuter, {
-          scaleY: 1, scaleX: 1, rotation: 0,
-          duration: 1.45, ease: unfurl,
-          stagger: { each: 0.042, from: "random" },
-        }, "-=1.05")
-        .to("#heroFlower circle", {
-          scale: 1, duration: 0.7, ease: "back.out(2)",
-          stagger: { each: 0.07, from: "center" },
-        }, "-=1.15");
+      // Width, length and twist are three tweens per ring, not one. Moving
+      // them in lockstep is what makes an unfurl read as a fan opening: the
+      // roll opens first, the petal then lays back to full length, and the
+      // twist unwinds across both and settles last with a slight splay.
+      const heroTl = gsap.timeline({ delay: 0.42 });
+      [[heroCore, 0.00, 0.95], [heroInner, 0.30, 1.20], [heroOuter, 0.52, 1.45]]
+        .forEach(function (ring) {
+          const els = ring[0], at = ring[1], dur = ring[2];
+          const stagger = { amount: dur * 0.34, from: "random" };
+          heroTl.to(els, { scaleX: 1, ease: "power2.out", duration: dur * 0.55, stagger: stagger }, at);
+          heroTl.to(els, { scaleY: 1, ease: "power2.out", duration: dur, stagger: stagger }, at + dur * 0.14);
+          heroTl.to(els, { rotation: 0, ease: unfurl, duration: dur * 1.2, stagger: stagger }, at);
+        });
+      heroTl.to("#heroFlower circle", {
+        scale: 1, duration: 0.7, ease: "back.out(2)",
+        stagger: { each: 0.07, from: "center" },
+      }, 0.10);
 
       // Slow continuous rotation (replaces the prior sway)
       gsap.to("#heroFlower", {
@@ -5273,8 +5274,28 @@ body.in-bloom-zoom .ambient-petals {
       // SVG, 0.82 → 6.5. Nothing unfurled. Every ray now begins tucked —
       // short along its length, rolled narrow, tilted inward — exactly as the
       // hero does, so the scroll opens a bud instead of magnifying a picture.
-      gsap.set("#zoomL1 .petal, #zoomL2 .petal, #zoomL3 .petal, #zoomL4 .petal", {
-        scaleY: 0.05, scaleX: 0.42, rotation: -19, transformOrigin: "0px 0px",
+      //
+      // Two things about this initial state matter more than they look.
+      //
+      // scaleY starts at 0.20, not near zero. At 0.05 the rays are effectively
+      // invisible, so the flower appears out of nothing — which the eye reads
+      // as GROWING, not as opening. At 0.20 there is a visible tight bud on
+      // screen from the first frame, and what follows is that bud opening.
+      //
+      // And each ring starts twisted by a different amount. A closed bud is a
+      // furled umbrella: the rays spiral around each other, and opening
+      // UNWINDS them. Giving the inner rings more twist than the outer means
+      // they unwind further, so the rays visibly slide past one another on the
+      // way out. That sliding is the thing that reads as a bloom — a ring of
+      // petals all extending in place, however well eased, reads as a fan.
+      const zoomBudTwist = { "#zoomL1": -16, "#zoomL2": -22, "#zoomL3": -28, "#zoomL4": -34 };
+      Object.keys(zoomBudTwist).forEach(function (ring) {
+        gsap.set(ring + " .petal", {
+          scaleY: 0.20,
+          scaleX: 0.34,
+          rotation: zoomBudTwist[ring],
+          transformOrigin: "0px 0px",
+        });
       });
       // The disc is the last thing visible in a real bud — the ray florets
       // wrap it — so it arrives with the innermost ring rather than up front.
@@ -5380,16 +5401,50 @@ body.in-bloom-zoom .ambient-petals {
       // timeline — measured — which put it mid-dive, opening while the camera
       // was already inside the flower. `amount` is the total spread, so each
       // ring finishes inside its own window whatever the ray count.
+      // The three properties are deliberately NOT one tween. A single ease
+      // applied to width, length and twist together moves all three in
+      // lockstep, and lockstep is exactly what makes an unfurl read as a
+      // mechanical fan opening. A real ray floret does them in an order:
+      //
+      //   1. the roll opens first — the petal widens while still short,
+      //   2. then it lays back — extending to full length,
+      //   3. and the twist unwinds across both, settling last with a slight
+      //      splay past its resting angle before relaxing into it.
+      //
+      // Staggering the three by fractions of the ring's window is the whole
+      // difference between "petals extending" and "a flower opening".
       [["#zoomL4 .petal", 0.00, 0.13, 0.05],
        ["#zoomL3 .petal", 0.04, 0.13, 0.06],
        ["#zoomL2 .petal", 0.09, 0.13, 0.07],
        ["#zoomL1 .petal", 0.14, 0.14, 0.08]].forEach(function (ring) {
-        zoomTl.to(ring[0], {
-          scaleY: 1, scaleX: 1, rotation: 0,
-          ease: "back.out(1.5)",
-          duration: ring[2],
-          stagger: { amount: ring[3], from: "random" },
-        }, ring[1]);
+        const sel = ring[0], at = ring[1], dur = ring[2];
+        const stagger = { amount: ring[3], from: "random" };
+
+        // 1. the roll opens — fast, and finished well before the extension
+        zoomTl.to(sel, {
+          scaleX: 1,
+          ease: "power2.out",
+          duration: dur * 0.55,
+          stagger: stagger,
+        }, at);
+
+        // 2. the petal lays back to full length, starting once it has width
+        zoomTl.to(sel, {
+          scaleY: 1,
+          ease: "power2.out",
+          duration: dur,
+          stagger: stagger,
+        }, at + dur * 0.14);
+
+        // 3. the twist unwinds, overshooting slightly and relaxing back —
+        //    the last thing to settle, which is why the head keeps moving
+        //    for a beat after it looks open
+        zoomTl.to(sel, {
+          rotation: 0,
+          ease: "back.out(1.8)",
+          duration: dur * 1.2,
+          stagger: stagger,
+        }, at);
       });
 
       zoomTl.to(".zoom-disc", {
