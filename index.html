@@ -1965,6 +1965,19 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
 }
 @media (max-width: 880px) { .work-grid { grid-template-columns: 1fr; } }
 
+/* Foliyo and Gateway are the supporting pair, and at half width a 16/10
+   preview made them nearly as tall as the featured cards above — which read as
+   equal billing when the hierarchy is deliberately not equal. A wider, shorter
+   preview and tighter body padding pull them back to a supporting scale. */
+.work-grid > .case:not(.case-featured) .preview { aspect-ratio: 7 / 3; }
+.work-grid > .case:not(.case-featured) .body { padding: 22px 24px 24px; }
+.work-grid > .case:not(.case-featured) .body h3 { font-size: var(--fs-h4); }
+.work-grid > .case:not(.case-featured) .body p { font-size: var(--fs-small); }
+@media (max-width: 880px) {
+  /* Full width again on one column, so the flatter ratio would waste the row. */
+  .work-grid > .case:not(.case-featured) .preview { aspect-ratio: 16 / 9; }
+}
+
 /* ── Projected work ──────────────────────────────────────────
    The 601 Inc composition: the room is dark, so the work is the only lit
    thing in it. One capture, hung on the wall inside a warm pool.
@@ -2203,14 +2216,25 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
 .case-ktk .logo-plate img { width: clamp(160px, 82%, 300px); height: auto; }
 
 /* Closing line that leads from the sites grid into the full Atelier */
+/* The outro sits centred under the grid: a line of copy, then the one button
+   that takes you further. Centred rather than left-aligned because after four
+   full-bleed cards the eye is in the middle of the page, not at its margin. */
+.work-outro {
+  margin: clamp(40px, 5vw, 64px) auto 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(18px, 2.2vw, 28px);
+  text-align: center;
+}
 .work-atelier-line {
-  margin: clamp(36px, 4.5vw, 56px) 0 0;
+  margin: 0;
   font-family: var(--serif);
   font-style: italic;
   font-size: clamp(18px, 1.8vw, 24px);
   line-height: 1.5;
   color: var(--ink-soft);
-  max-width: 60ch;
+  max-width: 46ch;
 }
 .work-atelier-line a {
   font-style: normal;
@@ -2646,16 +2670,21 @@ body.in-bloom-zoom .ambient-petals {
    describing a flower the visitor never gets to see. All four came out of one
    generation session so the line weight and palette match across the set.
 
-   They were drawn on pure white, so `multiply` against the warm halo knocks
-   the paper out for free: no alpha channel needed, and a JPEG does the job.
-   The halo is a warm cream, so the ink and the muted violet both survive it. */
+   `mix-blend-mode: multiply` was supposed to knock the white paper out, and it
+   could not: `.ovule-reveal` sets `will-change`, which makes it a stacking
+   context, and a blend inside an isolated group has no backdrop to multiply
+   against — so the paper stayed white behind every flower. The white is now
+   un-multiplied into a real alpha channel instead (alpha = 1 − min(R,G,B),
+   colour unpremultiplied), which is also why these are PNG. Only ~12% of each
+   plate's pixels survive, so they are smaller than the JPEGs they replaced. */
 .ovule-plate {
   display: block;
   width: clamp(62px, 8.4vw, 102px);
   height: auto;
   margin: 0 auto clamp(8px, 1.3vw, 16px);
-  mix-blend-mode: multiply;
-  opacity: 0.94;
+  /* A little lift off the ground, since the drawing now floats free of any
+     plate that used to separate it from the artwork behind. */
+  filter: drop-shadow(0 6px 14px rgba(20, 12, 4, 0.42));
 }
 @media (max-width: 560px) {
   /* At this size the plate would crowd the phase copy inside the ovule. */
@@ -3433,6 +3462,14 @@ body.in-bloom-zoom .ambient-petals {
             <stop offset="52%"  stop-color="#8b5fbf"/>
             <stop offset="100%" stop-color="#a97fd1"/>
           </linearGradient>
+          <!-- Deepest ring, closest to the disc: rays there sit in the shadow
+               of everything above them, so they run darker than the ring
+               outside them rather than lighter. -->
+          <linearGradient id="heroPetalCore" x1="50%" y1="0%" x2="50%" y2="100%">
+            <stop offset="0%"   stop-color="#5f3b8c"/>
+            <stop offset="55%"  stop-color="#6f479f"/>
+            <stop offset="100%" stop-color="#8055b4"/>
+          </linearGradient>
           <radialGradient id="heroDisc" cx="38%" cy="34%" r="70%">
             <stop offset="0%"   stop-color="#f0b48c"/>
             <stop offset="55%"  stop-color="#c87a4e"/>
@@ -3442,6 +3479,11 @@ body.in-bloom-zoom .ambient-petals {
         <g transform="translate(200 200)">
           <g id="heroOuter"></g>
           <g id="heroInner"></g>
+          <!-- A third, short ring. Two rings left a visible gap of empty
+               ground between the inner petals and the disc, which is what made
+               the head read as a drawn daisy rather than a composite flower —
+               real asters carry short rays right up to the disc. -->
+          <g id="heroCore"></g>
           <circle r="22" fill="url(#heroDisc)"/>
           <circle r="13" fill="#a8603a" fill-opacity="0.55"/>
           <circle r="6"  fill="#efb083"/>
@@ -3490,7 +3532,6 @@ body.in-bloom-zoom .ambient-petals {
         <span class="eyebrow reveal">Selected gardens</span>
         <h2 class="reveal-type">Sites we've grown <em>this year.</em></h2>
       </div>
-      <a href="atelier.html" class="btn btn-ghost reveal glow-track">Enter the Atelier →</a>
     </div>
     <div class="work-grid reveal-stagger">
       <!-- Power Tagun Engineering — real, live project, and the studio's
@@ -3568,10 +3609,15 @@ body.in-bloom-zoom .ambient-petals {
 
     <!-- Closing line into the full Atelier — the studio's products,
          process, and the complete set of sites we've created. -->
-    <p class="work-atelier-line reveal">
-      See what else we make, how we work, and every garden we've grown —
-      <a href="atelier.html">step inside the Atelier →</a>
-    </p>
+    <!-- The Atelier link used to sit top-right in the section head, competing
+         with the headline and asking visitors to leave before they had seen a
+         single project. It belongs here: after the proof, as the next step. -->
+    <div class="work-outro reveal">
+      <p class="work-atelier-line">
+        See what else we make, how we work, and every garden we've grown.
+      </p>
+      <a href="atelier.html" class="btn btn-ghost glow-track">Enter the Atelier →</a>
+    </div>
   </div>
 </section>
 
@@ -3667,25 +3713,25 @@ body.in-bloom-zoom .ambient-petals {
            screen readers even though it is the page's central idea. -->
       <ol class="ovule-phases">
       <li class="ovule-reveal" data-phase="1">
-        <img class="ovule-plate" src="assets/botanical/plate-01-seed.jpg" alt="" width="560" height="747" loading="lazy" decoding="async" />
+        <img class="ovule-plate" src="assets/botanical/plate-01-seed.png" alt="" width="240" height="320" loading="lazy" decoding="async" />
         <span class="ovule-label">Phase 01 · Bulb</span>
         <h3 class="ovule-title">Discovery <em>— the quiet seed.</em></h3>
         <p class="ovule-body">Listen first. Map the terrain.</p>
       </li>
       <li class="ovule-reveal" data-phase="2">
-        <img class="ovule-plate" src="assets/botanical/plate-02-bud.jpg" alt="" width="560" height="747" loading="lazy" decoding="async" />
+        <img class="ovule-plate" src="assets/botanical/plate-02-bud.png" alt="" width="240" height="320" loading="lazy" decoding="async" />
         <span class="ovule-label">Phase 02 · Sprouting</span>
         <h3 class="ovule-title">Blueprint <em>— roots take hold.</em></h3>
         <p class="ovule-body">Architecture. Wireframes. Direction.</p>
       </li>
       <li class="ovule-reveal" data-phase="3">
-        <img class="ovule-plate" src="assets/botanical/plate-03-half.jpg" alt="" width="560" height="747" loading="lazy" decoding="async" />
+        <img class="ovule-plate" src="assets/botanical/plate-03-half.png" alt="" width="240" height="320" loading="lazy" decoding="async" />
         <span class="ovule-label">Phase 03 · Budding</span>
         <h3 class="ovule-title">Craft <em>— the form emerges.</em></h3>
         <p class="ovule-body">Pixel-perfect UI. Meticulous engineering.</p>
       </li>
       <li class="ovule-reveal" data-phase="4">
-        <img class="ovule-plate" src="assets/botanical/plate-04-bloom.jpg" alt="" width="560" height="747" loading="lazy" decoding="async" />
+        <img class="ovule-plate" src="assets/botanical/plate-04-bloom.png" alt="" width="240" height="320" loading="lazy" decoding="async" />
         <span class="ovule-label">Phase 04 · Full Bloom</span>
         <h3 class="ovule-title">Launch <em>— your identity, alive.</em></h3>
         <p class="ovule-body">Staged launch. Tuned. Handed over.</p>
@@ -4170,12 +4216,16 @@ body.in-bloom-zoom .ambient-petals {
     for (let i = 0; i < count; i++) {
       // Up to ±28% of one step — enough to break the grid, not enough
       // to look like petals have fallen off.
-      const jitter = (rnd() - 0.5) * step * 0.56;
+      // Jitter halved, from ±28% of a step to ±14%. An aster is a fairly
+      // regular flower — heavy angular scatter reads as damage, and combined
+      // with a wide length spread it made the silhouette lumpy rather than
+      // organic. Enough to break the grid, not enough to look wind-blown.
+      const jitter = (rnd() - 0.5) * step * 0.28;
       const angle = offsetDeg + step * i + jitter;
 
-      const L = length * (0.88 + rnd() * 0.24);   // 0.88–1.12
-      const W = width  * (0.82 + rnd() * 0.36);   // 0.82–1.18
-      const lean = (rnd() - 0.5) * W * 1.5;       // tip drifts off-axis
+      const L = length * (0.94 + rnd() * 0.12);   // 0.94–1.06, a clean disc
+      const W = width  * (0.86 + rnd() * 0.26);   // 0.86–1.12
+      const lean = (rnd() - 0.5) * W * 1.1;       // tip drifts off-axis
 
       const g = document.createElementNS(ns, "g");
       g.setAttribute("transform", "rotate(" + angle.toFixed(2) + ")");
@@ -4196,19 +4246,37 @@ body.in-bloom-zoom .ambient-petals {
       // off at the tip. Still asymmetric — the two edges carry different
       // control weights and the tip leans off-axis — so no petal mirrors
       // itself and no two are the same blade.
+      // A ray floret is a narrow strap with a ROUNDED end. Both previous
+      // attempts missed on opposite sides: 18:1 needles from a point read as a
+      // starburst, and correcting to short wide blades read as a ring of
+      // paddles. Tapering those to points then read as a spiky dahlia.
+      //
+      // An aster is none of those. It is many fine, near-parallel rays of
+      // fairly even length, each finishing in a soft round cap — which is why
+      // the profile below holds close to full width for most of its run and
+      // only eases in over the last tenth, closing with two quadratics that
+      // form the cap. Narrow and numerous does the work; the silhouette is
+      // supposed to be a clean disc, not a star.
       const baseW = W * 0.34;
       const n = function (v) { return v.toFixed(2); };
       path.setAttribute("d",
         "M " + n(-baseW) + " 0 " +
-        "C " + n(-W * 1.00) + " " + n(-L * 0.24) + ", " +
-               n(-W * 0.98 + lean * 0.35) + " " + n(-L * 0.60) + ", " +
-               n(-W * 0.78 + lean) + " " + n(-L * 0.87) + " " +
-        "Q " + n(-W * 0.58 + lean) + " " + n(-L) + ", " +
+        "C " + n(-W * 0.97) + " " + n(-L * 0.14) + ", " +
+               n(-W * 1.00) + " " + n(-L * 0.32) + ", " +
+               n(-W * 0.96) + " " + n(-L * 0.54) + " " +
+        "C " + n(-W * 0.93 + lean * 0.4) + " " + n(-L * 0.72) + ", " +
+               n(-W * 0.80 + lean) + " " + n(-L * 0.84) + ", " +
+               n(-W * 0.62 + lean) + " " + n(-L * 0.92) + " " +
+        // the cap
+        "Q " + n(-W * 0.30 + lean) + " " + n(-L) + ", " +
                n(lean) + " " + n(-L) + " " +
-        "Q " + n(W * 0.60 + lean) + " " + n(-L) + ", " +
-               n(W * 0.80 + lean) + " " + n(-L * 0.86) + " " +
-        "C " + n(W * 0.94 + lean * 0.35) + " " + n(-L * 0.58) + ", " +
-               n(W * 1.02) + " " + n(-L * 0.22) + ", " +
+        "Q " + n(W * 0.32 + lean) + " " + n(-L) + ", " +
+               n(W * 0.64 + lean) + " " + n(-L * 0.92) + " " +
+        "C " + n(W * 0.82 + lean) + " " + n(-L * 0.84) + ", " +
+               n(W * 0.95 + lean * 0.4) + " " + n(-L * 0.70) + ", " +
+               n(W * 0.98) + " " + n(-L * 0.52) + " " +
+        "C " + n(W * 1.01) + " " + n(-L * 0.30) + ", " +
+               n(W * 0.97) + " " + n(-L * 0.13) + ", " +
                n(baseW) + " 0 Z"
       );
       path.setAttribute("fill", fill);
@@ -4230,8 +4298,16 @@ body.in-bloom-zoom .ambient-petals {
   // nearer 9:1, and overlapping neighbours are correct rather than a mistake:
   // the crowding at the base is what a composite flower head actually looks
   // like, and the disc covers it.
-  buildPetals(document.getElementById("heroOuter"), 19, 165, 17, "url(#heroPetalOuter)", 0,  20260829);
-  buildPetals(document.getElementById("heroInner"), 14, 106, 14, "url(#heroPetalInner)", 11, 77345201);
+  // More rays, each narrower. 19 blades at width 17 fused into a solid mass;
+  // an aster head is many fine rays that overlap, and the overlap is what
+  // reads as depth. Three rings now, each offset so no ray sits directly on
+  // top of another.
+  // 30 rays at width 9 sit shoulder to shoulder at mid-length without fusing
+  // into a mass — fine and numerous is what an aster head actually is. Each
+  // ring is offset so no ray lands directly on the one beneath it.
+  buildPetals(document.getElementById("heroOuter"), 30, 168, 9, "url(#heroPetalOuter)", 0,  20260829);
+  buildPetals(document.getElementById("heroInner"), 22, 120, 8, "url(#heroPetalInner)", 6,  77345201);
+  buildPetals(document.getElementById("heroCore"),  14,  66, 7, "url(#heroPetalCore)",  13, 41556207);
   buildPetals(document.getElementById("petalsOuter"), 14, 155, 12, "#c4a5e0");
   buildPetals(document.getElementById("petalsInner"), 12, 95, 9, "#8b5fbf", 15);
   buildPetals(document.getElementById("philOuter"), 12, 95, 7, "#c4a5e0");
@@ -4968,6 +5044,7 @@ body.in-bloom-zoom .ambient-petals {
     // Overshoot petal-bloom + slow continuous rotation + breathing halo
     const heroOuter = document.querySelectorAll("#heroOuter .petal");
     const heroInner = document.querySelectorAll("#heroInner .petal");
+    const heroCore  = document.querySelectorAll("#heroCore .petal");
     if (heroOuter.length && heroInner.length) {
       // Petals begin *tucked*, not shrunk: short along their length, rolled
       // narrow, and tilted in toward the centre the way a bud holds them.
@@ -4976,6 +5053,7 @@ body.in-bloom-zoom .ambient-petals {
       // made this look like a starburst popping open.
       gsap.set(heroOuter, { scaleY: 0.06, scaleX: 0.50, rotation: -16, transformOrigin: "0px 0px" });
       gsap.set(heroInner, { scaleY: 0.08, scaleX: 0.55, rotation: -12, transformOrigin: "0px 0px" });
+      gsap.set(heroCore,  { scaleY: 0.10, scaleX: 0.60, rotation: -9,  transformOrigin: "0px 0px" });
       gsap.set("#heroFlower circle", { scale: 0, transformOrigin: "200px 200px" });
 
       // Was `"cubic-bezier(0.34, 1.32, 0.64, 1)"` — not a registered GSAP
@@ -4987,12 +5065,20 @@ body.in-bloom-zoom .ambient-petals {
       // `from: "random"` matters as much as the ease: sequential stagger
       // opens the ring like a clock hand sweeping round. Real blooms don't
       // have an index order.
+      // Innermost first, then outward: a real head opens from the disc, and
+      // the order is legible even at 1.4s because the rings are different
+      // lengths.
       gsap.timeline({ delay: 0.42 })
+        .to(heroCore, {
+          scaleY: 1, scaleX: 1, rotation: 0,
+          duration: 1.0, ease: unfurl,
+          stagger: { each: 0.045, from: "random" },
+        })
         .to(heroInner, {
           scaleY: 1, scaleX: 1, rotation: 0,
           duration: 1.25, ease: unfurl,
           stagger: { each: 0.05, from: "random" },
-        })
+        }, "-=0.78")
         .to(heroOuter, {
           scaleY: 1, scaleX: 1, rotation: 0,
           duration: 1.45, ease: unfurl,
