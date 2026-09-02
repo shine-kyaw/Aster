@@ -641,11 +641,83 @@ button:focus-visible,
 
 /* ========== Hero ========== */
 .hero {
-  min-height: 100vh;
-  padding-top: clamp(140px, 18vh, 220px);
-  padding-bottom: 80px;
+  /* svh, not vh: on mobile browsers vh is the tallest possible viewport, so a
+     100vh hero is always taller than the visible area and the scroll cue sits
+     under the address bar. */
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: clamp(132px, 17vh, 200px);
+  padding-bottom: clamp(96px, 13vh, 150px);
   position: relative;
   overflow: hidden;
+}
+
+/* ── The headline, at reference scale ─────────────────────────
+   It was sharing a 1.4fr / 1fr grid with the flower, which capped it at just
+   over half the page — and every reference site runs its display type to
+   nearly the full measure. Its own clamp rather than the shared ramp because
+   the hero is the top of the hierarchy by definition and nothing else on the
+   page should reach it: the next step down (--fs-h1) maxes at 96px, so at
+   158px the hero cannot be outranked at any width. */
+.hero-title {
+  font-size: clamp(42px, 11.2vw, 158px);
+  line-height: 0.90;
+  letter-spacing: -0.036em;
+  margin: 0 0 clamp(26px, 3.2vw, 44px);
+  max-width: 15ch;      /* forces the two-line break rather than trusting it */
+}
+/* 20px of lede under 158px of display is a 7.9× jump — the eye reads it as a
+   caption that fell off the headline rather than as the next voice down. */
+.hero-lede {
+  font-size: clamp(19px, 1.55vw, 26px);
+  margin-bottom: clamp(30px, 3.4vw, 42px);
+  max-width: 34ch;
+}
+
+.hero-grid {
+  position: relative;
+  z-index: 2;
+}
+.hero-headline { position: relative; z-index: 2; }
+
+/* ── The scroll cue ─────────────────────────────────────────── */
+/* Absolute, not `margin-top: auto`. An auto margin inside a centred flex
+   column claims ALL the free space, which did two things at once: it shoved the
+   cue 12px below an 812px viewport (measured), and it pinned the content block
+   to the top instead of letting `justify-content: center` centre it. */
+.hero-scroll {
+  position: absolute;
+  left: var(--pad-x);
+  bottom: clamp(26px, 5vh, 52px);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  font-family: var(--sans);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  transition: color 0.4s var(--ease);
+}
+.hero-scroll:hover { color: var(--ink); }
+.hero-scroll-line {
+  display: block;
+  width: 58px;
+  height: 1px;
+  background: currentColor;
+  transform-origin: left center;
+  animation: heroScrollDraw 2.6s var(--ease) infinite;
+}
+@keyframes heroScrollDraw {
+  0%, 100% { transform: scaleX(0.35); opacity: 0.45; }
+  50%      { transform: scaleX(1);    opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-scroll-line { animation: none; transform: scaleX(1); }
 }
 .hero-arch {
   position: absolute;
@@ -671,14 +743,12 @@ button:focus-visible,
 @media (max-width: 760px) {
   .hero-arch { opacity: 0.38; top: 20px; width: 168%; }
 }
+/* Single column. The flower comes out of the grid entirely and becomes the
+   atmosphere of the section rather than the right-hand half of a two-up: a
+   neat flower in a neat cell beside a headline is a layout, and every one of
+   the reference sites is a composition instead. */
 .hero-grid {
-  display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: clamp(40px, 8vw, 120px);
-  align-items: center;
-}
-@media (max-width: 980px) {
-  .hero-grid { grid-template-columns: 1fr; gap: 50px; }
+  display: block;
 }
 .hero-headline {
   position: relative;
@@ -813,16 +883,43 @@ button:focus-visible,
   text-transform: uppercase;
 }
 
+/* Bleeding off the right edge, low and behind. Two things make this read as
+   composition rather than decoration: it is cropped by the viewport (an object
+   that continues past the frame implies a world larger than the screen, which
+   a fully-contained one never does), and it sits low-right where the headline
+   is not — the lede and the single button occupy the lower LEFT, so the two
+   never fight for the same ground. */
 .hero-flower {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  /* Pushed far enough right that its left petals only graze the headline
+     rather than its bright centre landing on the word "Aster" — measured, the
+     longest line ends near 1008px at 1440 wide, and -14vw of offset puts the
+     flower's left edge at almost exactly that. Large type crossing a soft
+     low-opacity graphic reads as layering; large type crossing the middle of a
+     high-contrast one reads as a mistake. */
+  right: clamp(-230px, -14vw, -80px);
+  top: 50%;
+  transform: translateY(-42%);
+  width: clamp(330px, 44vw, 660px);
+  opacity: 0.42;
 }
 .hero-flower svg {
   width: 100%;
-  max-width: 520px;
   height: auto;
+  max-width: none;
+}
+
+@media (max-width: 980px) {
+  /* Behind the type on a phone, held well back so it reads as a watermark. */
+  .hero-flower {
+    right: -26%;
+    top: 46%;
+    width: min(112%, 560px);
+    opacity: 0.30;
+  }
+  .hero-title { max-width: none; }
 }
 .hero-flower-halo {
   position: absolute;
@@ -3049,7 +3146,15 @@ body.in-bloom-zoom .ambient-petals {
 /* Lift content above aurora (NOT the fixed overlays — they keep position:fixed
    and already sit above via their own z-index; forcing relative here put the
    off-screen drawer into flow and widened the page). */
-.nav, .hero, .section, footer, .cta-section, .marquee-section { position: relative; z-index: 2; }
+/* `.nav` was in this list and must not be. The comment above says the fixed
+   overlays keep position:fixed, but this rule sits later in the sheet than
+   `.nav { position: fixed }` at equal specificity — so it won, and the nav has
+   never actually been fixed. It scrolled away with the page and occupied 88px
+   of real layout height, which is also why a `min-height: 100svh` hero
+   overshot the viewport by exactly 88px and pushed its own scroll cue out of
+   sight. Every `.nav.scrolled` and `.nav.on-dark` style on this page assumes a
+   bar that stays put. */
+.hero, .section, footer, .cta-section, .marquee-section { position: relative; z-index: 2; }
 
 /* ============================================================
    MTK · Ambient drifting petals
@@ -3303,7 +3408,10 @@ body.in-bloom-zoom .ambient-petals {
 @media (max-width: 480px) {
   :root { --pad-x: 18px; }
 
-  .hero { padding-top: 100px; }
+  /* Raised from 100px now that the nav is genuinely fixed: at 100px the
+     headline started ~12px below an 88px bar, so the eyebrow sat almost
+     touching it. */
+  .hero { padding-top: 128px; }
   /* The hero used to be overridden to clamp(36px, 12vw, 52px) below
      480px, which resolved to 38.4px at 320 while the .h-lg headings
      under it held a 44px floor — the page's H1 rendered smaller than
@@ -3466,86 +3574,30 @@ body.in-bloom-zoom .ambient-petals {
 
 <header class="hero wrap">
 
-  <!-- Old-European garden archway with climbing vines (decorative) -->
-  <div class="hero-arch" aria-hidden="true">
-    <svg viewBox="0 0 1200 300" preserveAspectRatio="xMidYMin meet" fill="none">
-      <defs>
-        <g id="archLeaf">
-          <path d="M0 0 C 6.4 -6 8 -22 0 -31 C -8 -22 -6.4 -6 0 0 Z" fill="#6f9163"/>
-          <path d="M0 -2 L0 -27" stroke="#46583a" stroke-width="0.9" stroke-linecap="round"/>
-        </g>
-        <g id="archLeaf2">
-          <path d="M0 0 C 5.6 -5 7 -19 0 -27 C -7 -19 -5.6 -5 0 0 Z" fill="#8aa77d"/>
-          <path d="M0 -2 L0 -23" stroke="#5c7350" stroke-width="0.8" stroke-linecap="round"/>
-        </g>
-        <g id="archTendril">
-          <path d="M0 0 C 11 -2 15 8 7 12 C 1 15 -4 9 1 5" fill="none"
-                stroke="#5c7350" stroke-width="1.4" stroke-linecap="round"/>
-        </g>
-        <g id="archBloom">
-          <g fill="#8b5fbf">
-            <ellipse rx="2.3" ry="6.6" cy="-7.6"/>
-            <ellipse rx="2.3" ry="6.6" cy="-7.6" transform="rotate(36)"/>
-            <ellipse rx="2.3" ry="6.6" cy="-7.6" transform="rotate(72)"/>
-            <ellipse rx="2.3" ry="6.6" cy="-7.6" transform="rotate(108)"/>
-            <ellipse rx="2.3" ry="6.6" cy="-7.6" transform="rotate(144)"/>
-            <ellipse rx="2.3" ry="6.6" cy="-7.6" transform="rotate(180)"/>
-            <ellipse rx="2.3" ry="6.6" cy="-7.6" transform="rotate(216)"/>
-            <ellipse rx="2.3" ry="6.6" cy="-7.6" transform="rotate(252)"/>
-            <ellipse rx="2.3" ry="6.6" cy="-7.6" transform="rotate(288)"/>
-            <ellipse rx="2.3" ry="6.6" cy="-7.6" transform="rotate(324)"/>
-          </g>
-          <circle r="3.3" fill="#e6b248"/>
-          <circle r="1.5" fill="#f6dd92"/>
-        </g>
-      </defs>
+  <!-- Seven competing elements became four. What went: a decorative vine
+       archway (a garland of small flowers and leaves — the least premium thing
+       on the page, and the references carry no decoration at all), a meta row
+       reading "Hand-built · hand-tended / ∞ Solely Aster", and a second
+       button that competed with the only one that converts.
 
-      <!-- a single, shallow spanning arch that runs off to BOTH sides (no legs)
-           and fades at the edges via the container mask. Charcoal tone matches
-           the site ink; a faint inner hairline gives a carved depth. -->
-      <path d="M0 214 C 230 104 412 72 600 68 C 788 72 970 104 1200 214"
-            stroke="#4a4640" stroke-width="1.6" opacity="0.34"/>
-      <path d="M0 244 C 240 138 416 104 600 100 C 784 104 960 138 1200 244"
-            stroke="#4a4640" stroke-width="1.1" opacity="0.16"/>
-
-      <!-- small keystone leaf at the crown -->
-      <path d="M600 52 C 608 70 608 80 600 98 C 592 80 592 70 600 52 Z" fill="#4a4640" opacity="0.28"/>
-
-      <!-- vine hugging the arch on the left half, mirrored to the right -->
-      <path id="vineL" d="M0 218 C 150 130 332 92 470 80 C 542 73 576 73 600 68"
-            stroke="#45583a" stroke-width="2.4" stroke-linecap="round" opacity="0.66"/>
-      <use href="#vineL" transform="translate(1200 0) scale(-1 1)"/>
-
-      <!-- foliage filled by buildArch() -->
-      <g id="archFoliageL"></g>
-      <g id="archFoliageR" transform="translate(1200 0) scale(-1 1)"></g>
-      <g id="archFoliageC"></g>
-    </svg>
-  </div>
+       What is left is what Wallpaper Projects has: an eyebrow, one enormous
+       serif, one line of copy, one action. -->
 
   <div class="hero-grid">
     <div class="hero-headline">
-      <span class="eyebrow hero-eyebrow">Bespoke Design Studio · est. 2026</span>
-      <h1 class="display hero-title h-xl">
+      <span class="eyebrow hero-eyebrow">Bespoke design studio · est. 2026</span>
+      <h1 class="display hero-title">
         <span class="l"><span>Your identity,</span></span>
         <span class="l"><span>purely <em class="italic">Aster.</em></span></span>
       </h1>
-      <p class="lede hero-lede hero-motto">
-        Your digital presence <span class="motto-sep">|</span> <em>built to bloom</em>.
+      <p class="lede hero-lede">
+        Your digital presence, <em>built to bloom</em>.
       </p>
       <div class="hero-actions">
         <a class="btn btn-primary glow-track glow-warm" href="#connect">
           Begin a conversation
           <svg class="ar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 18 L18 6 M9 6 H18 V15"/></svg>
         </a>
-        <a class="btn btn-ghost glow-track" href="#process">See the bloom →</a>
-      </div>
-      <div class="hero-meta hero-meta--mixed">
-        <span class="hero-meta-line">Hand-built <em class="dot">·</em> hand-tended</span>
-        <div class="item">
-          <span>∞</span>
-          <small>Solely Aster</small>
-        </div>
       </div>
     </div>
 
@@ -3604,6 +3656,15 @@ body.in-bloom-zoom .ambient-petals {
       </svg>
     </div>
   </div>
+
+  <!-- All three reference sites carry one of these. 601 Inc says "SCROLL TO
+       EXPLORE" in the corner; Wallpaper Projects draws a single hairline
+       arrow. It is the cheapest way to tell a visitor that a full-viewport
+       hero is the beginning of something rather than the whole page. -->
+  <a class="hero-scroll" href="#process">
+    <span>Scroll</span>
+    <span class="hero-scroll-line" aria-hidden="true"></span>
+  </a>
 </header>
 
 <!-- ============ MARQUEE STRIP (cycling words) ============ -->
