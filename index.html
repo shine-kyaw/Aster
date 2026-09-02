@@ -3691,6 +3691,33 @@ body.in-bloom-zoom .ambient-petals {
           </radialGradient>
         </defs>
 
+        <!-- The plant, behind the head. Growth is a vertical event, and this
+             flower was drawn from directly overhead — from that angle a
+             growing plant can only get bigger, which is exactly why the
+             section read as dilation no matter how the petals were eased.
+             A stem entering from below gives the head somewhere to have
+             grown FROM. -->
+        <g id="zoomStem" aria-hidden="true">
+          <path class="stem-line"
+                d="M 0 210 C -14 168, 10 122, 1 74 C -3 56, 0 46, 0 38"
+                fill="none" stroke="#7d9a6e" stroke-width="3.4" stroke-linecap="round"/>
+          <g class="stem-leaf stem-leaf--l">
+            <path d="M 0 0 C -22 -10, -46 -4, -58 12 C -40 26, -14 22, 0 0 Z" fill="#7d9a6e"/>
+            <path d="M -3 2 C -20 6, -36 12, -52 14" stroke="#5c7550" stroke-width="1.2"
+                  fill="none" stroke-linecap="round"/>
+          </g>
+          <g class="stem-leaf stem-leaf--r">
+            <path d="M 0 0 C 20 -12, 44 -8, 56 6 C 38 22, 13 20, 0 0 Z" fill="#88a878"/>
+            <path d="M 3 1 C 19 4, 34 9, 50 10" stroke="#5c7550" stroke-width="1.2"
+                  fill="none" stroke-linecap="round"/>
+          </g>
+        </g>
+
+        <!-- The whole head, so it can be tilted as one thing. Squashing it
+             vertically reads as a flower seen edge-on; releasing that squash
+             to 1 as it opens reads as the head turning to face you, which is
+             what a real bloom does and what no amount of scaling can fake. -->
+        <g id="zoomHead">
         <g id="zoomL1"></g>
         <g id="zoomL2"></g>
         <g id="zoomL3"></g>
@@ -3719,6 +3746,7 @@ body.in-bloom-zoom .ambient-petals {
           <circle cx="-2.4" cy="-3"   r="1.2" fill="#ffffff"/>
           <g id="ovuleTexture"></g>
         </g>
+        </g><!-- /#zoomHead -->
       </svg>
 
       <!-- All four phase reveals emerge from the ovule, one by one.
@@ -5300,6 +5328,31 @@ body.in-bloom-zoom .ambient-petals {
       // The disc is the last thing visible in a real bud — the ray florets
       // wrap it — so it arrives with the innermost ring rather than up front.
       gsap.set(".zoom-disc", { scale: 0.34, transformOrigin: "50% 50%" });
+
+      // ── The plant, before it has grown ──
+      // The stem is drawn with stroke-dashoffset, the oldest and still the most
+      // convincing way to make a line grow: the path is fully described from
+      // the first frame and simply revealed along its own length, so the tip
+      // travels the exact curve rather than a shape being scaled up.
+      const stemLine = document.querySelector(".stem-line");
+      let stemLen = 260;
+      if (stemLine && stemLine.getTotalLength) {
+        try { stemLen = stemLine.getTotalLength(); } catch (e) { /* keep fallback */ }
+      }
+      gsap.set(stemLine, { strokeDasharray: stemLen, strokeDashoffset: stemLen });
+      gsap.set(".stem-leaf--l", { transformOrigin: "0px 0px", x: -2, y: 132, scale: 0, rotation: -34 });
+      gsap.set(".stem-leaf--r", { transformOrigin: "0px 0px", x: 2,  y: 88,  scale: 0, rotation: 28 });
+
+      // The head starts squashed to a fifth of its height and sitting low on
+      // the stem. Releasing that squash is what turns "a shape getting bigger"
+      // into "a flower turning to face you" — the single change that separates
+      // growth from dilation here.
+      // scaleX is squashed almost as hard as scaleY. Squashing only the height
+      // leaves a wide flat smear of rays — visibly a flower pressed flat, not
+      // a bud. Pulling the width in too gives a small tight form, and y:34
+      // starts it at the stem's drawn tip so the head rises off the stem
+      // rather than hovering above where the stem ends.
+      gsap.set("#zoomHead", { scaleY: 0.16, scaleX: 0.42, y: 34, transformOrigin: "50% 50%" });
       // Phase reveals: centered via xPercent/yPercent so y-tweens compose
       // cleanly with centering; start tucked just below their resting
       // position with a tiny scale-down so they bloom upward into view.
@@ -5318,6 +5371,9 @@ body.in-bloom-zoom .ambient-petals {
         });
         gsap.set(".zoom-disc", { scale: 1 });
         gsap.set(zoomFlower, { scale: 1, rotation: 0 });
+        gsap.set(stemLine, { strokeDashoffset: 0 });
+        gsap.set(".stem-leaf", { scale: 1, rotation: 0 });
+        gsap.set("#zoomHead", { scaleY: 1, scaleX: 1, y: 0 });
         return;
       }
 
@@ -5372,7 +5428,24 @@ body.in-bloom-zoom .ambient-petals {
       //  meaningfully more reading time.
       // ─────────────────────────────────────────────────────────────────
 
-      // ── BLOOM-UP (0.00 → 0.22) ── shorter overture
+      // ── GROWTH (0.00 → 0.42) ── the stem, then the leaves, then the head
+      // turning up. This is the part that was missing entirely: the section
+      // used to begin with the flower already formed.
+      zoomTl
+        .to(stemLine, { strokeDashoffset: 0, ease: "power1.inOut", duration: 0.20 }, 0)
+        // Each leaf opens just after the drawn tip has passed its node, so it
+        // looks like the stem put it there rather than like two things
+        // animating at once.
+        .to(".stem-leaf--l", { scale: 1, rotation: 0, ease: "back.out(1.6)", duration: 0.11 }, 0.07)
+        .to(".stem-leaf--r", { scale: 1, rotation: 0, ease: "back.out(1.6)", duration: 0.11 }, 0.13)
+        // The head lifts and turns to face the viewer, finishing just after
+        // the outer ring of rays has finished unfurling.
+        .to("#zoomHead", {
+          scaleY: 1, scaleX: 1, y: 0,
+          ease: "power2.out", duration: 0.26,
+        }, 0.16);
+
+      // ── OVERTURE (0.00 → 0.22) ──
       zoomTl
         .to(zoomFlower, { scale: 1.0, ease: "power2.out", duration: 0.22 }, 0)
         .to(".zoom-aura", { scale: 1.0, opacity: 0.9, ease: "power2.out", duration: 0.22 }, 0);
@@ -5413,10 +5486,13 @@ body.in-bloom-zoom .ambient-petals {
       //
       // Staggering the three by fractions of the ring's window is the whole
       // difference between "petals extending" and "a flower opening".
-      [["#zoomL4 .petal", 0.00, 0.13, 0.05],
-       ["#zoomL3 .petal", 0.04, 0.13, 0.06],
-       ["#zoomL2 .petal", 0.09, 0.13, 0.07],
-       ["#zoomL1 .petal", 0.14, 0.14, 0.08]].forEach(function (ring) {
+      // Shifted to start at 0.13, once the stem is drawn and the head has begun
+      // turning up — so the rays unfurl AS the head rises, not before it
+      // exists. The two motions overlapping is what makes it one event.
+      [["#zoomL4 .petal", 0.13, 0.13, 0.05],
+       ["#zoomL3 .petal", 0.18, 0.13, 0.06],
+       ["#zoomL2 .petal", 0.23, 0.13, 0.07],
+       ["#zoomL1 .petal", 0.28, 0.14, 0.08]].forEach(function (ring) {
         const sel = ring[0], at = ring[1], dur = ring[2];
         const stagger = { amount: ring[3], from: "random" };
 
@@ -5451,7 +5527,7 @@ body.in-bloom-zoom .ambient-petals {
         scale: 1,
         ease: "back.out(1.8)",
         duration: 0.20,
-      }, 0.05);
+      }, 0.18);
 
       // ── BREATH (0.22 → 0.28) ── brief held inhale
       zoomTl.to(zoomFlower, {
@@ -5460,21 +5536,26 @@ body.in-bloom-zoom .ambient-petals {
         duration: 0.06,
       }, 0.22);
 
-      // ── CINEMATIC DIVE (0.28 → 1.00) ── runs through the phases
-      // Single continuous power2.in over 0.72 of timeline. The dive
-      // OVERLAPS with all four phase reveals — each phase appears
-      // against a more zoomed-in flower than the last.
+      // ── PUSH-IN (0.44 → 1.00) ── runs through the phases
+      // This used to be a 6.5× ramp starting at 0.28 — a single `scale` tween
+      // covering nearly three-quarters of the section, applied to the whole
+      // SVG. It WAS the animation, and scaling one static object across two
+      // thirds of a scroll is the definition of dilation. Cut to 2.4× and
+      // pushed back to 0.44 so it begins only once the plant has finished
+      // growing: the section is now a plant that grows, and then a camera that
+      // moves a little closer while you read. The growth is the event; the
+      // push-in is punctuation.
       //
-      //   Phase 01 (0.32) — scale ≈ 1.06   (just after breath)
-      //   Phase 02 (0.48) — scale ≈ 1.36   (early dive)
-      //   Phase 03 (0.64) — scale ≈ 1.95   (mid dive)
-      //   Phase 04 (0.80) — scale ≈ 3.15   (committed plunge)
-      //   End      (1.00) — scale = 6.5    (peak — ovule fills screen)
+      //   Phase 01 (0.46) — scale ≈ 1.01
+      //   Phase 02 (0.60) — scale ≈ 1.20
+      //   Phase 03 (0.72) — scale ≈ 1.48
+      //   Phase 04 (0.84) — scale ≈ 1.85
+      //   End      (1.00) — scale = 2.4
       zoomTl.to(zoomFlower, {
-        scale: 6.5,
+        scale: 2.4,
         ease: "power2.in",
-        duration: 0.72,
-      }, 0.28);
+        duration: 0.56,
+      }, 0.44);
 
       // ── DEPTH OF FIELD (0.36 → 0.96) ── stretched across phases
       // Outer rings fade gradually as the camera plunges past them.
