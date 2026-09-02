@@ -3727,6 +3727,14 @@ body.in-bloom-zoom .ambient-petals {
             <stop offset="60%" stop-color="#5e3d8a"/>
             <stop offset="100%" stop-color="#3d2660"/>
           </linearGradient>
+          <!-- Bracts run darker at the base and lighter at the tip, the
+               opposite way round from the petals, so the two rings read as
+               different material rather than a green copy of the same shape. -->
+          <linearGradient id="zoomSepalGrad" x1="50%" y1="100%" x2="50%" y2="0%">
+            <stop offset="0%"   stop-color="#4d6440"/>
+            <stop offset="55%"  stop-color="#6f8d5e"/>
+            <stop offset="100%" stop-color="#8fae7a"/>
+          </linearGradient>
           <radialGradient id="zoomDiscGrad" cx="50%" cy="50%" r="50%">
             <stop offset="0%"   stop-color="#fbd9be"/>
             <stop offset="22%"  stop-color="#e89a7c"/>
@@ -3774,11 +3782,40 @@ body.in-bloom-zoom .ambient-petals {
           </g>
         </g>
 
+        <!-- A real closed bud, and deliberately OUTSIDE #zoomHead. The head
+             fakes its side view by squashing vertically, which flattens
+             everything inside it — including the bracts — so the closed state
+             came out as a flat spiky ellipse rather than anything bud-shaped.
+             Sitting outside that squash, this keeps honest proportions: a
+             rounded green ovoid at the stem's tip, with two bract seams and a
+             sliver of violet already showing at the point. It fades as the
+             head rises through it. -->
+        <g id="zoomBud" transform="translate(0 12)" aria-hidden="true">
+          <path d="M 0 -30 C 13 -26, 19 -12, 19 2 C 19 16, 10 24, 0 24
+                   C -10 24, -19 16, -19 2 C -19 -12, -13 -26, 0 -30 Z"
+                fill="url(#zoomSepalGrad)"/>
+          <path d="M 0 -28 C -8 -14, -10 4, -6 22" fill="none"
+                stroke="#41563a" stroke-width="1.1" stroke-linecap="round" opacity="0.75"/>
+          <path d="M 0 -28 C 8 -14, 10 4, 6 22" fill="none"
+                stroke="#41563a" stroke-width="1.1" stroke-linecap="round" opacity="0.6"/>
+          <path d="M -5.5 -27.5 C -3 -33, 3 -33, 5.5 -27.5 C 3 -29.5, -3 -29.5, -5.5 -27.5 Z"
+                fill="#a98cc4"/>
+        </g>
+
         <!-- The whole head, so it can be tilted as one thing. Squashing it
              vertically reads as a flower seen edge-on; releasing that squash
              to 1 as it opens reads as the head turning to face you, which is
              what a real bloom does and what no amount of scaling can fake. -->
         <g id="zoomHead">
+        <!-- The involucre: the ring of green bracts that wraps a composite
+             flower's bud and stays underneath the open head. Painted BEFORE
+             the rays deliberately — SVG has no z-index, so drawing order is
+             the only control there is. While the rays are still tucked these
+             are the largest thing in the head, which is what gives the closed
+             state something to be: a green bud rather than a dark smudge. Once
+             the rays extend past them they recede into a fringe showing
+             between the petals, which is where they belong. -->
+        <g id="zoomSepals"></g>
         <g id="zoomL1"></g>
         <g id="zoomL2"></g>
         <g id="zoomL3"></g>
@@ -4536,6 +4573,10 @@ body.in-bloom-zoom .ambient-petals {
   buildPetals(document.getElementById("zoomL2"), 27, 148, 8.5, "url(#petalSheenLight)", 7,  31905513);
   buildPetals(document.getElementById("zoomL3"), 20, 116, 8.0, "url(#petalSheenMid)",   12, 88410267);
   buildPetals(document.getElementById("zoomL4"), 14,  86, 7.0, "url(#petalSheenDeep)",  17, 15773049);
+  // Bracts: longer than the innermost ray ring (86) and shorter than the next
+  // one out (116), so their tips finish between the two and show as a fringe
+  // rather than either vanishing under the head or sticking out past it.
+  buildPetals(document.getElementById("zoomSepals"), 11, 98, 10, "url(#zoomSepalGrad)", 4, 52708831);
 
   // ── Old-European archway: drape leaves + blooms along the vine paths.
   function buildArch() {
@@ -5408,12 +5449,30 @@ body.in-bloom-zoom .ambient-petals {
       // the stem. Releasing that squash is what turns "a shape getting bigger"
       // into "a flower turning to face you" — the single change that separates
       // growth from dilation here.
+      // The bud sits closed at the stem tip from the first frame, a touch
+      // small so the stem visibly delivers it.
+      gsap.set("#zoomBud", { scale: 0.62, opacity: 1, transformOrigin: "50% 80%" });
+
+      // The bracts start nearly formed — a bud's covering exists before the
+      // flower does — so unlike the rays they begin at most of their length,
+      // wrapped tight with no splay. Combined with the head's squash this is
+      // a small green closed bud, which is what the first frames were missing.
+      gsap.set("#zoomSepals .petal", {
+        scaleY: 0.66, scaleX: 0.92, rotation: 0, transformOrigin: "0px 0px",
+      });
+
       // scaleX is squashed almost as hard as scaleY. Squashing only the height
       // leaves a wide flat smear of rays — visibly a flower pressed flat, not
       // a bud. Pulling the width in too gives a small tight form, and y:34
       // starts it at the stem's drawn tip so the head rises off the stem
       // rather than hovering above where the stem ends.
-      gsap.set("#zoomHead", { scaleY: 0.16, scaleX: 0.42, y: 34, transformOrigin: "50% 50%" });
+      // opacity 0 as well as squashed. A flattened head still paints, and it
+      // showed as a dark spiky smear sitting under the bud for the whole first
+      // eighth of the section. Nothing should be visible there except a bud on
+      // a stem; the head fades in only as it rises through the bud.
+      gsap.set("#zoomHead", {
+        scaleY: 0.16, scaleX: 0.42, y: 34, opacity: 0, transformOrigin: "50% 50%",
+      });
       // Phase reveals: centered via xPercent/yPercent so y-tweens compose
       // cleanly with centering; start tucked just below their resting
       // position with a tiny scale-down so they bloom upward into view.
@@ -5434,7 +5493,9 @@ body.in-bloom-zoom .ambient-petals {
         gsap.set(zoomFlower, { scale: 1, rotation: 0 });
         gsap.set(stemLine, { strokeDashoffset: 0 });
         gsap.set(".stem-leaf", { scale: 1, rotation: 0 });
-        gsap.set("#zoomHead", { scaleY: 1, scaleX: 1, y: 0 });
+        gsap.set("#zoomHead", { scaleY: 1, scaleX: 1, y: 0, opacity: 1 });
+        gsap.set("#zoomSepals .petal", { scaleY: 1, scaleX: 1, rotation: 7, opacity: 0.88 });
+        gsap.set("#zoomBud", { opacity: 0 });
         return;
       }
 
@@ -5501,10 +5562,25 @@ body.in-bloom-zoom .ambient-petals {
         .to(".stem-leaf--r", { scale: 1, rotation: 0, ease: "back.out(1.6)", duration: 0.11 }, 0.13)
         // The head lifts and turns to face the viewer, finishing just after
         // the outer ring of rays has finished unfurling.
+        .to("#zoomHead", { opacity: 1, ease: "power1.out", duration: 0.07 }, 0.15)
         .to("#zoomHead", {
           scaleY: 1, scaleX: 1, y: 0,
           ease: "power2.out", duration: 0.26,
-        }, 0.16);
+        }, 0.16)
+        // The bud swells on the stem, then splits: it scales up and fades as
+        // the head rises through it, so the flower reads as having come OUT of
+        // the bud rather than the bud being swapped for a flower.
+        .to("#zoomBud", { scale: 1, ease: "power2.out", duration: 0.14 }, 0.03)
+        .to("#zoomBud", { scale: 1.5, opacity: 0, ease: "power2.in", duration: 0.14 }, 0.17)
+        // The bracts peel back and settle a touch translucent as the rays come
+        // through them. They reach full length but splay outward, so what is
+        // left is a green edge under the open head rather than a green ring
+        // competing with it.
+        .to("#zoomSepals .petal", {
+          scaleY: 1, scaleX: 1, rotation: 7, opacity: 0.88,
+          ease: "power2.out", duration: 0.24,
+          stagger: { amount: 0.05, from: "random" },
+        }, 0.15);
 
       // ── OVERTURE (0.00 → 0.22) ──
       zoomTl
