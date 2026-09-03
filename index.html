@@ -709,13 +709,20 @@ button:focus-visible,
   margin: 0 0 clamp(28px, 3.1vw, 44px);
   max-width: none;      /* the line breaks are explicit spans; the column caps width */
 }
-/* 42ch, measured, is where this copy breaks after "one at a time." — two whole
-   sentences on two lines. At 40ch it broke after "Nothing", orphaning the word
-   from its own clause. */
+/* The break is explicit rather than a `ch` cap. Measured, 42ch fits 46
+   characters of this sans — `ch` is the width of "0", which is wider than
+   average lowercase — so tuning a max-width to land the break after "one at a
+   time." means guessing at a number that moves with the webfont. A <br> that
+   only exists on the two-column layout is exact and cannot drift; the
+   max-width stays as a safety net for anything that changes the copy. */
 .hero-lede {
   font-size: clamp(18px, 1.35vw, 22px);
   margin-bottom: clamp(30px, 3.2vw, 40px);
-  max-width: 42ch;
+  max-width: 46ch;
+}
+.lede-break { display: none; }
+@media (min-width: 981px) {
+  .lede-break { display: inline; }
 }
 
 .hero-grid {
@@ -3717,8 +3724,8 @@ body.in-bloom-zoom .ambient-petals {
         <span class="l"><span>purely <em class="italic">Aster.</em></span></span>
       </h1>
       <p class="lede hero-lede">
-        Websites shaped by hand, one at a time. Nothing borrowed,
-        nothing templated.
+        Websites shaped by hand, one at a time.<br class="lede-break" />
+        Nothing borrowed, nothing templated.
       </p>
       <div class="hero-actions">
         <a class="btn btn-primary glow-track glow-warm" href="#connect">
