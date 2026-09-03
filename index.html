@@ -3292,8 +3292,17 @@ body.in-bloom-zoom .ambient-petals {
   0%, 100% { transform: scale(1);    opacity: 0.34; }
   50%      { transform: scale(1.06); opacity: 0.50; }
 }
+/* Its own keyframe, and a BASE opacity on the element.
+   `heroBreathe` carries the opacity inside the keyframe, and the global
+   reduced-motion rule sets `animation-duration: 0.01ms` rather than
+   `animation: none` — so the animation completes instantly and the element
+   falls back to its own style. With no base opacity that is 1, and anyone
+   browsing with reduced motion got this plate at full strength: a hard-edged
+   wash across the whole upper hero. Now the keyframe only modulates around a
+   resting value that is correct on its own. */
 .hero-flower-halo {
-  animation: heroBreathe 6s ease-in-out infinite;
+  opacity: 0.44;
+  animation: heroHaloBreathe 6s ease-in-out infinite;
   /* The painted pigment bleed with the violet lamp screened over it. Both are
      real plates: the wash carries watercolour bleed and paper tooth that no
      CSS radial can fake, and `screen` lets the lamp add light rather than
@@ -3304,11 +3313,21 @@ body.in-bloom-zoom .ambient-petals {
      and that is deliberate rather than incidental: --ink-mute clears AA on
      cream with only ~0.35 to spare, so tinting the ground under any text
      would break it. In this cell there is no text at any viewport width. */
+     The glow plate is sized past the mask's transparent edge rather than to
+     58%, which put its own rectangular boundary at about r=337 from centre —
+     well inside the mask's opaque zone. A JPEG's "black" ground is never quite
+     black, and under `screen` that residue drew a visible rectangle around the
+     flower. At 106% the plate's edge lands where the mask has already faded
+     out, so there is nothing there to see. */
   background:
-    url("assets/env/glow-aster.jpg") center / 58% 58% no-repeat,
+    url("assets/env/glow-aster.jpg") center / 106% 106% no-repeat,
     url("assets/env/hero-wash.jpg") center / cover no-repeat;
   background-blend-mode: screen, normal;
   will-change: transform, opacity;
+}
+@keyframes heroHaloBreathe {
+  0%, 100% { transform: scale(1);    opacity: 0.36; }
+  50%      { transform: scale(1.06); opacity: 0.54; }
 }
 
 /* ============================================================
@@ -3635,6 +3654,16 @@ body.in-bloom-zoom .ambient-petals {
             <stop offset="0%"   stop-color="#a77fd2"/>
             <stop offset="52%"  stop-color="#bd9ade"/>
             <stop offset="100%" stop-color="#dbc9ed"/>
+          </linearGradient>
+          <!-- The second ring needs its own step on the ramp. Giving it the
+               outer ring's gradient merged the two into one pale mass with the
+               darker inner ring abutting it, so the head read as two flat tones
+               stacked rather than one graded depth. These stops sit midway
+               between Outer and Inner. -->
+          <linearGradient id="heroPetalMid" x1="50%" y1="0%" x2="50%" y2="100%">
+            <stop offset="0%"   stop-color="#9267c1"/>
+            <stop offset="52%"  stop-color="#a97ace"/>
+            <stop offset="100%" stop-color="#c9b1e5"/>
           </linearGradient>
           <linearGradient id="heroPetalInner" x1="50%" y1="0%" x2="50%" y2="100%">
             <stop offset="0%"   stop-color="#7c50b0"/>
@@ -4620,8 +4649,8 @@ body.in-bloom-zoom .ambient-petals {
   // Four rings, not three. The head is now the hero's whole subject at 0.72
   // opacity rather than a 42% watermark, so it is being looked at directly and
   // the gaps between rings that a watermark hid are now visible.
-  buildPetals(document.getElementById("heroOuter"), 34, 172, 9,   "url(#heroPetalOuter)", 0,  20260829);
-  buildPetals(document.getElementById("heroMid"),   27, 140, 8.5, "url(#heroPetalOuter)", 5,  50913377);
+  buildPetals(document.getElementById("heroOuter"), 38, 172, 9,   "url(#heroPetalOuter)", 0,  20260829);
+  buildPetals(document.getElementById("heroMid"),   30, 142, 8.5, "url(#heroPetalMid)",   5,  50913377);
   buildPetals(document.getElementById("heroInner"), 21, 108, 8,   "url(#heroPetalInner)", 9,  77345201);
   buildPetals(document.getElementById("heroCore"),  15,  68, 7,   "url(#heroPetalCore)",  13, 41556207);
   // Bracts land between the two innermost ray rings, so their tips finish as a
