@@ -673,7 +673,9 @@ button:focus-visible,
   font-size: clamp(42px, 8.2vw, 118px);
   line-height: 0.90;
   letter-spacing: -0.036em;
-  margin: 0 0 clamp(26px, 3.2vw, 44px);
+  /* 0.90 line-height on 118px hangs the "y" of "purely" deep into this gap,
+     so the space the eye sees is roughly 25px less than the number. */
+  margin: 0 0 clamp(34px, 4vw, 56px);
   max-width: 15ch;      /* forces the two-line break rather than trusting it */
 }
 /* 20px of lede under 158px of display is a 7.9× jump — the eye reads it as a
@@ -909,8 +911,18 @@ button:focus-visible,
      high-contrast one reads as a mistake. */
   right: clamp(-210px, -12vw, -70px);
   top: 50%;
-  transform: translateY(-42%);
-  width: clamp(340px, 47vw, 700px);
+  /* Centred with a calc'd margin, NOT `transform: translateY(-42%)`.
+     The hero-depth parallax animates `y` on this same element, and GSAP parses
+     an existing transform into its own x/y cache in PIXELS — so a percentage
+     translate is silently reinterpreted, and the flower dropped 284px (exactly
+     42% of its 677px height) the moment the tween initialised. That is why the
+     head was sliding off the bottom-right corner with its disc below the fold
+     and only a fan of petals in frame.
+     The width is a variable so the half-height can be derived from it rather
+     than duplicating the clamp. */
+  --fw: clamp(340px, 47vw, 700px);
+  width: var(--fw);
+  margin-top: calc(var(--fw) * -0.46);
   /* 0.42 was the price of the collision above: at any real opacity the petals
      crossing the headline read as a mistake rather than as layering. With the
      type no longer reaching this far, the specimen can be a specimen. It stays
@@ -935,7 +947,9 @@ button:focus-visible,
   .hero-flower {
     right: -24%;
     top: 40%;
-    width: min(134%, 620px);
+    --fw: min(134%, 620px);
+    width: var(--fw);
+    margin-top: calc(var(--fw) * -0.46);
     opacity: 0.34;
   }
   .hero-title { max-width: none; }
@@ -3148,15 +3162,25 @@ body.in-bloom-zoom .ambient-petals {
   transition: transform 1.2s var(--ease);
   will-change: transform;
 }
+/* Both washes now sit on the same side, and that side is the flower's.
+   a1 was a 45%-alpha lavender disc bleeding out of the TOP-LEFT corner —
+   directly behind the eyebrow and the first line of the headline. Two opposing
+   corner stains give a page two light sources and therefore none, and a tint
+   under body copy is the one thing this palette cannot afford: --ink-mute
+   clears AA on cream with about 0.35 to spare.
+
+   Moved to the upper right and softened, it reinforces the light the flower is
+   already lit by, and the left half of the hero goes back to clean paper. */
 .aurora.a1 {
-  top: -22vmax;
-  left: -16vmax;
-  background: radial-gradient(circle, rgba(196, 165, 224, 0.45), transparent 65%);
+  top: -26vmax;
+  left: auto;
+  right: -12vmax;
+  background: radial-gradient(circle, rgba(196, 165, 224, 0.30), transparent 66%);
 }
 .aurora.a2 {
-  bottom: -22vmax;
-  right: -16vmax;
-  background: radial-gradient(circle, rgba(232, 154, 124, 0.35), transparent 65%);
+  bottom: -24vmax;
+  right: -20vmax;
+  background: radial-gradient(circle, rgba(232, 154, 124, 0.20), transparent 68%);
 }
 @media (prefers-reduced-motion: reduce), (hover: none) {
   .aurora { display: none; }
@@ -3656,34 +3680,65 @@ body.in-bloom-zoom .ambient-petals {
                a spark looks like. An aster's rays are deepest at the tip and
                pale toward the disc, so the ramp is now that way round and
                stays inside the violet family the whole way. -->
-          <linearGradient id="heroPetalOuter" x1="50%" y1="0%" x2="50%" y2="100%">
-            <stop offset="0%"   stop-color="#a77fd2"/>
-            <stop offset="52%"  stop-color="#bd9ade"/>
-            <stop offset="100%" stop-color="#dbc9ed"/>
+          <!-- ── Ray gradients run ACROSS the blade, not along it ──
+               Each of these used to ramp tip→base (y1 0% → y2 100%). At a
+               19:1 blade that ramp is spread over the long axis where it is
+               almost invisible, and ACROSS the blade — the axis the eye reads
+               as form — every ray was one flat colour. 104 flat blades is why
+               the head looked die-cut.
+
+               Turned 90°, the same number of stops describes a rounded
+               surface: shadowed at both margins, lit through the belly, with
+               the highlight held slightly off centre so the blade reads as
+               curved rather than as a tube. And because the axis is the
+               blade's own width, the shading is identical however the ray is
+               rotated — which is the only reason this works at all in
+               objectBoundingBox space, where a diagonal or lengthwise light
+               would spin round the head with each petal.
+
+               The base-of-petal darkening the old ramp provided comes back
+               globally, and better, from #heroThroat below. -->
+          <linearGradient id="heroPetalOuter" x1="0%" y1="50%" x2="100%" y2="50%">
+            <stop offset="0%"   stop-color="#9b78c9"/>
+            <stop offset="26%"  stop-color="#c1a4e2"/>
+            <stop offset="56%"  stop-color="#e0d2f1"/>
+            <stop offset="82%"  stop-color="#b797da"/>
+            <stop offset="100%" stop-color="#9270c2"/>
           </linearGradient>
-          <!-- The second ring needs its own step on the ramp. Giving it the
-               outer ring's gradient merged the two into one pale mass with the
-               darker inner ring abutting it, so the head read as two flat tones
-               stacked rather than one graded depth. These stops sit midway
-               between Outer and Inner. -->
-          <linearGradient id="heroPetalMid" x1="50%" y1="0%" x2="50%" y2="100%">
-            <stop offset="0%"   stop-color="#9d74cb"/>
-            <stop offset="52%"  stop-color="#b18ed8"/>
-            <stop offset="100%" stop-color="#d3bfe9"/>
+          <linearGradient id="heroPetalMid" x1="0%" y1="50%" x2="100%" y2="50%">
+            <stop offset="0%"   stop-color="#8f6cbf"/>
+            <stop offset="26%"  stop-color="#b596d9"/>
+            <stop offset="56%"  stop-color="#d4c4ed"/>
+            <stop offset="82%"  stop-color="#ab89d1"/>
+            <stop offset="100%" stop-color="#8664b7"/>
           </linearGradient>
-          <linearGradient id="heroPetalInner" x1="50%" y1="0%" x2="50%" y2="100%">
-            <stop offset="0%"   stop-color="#8f64c1"/>
-            <stop offset="52%"  stop-color="#a37fd0"/>
-            <stop offset="100%" stop-color="#c6b0e4"/>
+          <linearGradient id="heroPetalInner" x1="0%" y1="50%" x2="100%" y2="50%">
+            <stop offset="0%"   stop-color="#8461b4"/>
+            <stop offset="26%"  stop-color="#a98ad0"/>
+            <stop offset="56%"  stop-color="#c8b6e7"/>
+            <stop offset="82%"  stop-color="#a07cc8"/>
+            <stop offset="100%" stop-color="#7c59ac"/>
           </linearGradient>
-          <!-- Deepest ring, closest to the disc: rays there sit in the shadow
-               of everything above them, so they run darker than the ring
-               outside them rather than lighter. -->
-          <linearGradient id="heroPetalCore" x1="50%" y1="0%" x2="50%" y2="100%">
-            <stop offset="0%"   stop-color="#7f55b2"/>
-            <stop offset="55%"  stop-color="#9470c4"/>
-            <stop offset="100%" stop-color="#b9a2dd"/>
+          <linearGradient id="heroPetalCore" x1="0%" y1="50%" x2="100%" y2="50%">
+            <stop offset="0%"   stop-color="#7a56aa"/>
+            <stop offset="26%"  stop-color="#9d7cc7"/>
+            <stop offset="56%"  stop-color="#bda9e0"/>
+            <stop offset="82%"  stop-color="#946fbf"/>
+            <stop offset="100%" stop-color="#734ea2"/>
           </linearGradient>
+          <!-- The throat. Rays overlap heavily where they meet the disc and no
+               light reaches in there; without it a dense head reads as a flat
+               mat of petals. Painted normally rather than with mix-blend-mode:
+               a blended overlay inside an isolation group tints the GAPS
+               between rays too, because blending against a transparent
+               backdrop just returns the source. Held inside r=118, where the
+               two innermost rings cover the ground completely. -->
+          <radialGradient id="heroThroat" cx="50%" cy="50%" r="50%">
+            <stop offset="0%"   stop-color="#5d4184" stop-opacity="0.50"/>
+            <stop offset="24%"  stop-color="#6b4d93" stop-opacity="0.34"/>
+            <stop offset="52%"  stop-color="#9070bb" stop-opacity="0.13"/>
+            <stop offset="100%" stop-color="#9070bb" stop-opacity="0"/>
+          </radialGradient>
           <radialGradient id="heroDisc" cx="38%" cy="34%" r="70%">
             <stop offset="0%"   stop-color="#f0b48c"/>
             <stop offset="55%"  stop-color="#c87a4e"/>
@@ -3723,6 +3778,9 @@ body.in-bloom-zoom .ambient-petals {
                the head read as a drawn daisy rather than a composite flower —
                real asters carry short rays right up to the disc. -->
           <g id="heroCore"></g>
+          <!-- Drawn after every ray and before the disc, so it deepens where
+               the blades pile up without touching the disc itself. -->
+          <circle r="118" fill="url(#heroThroat)"/>
           <circle r="22" fill="url(#heroDisc)"/>
           <circle r="13" fill="#a8603a" fill-opacity="0.55"/>
           <!-- Pollen, on the golden angle. A composite flower's disc really is
@@ -4408,17 +4466,18 @@ body.in-bloom-zoom .ambient-petals {
   </div>
 </footer>
 
-<!-- ============ AMBIENT DRIFTING PETALS ============ -->
-<div class="ambient-petals" aria-hidden="true">
-  <svg class="dp" style="--x: 8vw;  --delay: -2s;  --dur: 28s; --hue: var(--aster);"       viewBox="0 0 20 28"><ellipse cx="10" cy="14" rx="5" ry="13"/></svg>
-  <svg class="dp" style="--x: 22vw; --delay: -8s;  --dur: 32s; --hue: var(--aster-light);" viewBox="0 0 20 28"><ellipse cx="10" cy="14" rx="5" ry="13"/></svg>
-  <svg class="dp" style="--x: 38vw; --delay: -14s; --dur: 26s; --hue: var(--bloom);"       viewBox="0 0 20 28"><ellipse cx="10" cy="14" rx="5" ry="13"/></svg>
-  <svg class="dp" style="--x: 54vw; --delay: -4s;  --dur: 34s; --hue: var(--bloom-deep);"  viewBox="0 0 20 28"><ellipse cx="10" cy="14" rx="5" ry="13"/></svg>
-  <svg class="dp" style="--x: 68vw; --delay: -18s; --dur: 30s; --hue: var(--aster-deep);"  viewBox="0 0 20 28"><ellipse cx="10" cy="14" rx="5" ry="13"/></svg>
-  <svg class="dp" style="--x: 82vw; --delay: -11s; --dur: 24s; --hue: var(--sage);"        viewBox="0 0 20 28"><ellipse cx="10" cy="14" rx="5" ry="13"/></svg>
-  <svg class="dp" style="--x: 92vw; --delay: -6s;  --dur: 36s; --hue: var(--aster);"       viewBox="0 0 20 28"><ellipse cx="10" cy="14" rx="5" ry="13"/></svg>
-  <svg class="dp" style="--x: 14vw; --delay: -22s; --dur: 28s; --hue: var(--aster-light);" viewBox="0 0 20 28"><ellipse cx="10" cy="14" rx="5" ry="13"/></svg>
-</div>
+<!-- ============ AMBIENT DRIFTING PETALS — REMOVED ============
+     Eight coloured ellipses (lavender, peach, sage) drifting across a
+     `position: fixed` full-viewport layer, over every section including the
+     hero. At any moment several of them sit at random points of the
+     composition, and at that size they do not read as petals — they read as
+     specks of dust on the screen. It is the kind of ambient decoration that
+     makes careful work look like a template.
+
+     The `.dp` CSS stays: the contact section reuses the class in
+     `.portal-petals`, contained inside its own section where the effect makes
+     sense. To restore, put back a `<div class="ambient-petals">` of `.dp` svgs.
+     ============================================================ -->
 
 <!-- ============================================================
      ENQUIRY CLIENT — talks to /api/enquiry (a Vercel function).
