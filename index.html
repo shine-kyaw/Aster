@@ -920,7 +920,7 @@ button:focus-visible,
      and only a fan of petals in frame.
      The width is a variable so the half-height can be derived from it rather
      than duplicating the clamp. */
-  --fw: clamp(340px, 47vw, 700px);
+  --fw: clamp(350px, 50vw, 745px);
   width: var(--fw);
   margin-top: calc(var(--fw) * -0.46);
   /* 0.42 was the price of the collision above: at any real opacity the petals
@@ -4612,9 +4612,25 @@ body.in-bloom-zoom .ambient-petals {
 
      The `.petal` / `.petal-rotator` class names are load-bearing —
      the GSAP hero bloom targets them — so they stay. */
-  function buildPetals(container, count, length, width, fill, offsetDeg, seed) {
+  // `blunt` (0–1, default 0) fattens the last sixth of the blade and widens the
+  // cap. At 0 the profile is the spear this has always drawn: it holds width to
+  // about 54% of its length, then tapers to a cap only a third as wide as the
+  // belly. Measured, that makes a 10:1 blade read as a NEEDLE, and forty-odd
+  // needles on a disc read as a sea urchin however carefully they are shaded.
+  // At 1 the blade keeps its width almost to the end and finishes square-round
+  // — a real aster ray — and the tips form a rim instead of a star.
+  // Defaulted off so the bloom-zoom and the tier marks, which are tuned around
+  // the old profile, are untouched.
+  function buildPetals(container, count, length, width, fill, offsetDeg, seed, blunt) {
     if (!container) return;
     offsetDeg = offsetDeg || 0;
+    blunt = blunt || 0;
+    const tA = 0.80 + 0.16 * blunt;   // half-width at 84% of the length
+    const tB = 0.62 + 0.26 * blunt;   // at 92%
+    const tC = 0.30 + 0.26 * blunt;   // cap control, leading edge
+    const tD = 0.32 + 0.26 * blunt;   // cap control, trailing edge
+    const tE = 0.64 + 0.24 * blunt;   // mirror of tB
+    const tF = 0.82 + 0.14 * blunt;   // mirror of tA
     const rnd = seededRandom(seed || (count * 7919 + Math.round(length) * 104729));
     const step = 360 / count;
     const frag = document.createDocumentFragment();
@@ -4663,7 +4679,7 @@ body.in-bloom-zoom .ambient-petals {
       // only eases in over the last tenth, closing with two quadratics that
       // form the cap. Narrow and numerous does the work; the silhouette is
       // supposed to be a clean disc, not a star.
-      const baseW = W * 0.34;
+      const baseW = W * (0.34 + 0.10 * blunt);
       const n = function (v) { return v.toFixed(2); };
       path.setAttribute("d",
         "M " + n(-baseW) + " 0 " +
@@ -4671,14 +4687,14 @@ body.in-bloom-zoom .ambient-petals {
                n(-W * 1.00) + " " + n(-L * 0.32) + ", " +
                n(-W * 0.96) + " " + n(-L * 0.54) + " " +
         "C " + n(-W * 0.93 + lean * 0.4) + " " + n(-L * 0.72) + ", " +
-               n(-W * 0.80 + lean) + " " + n(-L * 0.84) + ", " +
-               n(-W * 0.62 + lean) + " " + n(-L * 0.92) + " " +
+               n(-W * tA + lean) + " " + n(-L * 0.84) + ", " +
+               n(-W * tB + lean) + " " + n(-L * 0.92) + " " +
         // the cap
-        "Q " + n(-W * 0.30 + lean) + " " + n(-L) + ", " +
+        "Q " + n(-W * tC + lean) + " " + n(-L) + ", " +
                n(lean) + " " + n(-L) + " " +
-        "Q " + n(W * 0.32 + lean) + " " + n(-L) + ", " +
-               n(W * 0.64 + lean) + " " + n(-L * 0.92) + " " +
-        "C " + n(W * 0.82 + lean) + " " + n(-L * 0.84) + ", " +
+        "Q " + n(W * tD + lean) + " " + n(-L) + ", " +
+               n(W * tE + lean) + " " + n(-L * 0.92) + " " +
+        "C " + n(W * tF + lean) + " " + n(-L * 0.84) + ", " +
                n(W * 0.95 + lean * 0.4) + " " + n(-L * 0.70) + ", " +
                n(W * 0.98) + " " + n(-L * 0.52) + " " +
         "C " + n(W * 1.01) + " " + n(-L * 0.30) + ", " +
@@ -4720,14 +4736,16 @@ body.in-bloom-zoom .ambient-petals {
   // and the head reads as a sea urchin. Packing for the tips means the middles
   // overlap heavily — which is correct: that overlap is what the throat radial
   // then reads as depth.
-  buildPetals(document.getElementById("heroOuter"), 48, 168, 9,   "url(#heroPetalOuter)", 0,  20260829);
-  buildPetals(document.getElementById("heroMid"),   38, 138, 8.5, "url(#heroPetalMid)",   5,  50913377);
-  buildPetals(document.getElementById("heroInner"), 26, 108, 8,   "url(#heroPetalInner)", 9,  77345201);
-  buildPetals(document.getElementById("heroCore"),  17,  70, 7,   "url(#heroPetalCore)",  13, 41556207);
+  // Shorter and a shade wider than before as well as blunt: 168x9 was 10:1,
+  // and an aster ray sits nearer 8:1.
+  buildPetals(document.getElementById("heroOuter"), 46, 158, 9.5, "url(#heroPetalOuter)", 0,  20260829, 1);
+  buildPetals(document.getElementById("heroMid"),   36, 132, 9,   "url(#heroPetalMid)",   5,  50913377, 1);
+  buildPetals(document.getElementById("heroInner"), 25, 104, 8.5, "url(#heroPetalInner)", 9,  77345201, 1);
+  buildPetals(document.getElementById("heroCore"),  17,  68, 7.5, "url(#heroPetalCore)",  13, 41556207, 1);
   // Bracts land between the two innermost ray rings, so their tips finish as a
   // green fringe under the open flower instead of vanishing beneath it or
   // sticking out past it.
-  buildPetals(document.getElementById("heroSepals"), 11, 92, 10, "url(#heroSepalGrad)", 4, 52708831);
+  buildPetals(document.getElementById("heroSepals"), 11, 88, 10, "url(#heroSepalGrad)", 4, 52708831, 0.4);
 
   // ── Pollen on the disc, placed on the golden angle (137.5°), which is how a
   // real composite flower's disc florets are actually arranged. sqrt(t) spaces
