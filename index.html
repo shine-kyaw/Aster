@@ -648,42 +648,10 @@ button:focus-visible,
   display: flex;
   flex-direction: column;
   justify-content: center;
-  /* Lower than before, because the hero is now a two-column composition
-     rather than a single stack: the object needs vertical room, and 17vh of
-     top padding was squeezing a 900px viewport down to 630px of usable
-     height. */
-  padding-top: clamp(120px, 15vh, 176px);
-  padding-bottom: clamp(84px, 11vh, 132px);
+  padding-top: clamp(132px, 17vh, 200px);
+  padding-bottom: clamp(96px, 13vh, 150px);
   position: relative;
   overflow: hidden;
-  /* The hero is full-bleed now (it used to BE the .wrap), so anything
-     absolutely positioned against it — the scroll cue — needs the rail
-     offset that lines it up with the centred content column. */
-  --rail: max(var(--pad-x), calc((100% - var(--max)) / 2 + var(--pad-x)));
-}
-/* A different part of the same wall than the sections below it: the plate sits
-   high so the brightest part of the plaster falls behind the headline. */
-.hero.on-ink { background-position: center, center, center, center, center 6%; }
-.hero-inner { width: 100%; }
-
-/* The spotlight the subject stands in. Same warm bloom plate the callout uses,
-   parked behind the stage column — `screen` so its black ground costs nothing,
-   and masked because the plate's own falloff is tighter than real light.
-   Two classes so z-index: 0 beats `.on-ink > *`. */
-.hero > .hero-glow {
-  position: absolute;
-  z-index: 0;
-  right: clamp(-140px, -6vw, -20px);
-  top: 46%;
-  width: min(940px, 66vw);
-  aspect-ratio: 1;
-  transform: translateY(-50%);
-  pointer-events: none;
-  background: url("assets/env/glow-aster.jpg") center / contain no-repeat;
-  mix-blend-mode: screen;
-  opacity: 0.52;
-  -webkit-mask-image: radial-gradient(circle, #000 20%, rgba(0, 0, 0, 0.44) 50%, transparent 74%);
-          mask-image: radial-gradient(circle, #000 20%, rgba(0, 0, 0, 0.44) 50%, transparent 74%);
 }
 
 /* ── The headline, at reference scale ─────────────────────────
@@ -693,36 +661,27 @@ button:focus-visible,
    the hero is the top of the hierarchy by definition and nothing else on the
    page should reach it: the next step down (--fs-h1) maxes at 96px, so at
    158px the hero cannot be outranked at any width. */
-/* Down from a 158px max. Not a retreat from scale — the headline now shares
-   the row with the object instead of running the full measure, and "Your
-   identity," is fourteen characters of wide serif. Measured, it needs 550px at
-   100px and the left column is 618px at the widest layout; at 158px it wanted
-   864px and simply could not coexist with anything beside it, which is exactly
-   why the flower had to be shoved off the right edge at 42% opacity before.
-   Still above --fs-h1's 96px ceiling, so the hero cannot be outranked. */
+/* 118px, not 158px, and the number is measured rather than chosen.
+   "Your identity," is 5.55× its own font-size wide in this serif, so at 158px
+   it wants 877px and ends around x=1004 at 1440 wide — while the flower's left
+   edge sits at 998. That six-pixel overlap is why "Aster." had petals running
+   through it, and it is also why the flower had to be held at 42% opacity to
+   survive the collision. At 118px the line ends near 782 and the gap is over
+   200px, which lets the flower come forward and be looked at.
+   Still well above --fs-h1's 96px ceiling, so the hero cannot be outranked. */
 .hero-title {
-  font-size: clamp(38px, 6.5vw, 100px);
-  line-height: 0.88;
-  letter-spacing: -0.034em;
-  /* 0.88 line-height leaves the "y" descender of "purely" hanging low, so the
-     gap the eye actually sees is smaller than the margin. */
-  margin: 0 0 clamp(34px, 3.8vw, 54px);
-  max-width: none;      /* the line breaks are explicit spans; the column caps width */
+  font-size: clamp(42px, 8.2vw, 118px);
+  line-height: 0.90;
+  letter-spacing: -0.036em;
+  margin: 0 0 clamp(26px, 3.2vw, 44px);
+  max-width: 15ch;      /* forces the two-line break rather than trusting it */
 }
-/* The break is explicit rather than a `ch` cap. Measured, 42ch fits 46
-   characters of this sans — `ch` is the width of "0", which is wider than
-   average lowercase — so tuning a max-width to land the break after "one at a
-   time." means guessing at a number that moves with the webfont. A <br> that
-   only exists on the two-column layout is exact and cannot drift; the
-   max-width stays as a safety net for anything that changes the copy. */
+/* 20px of lede under 158px of display is a 7.9× jump — the eye reads it as a
+   caption that fell off the headline rather than as the next voice down. */
 .hero-lede {
-  font-size: clamp(18px, 1.35vw, 22px);
-  margin-bottom: clamp(30px, 3.2vw, 40px);
-  max-width: 46ch;
-}
-.lede-break { display: none; }
-@media (min-width: 981px) {
-  .lede-break { display: inline; }
+  font-size: clamp(19px, 1.55vw, 26px);
+  margin-bottom: clamp(30px, 3.4vw, 42px);
+  max-width: 34ch;
 }
 
 .hero-grid {
@@ -738,7 +697,7 @@ button:focus-visible,
    to the top instead of letting `justify-content: center` centre it. */
 .hero-scroll {
   position: absolute;
-  left: var(--rail);
+  left: var(--pad-x);
   bottom: clamp(26px, 5vh, 52px);
   z-index: 2;
   display: inline-flex;
@@ -796,17 +755,8 @@ button:focus-visible,
    atmosphere of the section rather than the right-hand half of a two-up: a
    neat flower in a neat cell beside a headline is a layout, and every one of
    the reference sites is a composition instead. */
-/* Two real columns. `display: block` with the flower absolutely positioned is
-   what produced the collision the old comment spent a paragraph apologising
-   for — "the longest line ends near 1008px, so -14vw puts the flower's left
-   edge at almost exactly that" is a hand-fitted number that only held at one
-   viewport width. Grid tracks hold at every width, for free.
-   1.12 / 0.88 because the headline is the wider of the two things. */
 .hero-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
-  gap: clamp(24px, 3.6vw, 60px);
-  align-items: center;
+  display: block;
 }
 .hero-headline {
   position: relative;
@@ -941,162 +891,63 @@ button:focus-visible,
   text-transform: uppercase;
 }
 
-/* ── The stage the subject stands on ─────────────────────────
-   A square cell in the right-hand grid track. Square because the bloom is
-   radially symmetric and any other ratio wastes one axis; capped in svh as
-   well as px so it can never grow taller than the room it is centred in. */
-/* One `min()` rather than a width plus a max-height, which fight: aspect-ratio
-   loses to max-height and the canvas ends up squashed. 112% lets the stage
-   spill a little past its track into the wrap's padding — the object being
-   slightly larger than its column is what stops the composition reading as two
-   tidy boxes side by side. The svh term shrinks it on short windows so it can
-   never be taller than the room it stands in. */
-.hero-stage {
-  position: relative;
-  z-index: 1;
-  aspect-ratio: 1;
-  width: min(112%, 66svh, 570px);
-  margin-left: auto;
-}
-.hero-aster-3d {
+/* Bleeding off the right edge, low and behind. Two things make this read as
+   composition rather than decoration: it is cropped by the viewport (an object
+   that continues past the frame implies a world larger than the screen, which
+   a fully-contained one never does), and it sits low-right where the headline
+   is not — the lede and the single button occupy the lower LEFT, so the two
+   never fight for the same ground. */
+.hero-flower {
   position: absolute;
-  inset: 0;
-}
-.hero-aster-3d canvas {
-  display: block;
-  width: 100% !important;
-  height: 100% !important;
-}
-
-/* The affordance. A dark canvas with no cursor over it gives no clue that it
-   can be grabbed, and "drag to turn" is the entire reason the object is a live
-   render rather than a rendered still. */
-/* Right-aligned, not centred: the stem exits the bottom of the canvas dead
-   centre, so a centred caption sits directly across it and both become hard to
-   read. */
-.hero-stage-hint {
-  position: absolute;
-  right: 2px;
-  bottom: -4px;
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  margin: 0;
-  font-family: var(--sans);
-  font-size: 10.5px;
-  font-weight: 500;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
+  z-index: 0;
   pointer-events: none;
-  white-space: nowrap;
+  /* Pushed far enough right that its left petals only graze the headline
+     rather than its bright centre landing on the word "Aster" — measured, the
+     longest line ends near 1008px at 1440 wide, and -14vw of offset puts the
+     flower's left edge at almost exactly that. Large type crossing a soft
+     low-opacity graphic reads as layering; large type crossing the middle of a
+     high-contrast one reads as a mistake. */
+  right: clamp(-210px, -12vw, -70px);
+  top: 50%;
+  transform: translateY(-42%);
+  width: clamp(340px, 47vw, 700px);
+  /* 0.42 was the price of the collision above: at any real opacity the petals
+     crossing the headline read as a mistake rather than as layering. With the
+     type no longer reaching this far, the specimen can be a specimen. It stays
+     under 1 so the paper still shows through the blades — an aster's rays are
+     thin enough to be slightly translucent, and holding a little of that is
+     what keeps this from looking like a sticker. */
+  opacity: 0.78;
 }
-.hero-hint-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--bloom);
-  box-shadow: 0 0 0 0 rgba(240, 169, 140, 0.55);
-  animation: hintPulse 2.8s var(--ease) infinite;
-}
-@keyframes hintPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(240, 169, 140, 0.5); }
-  55%      { box-shadow: 0 0 0 7px rgba(240, 169, 140, 0); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .hero-hint-dot { animation: none; }
-}
-
-/* ── Proof, not adjectives ───────────────────────────────────
-   Four names, all live, all linked to the section that shows them. */
-.hero-proof {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px 18px;
-  margin: clamp(26px, 3.2vw, 40px) 0 0;
-  font-family: var(--sans);
-  font-size: 11.5px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-.hero-proof-label {
-  color: var(--ink-mute);
-  letter-spacing: 0.24em;
-}
-.hero-proof-label::after {
-  content: "";
-  display: inline-block;
-  width: 22px;
-  height: 1px;
-  margin-left: 14px;
-  vertical-align: middle;
-  background: var(--line);
-}
-.hero-proof a {
-  color: var(--ink-soft);
-  text-decoration: none;
-  padding-bottom: 2px;
-  border-bottom: 1px solid transparent;
-  transition: color 0.32s var(--ease), border-color 0.32s var(--ease);
-}
-.hero-proof a:hover {
-  color: var(--ink);
-  border-bottom-color: var(--aster);
+.hero-flower svg {
+  width: 100%;
+  height: auto;
+  max-width: none;
 }
 
 @media (max-width: 980px) {
-  /* Stacked, with the object FIRST. A phone shows one column, and leading
-     with the bloom is what carries the hook — a headline over an unlit fold
-     is the version of this layout that stops working. */
-  .hero-grid { grid-template-columns: 1fr; gap: clamp(18px, 5vw, 34px); }
-  .hero-stage {
-    order: -1;
-    width: min(90%, 36svh, 310px);
-    margin-inline: auto;
-    /* Room under the square for the hint, which cannot sit inside it here. */
-    margin-bottom: 26px;
-  }
-  /* Right-aligning the hint only clears the stem while the stage is wide. In
-     one column the caption is nearly as wide as the stage itself, so it goes
-     fully BELOW the canvas instead — centred, since there is nothing left of
-     it to collide with. */
-  .hero-stage-hint {
-    right: 50%;
-    bottom: -24px;
-    transform: translateX(50%);
-  }
-  /* The flower leads on a phone, so the hero starts higher up. */
-  .hero { padding-top: clamp(104px, 13vh, 132px); }
-  /* The spotlight has to follow the subject. Anchored to the right edge at
-     46% it stayed put while the stage moved to the top of the stack, leaving a
-     bright lavender blob sitting behind the headline and lede — light where
-     there is no object, and a tint under body copy, which this palette cannot
-     afford. Centred on the stage instead, and eased back. */
-  .hero > .hero-glow {
-    right: auto;
-    left: 50%;
-    top: 26%;
-    width: min(560px, 118vw);
-    transform: translate(-50%, -50%);
-    opacity: 0.40;
+  /* Behind the type on a phone, held well back so it reads as a watermark. */
+  .hero-flower {
+    right: -26%;
+    top: 46%;
+    width: min(112%, 560px);
+    opacity: 0.30;
   }
   .hero-title { max-width: none; }
-  .hero-proof { font-size: 10.5px; gap: 6px 14px; }
 }
-@media (max-width: 560px) {
-  .hero-stage { width: min(92%, 32svh, 260px); }
-  .hero-stage-hint { font-size: 9.5px; letter-spacing: 0.2em; }
-  /* Two full-width stacked buttons plus a proof row is a lot of vertical
-     spend on a small screen; the label goes and the names carry it. */
-  .hero-proof-label { display: none; }
-  /* The chat launcher is fixed bottom-right and sat directly on top of
-     "Gateway Orbital". Reserving its width makes the row wrap above it
-     instead of disappearing behind it. */
-  .hero-proof { padding-right: 68px; }
+.hero-flower-halo {
+  position: absolute;
+  width: 172%;
+  height: 172%;
+  left: -36%;
+  top: -36%;
+  pointer-events: none;
+  /* A soft radial mask rather than border-radius. A hard circle edge is
+     exactly what made this read as a coloured disc parked behind the
+     flower instead of light in the air around it. */
+  -webkit-mask-image: radial-gradient(circle closest-side, #000 10%, rgba(0, 0, 0, 0.46) 38%, rgba(0, 0, 0, 0.14) 64%, transparent 88%);
+          mask-image: radial-gradient(circle closest-side, #000 10%, rgba(0, 0, 0, 0.46) 38%, rgba(0, 0, 0, 0.14) 64%, transparent 88%);
 }
-
 
 /* ========== Section divider ========== */
 .fine-divide {
@@ -3441,6 +3292,24 @@ body.in-bloom-zoom .ambient-petals {
   0%, 100% { transform: scale(1);    opacity: 0.34; }
   50%      { transform: scale(1.06); opacity: 0.50; }
 }
+.hero-flower-halo {
+  animation: heroBreathe 6s ease-in-out infinite;
+  /* The painted pigment bleed with the violet lamp screened over it. Both are
+     real plates: the wash carries watercolour bleed and paper tooth that no
+     CSS radial can fake, and `screen` lets the lamp add light rather than
+     veil — its black ground disappears for free, so no alpha channel and a
+     JPEG does the job.
+
+     This lives inside the flower's own grid cell, never behind body copy,
+     and that is deliberate rather than incidental: --ink-mute clears AA on
+     cream with only ~0.35 to spare, so tinting the ground under any text
+     would break it. In this cell there is no text at any viewport width. */
+  background:
+    url("assets/env/glow-aster.jpg") center / 58% 58% no-repeat,
+    url("assets/env/hero-wash.jpg") center / cover no-repeat;
+  background-blend-mode: screen, normal;
+  will-change: transform, opacity;
+}
 
 /* ============================================================
    MOBILE TUNING — comprehensive responsiveness pass
@@ -3490,7 +3359,7 @@ body.in-bloom-zoom .ambient-petals {
   .hero-meta--line, .hero-meta--mixed { gap: 14px; }
 
   /* Hero flower: cap size so it doesn't dominate on small viewports */
-
+  .hero-flower svg { max-width: 360px; margin: 0 auto; }
 
   /* Section padding tighter on phones */
   .section { padding-top: clamp(60px, 10vw, 90px); padding-bottom: clamp(60px, 10vw, 90px); }
@@ -3580,7 +3449,7 @@ body.in-bloom-zoom .ambient-petals {
   .tier-price { font-size: 28px; }
 
   /* Hero flower: smaller still */
-
+  .hero-flower svg { max-width: 280px; }
 
   /* Hero meta line (italic byline) — keep punchy but readable */
   .hero-meta-line { font-size: 14px; }
@@ -3681,11 +3550,7 @@ body.in-bloom-zoom .ambient-petals {
 <div class="aurora a2" aria-hidden="true"></div>
 
 <!-- ============ NAV ============ -->
-<!-- `on-dark` in the markup, not just from JS: the hero is a dark room and the
-     nav sits over it from the first painted frame. Without this the bar renders
-     ink-on-ink until the flip runs. The geometry check in the nav script owns it
-     from then on and will remove it on the first cream section. -->
-<nav class="nav on-dark" id="nav">
+<nav class="nav" id="nav">
   <a href="#" class="brand" aria-label="Aster Studio home">
     <img class="brand-mark" src="logo.png" width="60" height="60" alt="" decoding="async" />
     <span>
@@ -3711,7 +3576,7 @@ body.in-bloom-zoom .ambient-petals {
 </div>
 
 <!-- ============ PERSISTENT SIDE RAIL ============ -->
-<nav class="side-rail on-dark" aria-label="Section navigation">
+<nav class="side-rail" aria-label="Section navigation">
   <a href="#process" data-section="process">Process</a>
   <a href="#work" data-section="work">Work</a>
   <a href="#pricing" data-section="pricing">Pricing</a>
@@ -3721,32 +3586,18 @@ body.in-bloom-zoom .ambient-petals {
 <!-- ============ HERO ============ -->
 <main id="main" tabindex="-1">
 
-<header class="hero on-ink" id="top">
+<header class="hero wrap">
 
-  <!-- A LIT STAGE WITH ONE SUBJECT ON IT.
-       ────────────────────────────────────
-       The hero used to be pale type on pale cream with the aster behind it as
-       a 42%-opacity flat vector. Nothing on the screen had any contrast
-       against anything else, so the eye had nowhere to land — it read as a
-       nicely-set page rather than something that grabs you.
+  <!-- Seven competing elements became four. What went: a decorative vine
+       archway (a garland of small flowers and leaves — the least premium thing
+       on the page, and the references carry no decoration at all), a meta row
+       reading "Hand-built · hand-tended / ∞ Solely Aster", and a second
+       button that competed with the only one that converts.
 
-       What ktk-umber does, and what this now does: a dark room, ONE object in
-       it, lit, big, and type sized to stand next to the object rather than
-       beneath it. Aster's version is warm rather than industrial — the same
-       photographed candlelit wall the rest of the dark sections use — and its
-       object is the one thing a flat product photograph cannot do: you can
-       take hold of the bloom and turn it.
+       What is left is what Wallpaper Projects has: an eyebrow, one enormous
+       serif, one line of copy, one action. -->
 
-       That is also why the earlier "seven elements became four" cut is partly
-       reversed. The two things put back are the two that actually earn their
-       place in a hero: a second, lower-commitment action for the visitors not
-       ready to start a conversation, and a line of real proof. Nothing else
-       came back — the vine archway and the invented meta row stay gone. -->
-
-  <div class="hero-glow" aria-hidden="true"></div>
-
-  <div class="wrap hero-inner">
-    <div class="hero-grid">
+  <div class="hero-grid">
     <div class="hero-headline">
       <span class="eyebrow hero-eyebrow">Bespoke design studio · est. 2026</span>
       <h1 class="display hero-title">
@@ -3754,39 +3605,117 @@ body.in-bloom-zoom .ambient-petals {
         <span class="l"><span>purely <em class="italic">Aster.</em></span></span>
       </h1>
       <p class="lede hero-lede">
-        Websites shaped by hand, one at a time.<br class="lede-break" />
-        Nothing borrowed, nothing templated.
+        Your digital presence, <em>built to bloom</em>.
       </p>
       <div class="hero-actions">
         <a class="btn btn-primary glow-track glow-warm" href="#connect">
           Begin a conversation
           <svg class="ar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 18 L18 6 M9 6 H18 V15"/></svg>
         </a>
-        <a class="btn btn-ghost glow-track" href="#work">See the work</a>
       </div>
-      <!-- Real, shipped, and named. Four live sites is the whole portfolio and
-           saying so beats any adjective available here. -->
-      <p class="hero-proof">
-        <span class="hero-proof-label">Recently shipped</span>
-        <a href="#work">Power&nbsp;Tagun</a>
-        <a href="#work">KTK</a>
-        <a href="#work">Foliyo</a>
-        <a href="#work">Gateway&nbsp;Orbital</a>
-      </p>
     </div>
 
-    <!-- The subject. An interactive, shadow-mapped, spotlit aster — the same
-         one the philosophy section invites you to turn, because one WebGL
-         context is moved between the two hosts rather than paying for two.
-         Falls back to an empty cell if WebGL or three.js is unavailable; the
-         hero still reads as a hero, it just loses its object. -->
-    <div class="hero-stage">
-      <div id="heroAster3D" class="hero-aster-3d"
-           aria-label="Interactive 3D aster — click and drag to turn it"></div>
-      <p class="hero-stage-hint" aria-hidden="true">
-        <span class="hero-hint-dot"></span>Drag to turn it
-      </p>
-    </div>
+    <div class="hero-flower">
+      <div class="hero-flower-halo"></div>
+      <svg viewBox="0 0 400 400" aria-hidden="true" id="heroFlower">
+        <defs>
+          <!-- Petals were flat single-colour fills, which is most of why
+               the hero flower read as a graphic starburst rather than a
+               bloom. A gradient down each blade gives it a light side and
+               a shadow side. Own defs rather than borrowing the bloom-zoom
+               ones, so the hero doesn't depend on another section's markup. -->
+          <!-- These run tip (0%) → base (100%), because the gradient resolves
+               against each petal's own bounding box before rotation and the
+               petals are drawn pointing up. The old ramp started at #efe4f8 —
+               near-white — so every single ray had a white tip, which is what
+               a spark looks like. An aster's rays are deepest at the tip and
+               pale toward the disc, so the ramp is now that way round and
+               stays inside the violet family the whole way. -->
+          <linearGradient id="heroPetalOuter" x1="50%" y1="0%" x2="50%" y2="100%">
+            <stop offset="0%"   stop-color="#a77fd2"/>
+            <stop offset="52%"  stop-color="#bd9ade"/>
+            <stop offset="100%" stop-color="#dbc9ed"/>
+          </linearGradient>
+          <linearGradient id="heroPetalInner" x1="50%" y1="0%" x2="50%" y2="100%">
+            <stop offset="0%"   stop-color="#7c50b0"/>
+            <stop offset="52%"  stop-color="#8b5fbf"/>
+            <stop offset="100%" stop-color="#a97fd1"/>
+          </linearGradient>
+          <!-- Deepest ring, closest to the disc: rays there sit in the shadow
+               of everything above them, so they run darker than the ring
+               outside them rather than lighter. -->
+          <linearGradient id="heroPetalCore" x1="50%" y1="0%" x2="50%" y2="100%">
+            <stop offset="0%"   stop-color="#5f3b8c"/>
+            <stop offset="55%"  stop-color="#6f479f"/>
+            <stop offset="100%" stop-color="#8055b4"/>
+          </linearGradient>
+          <radialGradient id="heroDisc" cx="38%" cy="34%" r="70%">
+            <stop offset="0%"   stop-color="#f0b48c"/>
+            <stop offset="55%"  stop-color="#c87a4e"/>
+            <stop offset="100%" stop-color="#9c5734"/>
+          </radialGradient>
+          <!-- Bracts run darker at the base and lighter at the tip, the
+               opposite way round from the petals, so the involucre reads as a
+               different material rather than a green copy of the same shape. -->
+          <linearGradient id="heroSepalGrad" x1="50%" y1="100%" x2="50%" y2="0%">
+            <stop offset="0%"   stop-color="#4d6440"/>
+            <stop offset="55%"  stop-color="#6f8d5e"/>
+            <stop offset="100%" stop-color="#8fae7a"/>
+          </linearGradient>
+        </defs>
+        <!-- The head. Four ray rings instead of three, with a green involucre
+             behind them, because the arrival animation now opens a BUD rather
+             than fading in an already-open flower — and a bud only reads as a
+             bud if there is something green wrapping it.
+
+             SVG has no z-index. Paint order is the only control there is, so
+             the bracts are declared before the rays and the rays before the
+             disc, outermost first. -->
+        <!-- The translate lives on a WRAPPER, not on the animated group. With
+             `transform="translate(200 200)"` on #heroHead itself, its own
+             transform-origin and GSAP's parsed x/y have to be reconciled, and
+             "the centre of the flower" becomes ambiguous between the element's
+             local space and the viewBox. Wrapped, #heroHead's children are
+             centred on its own (0,0) and the origin is simply 0 0. -->
+        <g transform="translate(200 200)">
+        <g id="heroHead">
+          <g id="heroSepals"></g>
+          <g id="heroOuter"></g>
+          <g id="heroMid"></g>
+          <g id="heroInner"></g>
+          <!-- A short innermost ring. Two rings left a visible gap of empty
+               ground between the inner petals and the disc, which is what made
+               the head read as a drawn daisy rather than a composite flower —
+               real asters carry short rays right up to the disc. -->
+          <g id="heroCore"></g>
+          <circle r="22" fill="url(#heroDisc)"/>
+          <circle r="13" fill="#a8603a" fill-opacity="0.55"/>
+          <!-- Pollen, on the golden angle. A composite flower's disc really is
+               a phyllotactic spiral, and the eye knows the difference between
+               that and a plain filled circle even when it can't name it. -->
+          <g id="heroPollen"></g>
+        </g>
+        </g>
+
+        <!-- The bud, OUTSIDE the head group: the head is scaled and rotated
+             during the opening, and anything inside it inherits that. This has
+             to hold its own shape while the flower grows through it. -->
+        <g transform="translate(200 200)">
+        <g id="heroBud">
+          <path d="M 0 -34 C 15 -29, 22 -13, 22 3 C 22 19, 12 28, 0 28
+                   C -12 28, -22 19, -22 3 C -22 -13, -15 -29, 0 -34 Z"
+                fill="url(#heroSepalGrad)"/>
+          <path d="M 0 -33 C 7 -24, 9 -8, 8 27" fill="none"
+                stroke="#4d6440" stroke-opacity="0.42" stroke-width="1.5"/>
+          <path d="M 0 -33 C -7 -24, -9 -8, -8 27" fill="none"
+                stroke="#4d6440" stroke-opacity="0.42" stroke-width="1.5"/>
+          <!-- The colour already showing at the tip: what tells you this is
+               about to open rather than just a green pod. -->
+          <path d="M 0 -34 C 6 -31, 8 -25, 7 -21 C 3 -24, -3 -24, -7 -21
+                   C -8 -25, -6 -31, 0 -34 Z" fill="#b18ad6" fill-opacity="0.85"/>
+        </g>
+        </g>
+      </svg>
     </div>
   </div>
 
@@ -4688,9 +4617,43 @@ body.in-bloom-zoom .ambient-petals {
   // 30 rays at width 9 sit shoulder to shoulder at mid-length without fusing
   // into a mass — fine and numerous is what an aster head actually is. Each
   // ring is offset so no ray lands directly on the one beneath it.
-  buildPetals(document.getElementById("heroOuter"), 30, 168, 9, "url(#heroPetalOuter)", 0,  20260829);
-  buildPetals(document.getElementById("heroInner"), 22, 120, 8, "url(#heroPetalInner)", 6,  77345201);
-  buildPetals(document.getElementById("heroCore"),  14,  66, 7, "url(#heroPetalCore)",  13, 41556207);
+  // Four rings, not three. The head is now the hero's whole subject at 0.72
+  // opacity rather than a 42% watermark, so it is being looked at directly and
+  // the gaps between rings that a watermark hid are now visible.
+  buildPetals(document.getElementById("heroOuter"), 34, 172, 9,   "url(#heroPetalOuter)", 0,  20260829);
+  buildPetals(document.getElementById("heroMid"),   27, 140, 8.5, "url(#heroPetalOuter)", 5,  50913377);
+  buildPetals(document.getElementById("heroInner"), 21, 108, 8,   "url(#heroPetalInner)", 9,  77345201);
+  buildPetals(document.getElementById("heroCore"),  15,  68, 7,   "url(#heroPetalCore)",  13, 41556207);
+  // Bracts land between the two innermost ray rings, so their tips finish as a
+  // green fringe under the open flower instead of vanishing beneath it or
+  // sticking out past it.
+  buildPetals(document.getElementById("heroSepals"), 11, 92, 10, "url(#heroSepalGrad)", 4, 52708831);
+
+  // ── Pollen on the disc, placed on the golden angle (137.5°), which is how a
+  // real composite flower's disc florets are actually arranged. sqrt(t) spaces
+  // them by equal AREA rather than equal radius — without it they bunch at the
+  // centre and thin out at the rim.
+  (function () {
+    const disc = document.getElementById("heroPollen");
+    if (!disc) return;
+    const GA = Math.PI * (3 - Math.sqrt(5));
+    const N = 46;
+    const shades = ["#f3d070", "#e6b248", "#cf9234", "#f7e09a"];
+    const frag = document.createDocumentFragment();
+    for (let i = 0; i < N; i++) {
+      const t = (i + 0.5) / N;
+      const rr = Math.sqrt(t) * 19;
+      const ang = i * GA;
+      const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      c.setAttribute("cx", (Math.cos(ang) * rr).toFixed(2));
+      c.setAttribute("cy", (Math.sin(ang) * rr).toFixed(2));
+      c.setAttribute("r", (1.5 + t * 1.1).toFixed(2));
+      c.setAttribute("fill", shades[i & 3]);
+      c.setAttribute("class", "hero-grain");
+      frag.appendChild(c);
+    }
+    disc.appendChild(frag);
+  })();
   buildPetals(document.getElementById("petalsOuter"), 14, 155, 12, "#c4a5e0");
   buildPetals(document.getElementById("petalsInner"), 12, 95, 9, "#8b5fbf", 15);
   buildPetals(document.getElementById("philOuter"), 12, 95, 7, "#c4a5e0");
@@ -5378,62 +5341,18 @@ body.in-bloom-zoom .ambient-petals {
 <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
 <script src="aster-3d.js"></script>
 <script>
-  // Mount the 3D aster in the hero, and hand the same canvas to the
-  // philosophy stage when you scroll down to it.
-  //
-  // One context, two hosts. The bloom is the hero's subject AND the thing the
-  // philosophy section asks you to turn in the light, but the two are most of
-  // a page apart and can never be on screen together — so mounting twice would
-  // buy nothing and cost a second shadow pass, a second copy of every buffer,
-  // and on some mobile GPUs a context eviction that blanks one of them.
-  //
-  // Falls back silently if Three.js fails to load (the cells just stay empty —
-  // the rest of the page is unaffected).
+  // Mount the 3D aster inside the philosophy section's cyclical stage.
+  // Falls back silently if Three.js fails to load (the container just
+  // stays empty — the rest of the page is unaffected).
   (function () {
     function mountAster3D() {
       // Dev/preview escape hatch: ?no3d skips the WebGL mount so headless
       // screenshot tooling (which hangs on a live WebGL context) can capture
       // static layout. Invisible to real visitors.
       if (/(\?|&|#)no3d\b/.test(window.location.href)) return;
-      const heroHost = document.getElementById('heroAster3D');
-      const philHost = document.getElementById('philosophyAster3D');
-      const first = heroHost || philHost;
-      if (!first || !window.AsterFlower3D || !window.THREE) return;
-      const aster = window.AsterFlower3D.mount(first);
-      window.__aster3d = aster;
-
-      if (!heroHost || !philHost || typeof aster.setHost !== 'function') return;
-
-      // Whichever host's centre is nearer the viewport's centre wins. Checked
-      // on scroll but rate-limited to one rAF, because the test reads two
-      // rects and that flushes layout.
-      const hosts = [heroHost, philHost];
-      let queued = false;
-
-      function pick() {
-        queued = false;
-        if (aster.isDragging()) return;
-        const mid = window.innerHeight / 2;
-        let best = null;
-        let bestDist = Infinity;
-        hosts.forEach(function (h) {
-          const r = h.getBoundingClientRect();
-          const d = Math.abs(r.top + r.height / 2 - mid);
-          if (d < bestDist) { bestDist = d; best = h; }
-        });
-        if (best && best !== aster.host()) aster.setHost(best);
-      }
-
-      window.addEventListener('scroll', function () {
-        if (queued) return;
-        queued = true;
-        requestAnimationFrame(pick);
-      }, { passive: true });
-      window.addEventListener('resize', function () {
-        if (queued) return;
-        queued = true;
-        requestAnimationFrame(pick);
-      }, { passive: true });
+      const stage = document.getElementById('philosophyAster3D');
+      if (!stage || !window.AsterFlower3D || !window.THREE) return;
+      window.__aster3d = window.AsterFlower3D.mount(stage);
     }
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', mountAster3D);
@@ -5474,8 +5393,121 @@ body.in-bloom-zoom .ambient-petals {
       gsap.ticker.lagSmoothing(0);
     }
 
-    // The SVG hero flower and its load-time petal unfurl are gone: the hero's
-    // subject is now the live 3D bloom, which arrives with its own reveal.
+    // ===== HERO ARRIVAL: a bud that opens =====
+    // The old version faded in an already-formed head and scaled its petals
+    // up. Even with per-ring stagger and overshoot that reads as a starburst
+    // popping, because nothing was ever CLOSED — the flower had no before.
+    //
+    // Now there is a before: a green bud sits on the page, swells, and the
+    // head grows up through it as it splits. Same bloom, given a first act.
+    const heroOuter  = document.querySelectorAll("#heroOuter .petal");
+    const heroMid    = document.querySelectorAll("#heroMid .petal");
+    const heroInner  = document.querySelectorAll("#heroInner .petal");
+    const heroCore   = document.querySelectorAll("#heroCore .petal");
+    const heroSepals = document.querySelectorAll("#heroSepals .petal");
+    if (heroOuter.length && heroInner.length) {
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      // Petals begin *tucked*, not shrunk: short along their length, rolled
+      // narrow, and tilted in toward the centre the way a bud holds them.
+      // Opening then reads as an unfurl — the blade extends and widens as it
+      // untucks — rather than a uniform scale-up. Inner rings are wound
+      // further than outer ones, so opening unwinds them past each other.
+      const tuck = [
+        [heroCore,  0.22, 0.38, -31],
+        [heroInner, 0.20, 0.34, -26],
+        [heroMid,   0.20, 0.34, -21],
+        [heroOuter, 0.20, 0.34, -17],
+      ];
+      tuck.forEach(function (t) {
+        gsap.set(t[0], { scaleY: t[1], scaleX: t[2], rotation: t[3], transformOrigin: "0px 0px" });
+      });
+      gsap.set(heroSepals, { scaleY: 0.62, scaleX: 0.9, rotation: 0, transformOrigin: "0px 0px" });
+      gsap.set("#heroPollen .hero-grain", { scale: 0, transformOrigin: "0px 0px" });
+      gsap.set("#heroHead > circle", { scale: 0, transformOrigin: "0px 0px" });
+      // A squashed head still paints, and it showed as a violet smear under
+      // the bud for the first beat. It has to be genuinely invisible.
+      gsap.set("#heroHead", { scale: 0.42, opacity: 0, transformOrigin: "0px 0px" });
+      gsap.set("#heroBud", { scale: 0.58, opacity: 1, transformOrigin: "0px 14px" });
+
+      // Reduced motion gets the finished flower, not a permanent bud. Every
+      // end state has to be written before bailing out.
+      if (reduce) {
+        tuck.forEach(function (t) { gsap.set(t[0], { scaleY: 1, scaleX: 1, rotation: 0 }); });
+        gsap.set(heroSepals, { scaleY: 1, scaleX: 1, rotation: 7 });
+        gsap.set("#heroPollen .hero-grain", { scale: 1 });
+        gsap.set("#heroHead > circle", { scale: 1 });
+        gsap.set("#heroHead", { scale: 1, opacity: 1 });
+        gsap.set("#heroBud", { opacity: 0 });
+      } else {
+        // Was `"cubic-bezier(0.34, 1.32, 0.64, 1)"` — not a registered GSAP
+        // ease, and CustomEase isn't loaded, so every petal silently fell back
+        // to power1.out. The bloom had no overshoot at all, which is most of
+        // why it read as mechanical. `back.out` ships in core.
+        const unfurl = "back.out(1.6)";
+        const tl = gsap.timeline({ delay: 0.34 });
+
+        // 1. the bud swells
+        tl.to("#heroBud", { scale: 1, ease: "power2.out", duration: 0.72 }, 0);
+
+        // 2. the head rises through it as it splits and fades. Overlapping
+        //    these two is the whole trick — cut the bud first and you have
+        //    swapped one object for another instead of growing through it.
+        tl.to("#heroHead", { opacity: 1, ease: "power1.out", duration: 0.26 }, 0.46);
+        tl.to("#heroHead", { scale: 1, ease: "power2.out", duration: 1.05 }, 0.48);
+        tl.to("#heroBud", { scale: 1.55, opacity: 0, ease: "power2.in", duration: 0.5 }, 0.52);
+        tl.to(heroSepals, {
+          scaleY: 1, scaleX: 1, rotation: 7, ease: "power2.out",
+          duration: 0.8, stagger: { amount: 0.18, from: "random" },
+        }, 0.5);
+
+        // 3. the rays unfurl, innermost first — a real head opens from the
+        //    disc outward, and the order is legible because the rings are
+        //    different lengths.
+        //
+        //    Width, length and twist are three tweens per ring, not one.
+        //    Moving them in lockstep is what makes an unfurl read as a fan
+        //    opening: the roll opens first, the blade then lays back to full
+        //    length, and the twist unwinds across both and settles last.
+        //
+        //    `from: "random"` matters as much as the ease — a sequential
+        //    stagger opens the ring like a clock hand sweeping round, and real
+        //    blooms have no index order. `amount` (total spread), never `each`,
+        //    which is ADDED to the tween's own duration and would push the
+        //    outer ring's finish well past the end of the timeline.
+        [[heroCore, 0.56, 0.95], [heroInner, 0.78, 1.10],
+         [heroMid, 0.98, 1.25], [heroOuter, 1.16, 1.45]]
+          .forEach(function (ring) {
+            const els = ring[0], at = ring[1], dur = ring[2];
+            const stagger = { amount: dur * 0.32, from: "random" };
+            tl.to(els, { scaleX: 1, ease: "power2.out", duration: dur * 0.55, stagger: stagger }, at);
+            tl.to(els, { scaleY: 1, ease: "power2.out", duration: dur, stagger: stagger }, at + dur * 0.14);
+            tl.to(els, { rotation: 0, ease: unfurl, duration: dur * 1.2, stagger: stagger }, at);
+          });
+
+        // 4. the disc fills in behind them
+        tl.to("#heroHead > circle", {
+          scale: 1, duration: 0.62, ease: "back.out(2)",
+          stagger: { each: 0.08, from: "center" },
+        }, 0.72);
+        tl.to("#heroPollen .hero-grain", {
+          scale: 1, duration: 0.5, ease: "back.out(2.4)",
+          stagger: { amount: 0.5, from: "center" },
+        }, 0.95);
+      }
+
+      // Slow continuous rotation, once the bloom has settled.
+      if (!reduce) {
+        gsap.to("#heroHead", {
+          rotation: "+=360",
+          duration: 96,
+          ease: "none",
+          repeat: -1,
+          transformOrigin: "0px 0px",
+          delay: 3.1,
+        });
+      }
+    }
 
 
     // ═══════════════════════════════════════════════════════════════════
@@ -6171,26 +6203,14 @@ body.in-bloom-zoom .ambient-petals {
 
   /* ---------- 1. nav chrome follows the room ---------- */
   if (nav && stages.length) {
-    // Recomputed from geometry, not accumulated. This was a counter, because
-    // dark sections abut and during a handoff the nav is briefly inside two
-    // triggers at once — a boolean gets cleared by whichever fires second and
-    // the nav flashes cream mid-run. But a counter has to START from the right
-    // number, and now that the HERO is dark the very first frame depends on it:
-    // if ScrollTrigger does not emit an initial toggle for a trigger that is
-    // already active, the count stays 0 and the nav paints dark-on-dark until
-    // you scroll far enough to reach the next dark section.
-    //
-    // Asking the DOM how many dark sections currently cross the nav's band is
-    // stateless, cannot drift or double-count, and is correct on load. It costs
-    // one rect per section per toggle, and toggles happen a handful of times
-    // per traverse.
+    // A counter, not a boolean. Dark sections sit directly against each other
+    // in places, so during a handoff the nav is briefly inside two triggers at
+    // once; a boolean flag gets cleared by whichever fires second and the nav
+    // flashes cream for a frame in the middle of a dark run.
+    let overDark = 0;
+
     const apply = function () {
-      let n = 0;
-      stages.forEach(function (stage) {
-        const r = stage.getBoundingClientRect();
-        if (r.top <= 64 && r.bottom >= 64) n++;
-      });
-      const on = n > 0;
+      const on = overDark > 0;
       nav.classList.toggle("on-dark", on);
       if (rail) rail.classList.toggle("on-dark", on);
     };
@@ -6202,11 +6222,13 @@ body.in-bloom-zoom .ambient-petals {
         // the flip happens when the bar actually overlaps the dark ground.
         start: "top 64px",
         end: "bottom 64px",
-        onToggle: apply,
+        onToggle: function (self) {
+          overDark += self.isActive ? 1 : -1;
+          if (overDark < 0) overDark = 0;
+          apply();
+        },
       });
     });
-
-    apply();
   }
 
   /* ---------- 2. the gallery travels sideways ---------- */
@@ -6247,27 +6269,87 @@ body.in-bloom-zoom .ambient-petals {
   }
 
   /* ---------- 3. hero depth ---------- */
-  // The three-plane parallax and the counter-rotating ring pass both drove
-  // elements of the old SVG hero flower, which no longer exists. Depth in the
-  // hero is now real: the subject is a perspective render with its own
-  // shadows, and the headline is the only flat plane left in the composition.
-  // One layer of drift is worth keeping so the type releases the viewport
-  // slightly slower than the object does.
+  // One plane moving at one rate is a backdrop; three planes at different
+  // rates is a space. The numbers are deliberately small — this should be
+  // felt as depth on the way past, never noticed as an effect.
   const hero = document.querySelector(".hero");
   if (hero && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    gsap.to(".hero-headline", {
-      y: 18,
-      ease: "none",
-      scrollTrigger: {
-        trigger: hero,
-        start: "top top",
-        end: "bottom top",
-        // Seconds of catch-up, not `true`: the layer keeps easing after you
-        // stop, which is the whole difference between cinematic and welded to
-        // the trackpad.
-        scrub: 0.8,
-      },
+    const layers = [
+      [".hero-arch", 34, 0.55],       // furthest back, drifts most
+      [".hero-flower", -46, 1],       // rises against the scroll
+      [".hero-headline", 16, 1],      // nearly still: the anchor
+    ];
+
+    layers.forEach(function (spec) {
+      const el = document.querySelector(spec[0]);
+      if (!el) return;
+      gsap.to(el, {
+        y: spec[1],
+        opacity: spec[2] < 1 ? spec[2] : undefined,
+        ease: "none",
+        scrollTrigger: {
+          trigger: hero,
+          start: "top top",
+          end: "bottom top",
+          // The lag that separates "cinematic" from "welded to my trackpad".
+          // `scrub: true` is 1:1 with the wheel; a number is seconds of
+          // catch-up, so the layers keep easing after you stop.
+          scrub: 0.8,
+        },
+      });
     });
+
+    // A second act for the flower, this one scrubbed. The bloom still plays on
+    // load rather than on scroll: a scroll-driven bloom leaves the hero looking
+    // half-built for anyone who lands and reads before touching the wheel, and
+    // the arrival moment is worth more than the interaction. But from then on
+    // the head answers the scroll — the rings counter-rotate and spread as the
+    // page pulls away, which reads as moving THROUGH the flower rather than
+    // past a picture of one.
+    //
+    // ── The specimen answers the pointer ──
+    // A small parallax tilt, applied to the <svg> itself rather than to any of
+    // the groups inside it, because those are already carrying the arrival
+    // timeline, the slow rotation and the scroll pass — three animations on one
+    // element is where GSAP conflicts start. The <svg> is an HTML-level box, so
+    // a CSS 3D transform on it is free and composited.
+    //
+    // quickTo, not a tween per event: pointermove fires far faster than a frame
+    // and each `gsap.to` would instantiate and overwrite the last.
+    const heroSvg = document.getElementById("heroFlower");
+    if (heroSvg && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+      gsap.set(heroSvg, { transformPerspective: 900, transformOrigin: "50% 50%" });
+      const tiltY = gsap.quickTo(heroSvg, "rotationY", { duration: 0.9, ease: "power3" });
+      const tiltX = gsap.quickTo(heroSvg, "rotationX", { duration: 0.9, ease: "power3" });
+      window.addEventListener("pointermove", function (e) {
+        // Nothing to tilt once the hero has left the screen.
+        if (window.scrollY > window.innerHeight) return;
+        tiltY((e.clientX / window.innerWidth - 0.5) * 13);
+        tiltX((e.clientY / window.innerHeight - 0.5) * -9);
+      }, { passive: true });
+    }
+
+    // A second act for the flower, this one scrubbed. The parent <g> is
+    // translated to (200 200), so each ring's own origin is already the centre
+    // of the head — hence 0,0 rather than 200,200.
+    [["#heroOuter", 13, 1.11], ["#heroMid", -8, 1.08],
+     ["#heroInner", -10, 1.06], ["#heroCore", 7, 1.03]]
+      .forEach(function (spec) {
+        const ring = document.querySelector(spec[0]);
+        if (!ring) return;
+        gsap.to(ring, {
+          rotation: spec[1],
+          scale: spec[2],
+          transformOrigin: "0px 0px",
+          ease: "none",
+          scrollTrigger: {
+            trigger: hero,
+            start: "top top",
+            end: "bottom top",
+            scrub: 0.8,
+          },
+        });
+      });
   }
 })();
 </script>
