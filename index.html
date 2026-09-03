@@ -675,7 +675,7 @@ button:focus-visible,
   letter-spacing: -0.036em;
   /* 0.90 line-height on 118px hangs the "y" of "purely" deep into this gap,
      so the space the eye sees is roughly 25px less than the number. */
-  margin: 0 0 clamp(34px, 4vw, 56px);
+  margin: 0 0 clamp(40px, 4.8vw, 68px);
   max-width: 15ch;      /* forces the two-line break rather than trusting it */
 }
 /* 20px of lede under 158px of display is a 7.9× jump — the eye reads it as a
@@ -3699,32 +3699,32 @@ body.in-bloom-zoom .ambient-petals {
                The base-of-petal darkening the old ramp provided comes back
                globally, and better, from #heroThroat below. -->
           <linearGradient id="heroPetalOuter" x1="0%" y1="50%" x2="100%" y2="50%">
-            <stop offset="0%"   stop-color="#9b78c9"/>
-            <stop offset="26%"  stop-color="#c1a4e2"/>
-            <stop offset="56%"  stop-color="#e0d2f1"/>
-            <stop offset="82%"  stop-color="#b797da"/>
-            <stop offset="100%" stop-color="#9270c2"/>
+            <stop offset="0%"   stop-color="#a382cf"/>
+            <stop offset="30%"  stop-color="#bfa2e0"/>
+            <stop offset="58%"  stop-color="#cfbfe9"/>
+            <stop offset="84%"  stop-color="#b193d6"/>
+            <stop offset="100%" stop-color="#9c79c8"/>
           </linearGradient>
           <linearGradient id="heroPetalMid" x1="0%" y1="50%" x2="100%" y2="50%">
-            <stop offset="0%"   stop-color="#8f6cbf"/>
-            <stop offset="26%"  stop-color="#b596d9"/>
-            <stop offset="56%"  stop-color="#d4c4ed"/>
-            <stop offset="82%"  stop-color="#ab89d1"/>
-            <stop offset="100%" stop-color="#8664b7"/>
+            <stop offset="0%"   stop-color="#9873c3"/>
+            <stop offset="30%"  stop-color="#b393d5"/>
+            <stop offset="58%"  stop-color="#c4b2e2"/>
+            <stop offset="84%"  stop-color="#a586cc"/>
+            <stop offset="100%" stop-color="#916fbc"/>
           </linearGradient>
           <linearGradient id="heroPetalInner" x1="0%" y1="50%" x2="100%" y2="50%">
-            <stop offset="0%"   stop-color="#8461b4"/>
-            <stop offset="26%"  stop-color="#a98ad0"/>
-            <stop offset="56%"  stop-color="#c8b6e7"/>
-            <stop offset="82%"  stop-color="#a07cc8"/>
-            <stop offset="100%" stop-color="#7c59ac"/>
+            <stop offset="0%"   stop-color="#8d67b7"/>
+            <stop offset="30%"  stop-color="#a786cb"/>
+            <stop offset="58%"  stop-color="#b8a4d9"/>
+            <stop offset="84%"  stop-color="#9a7bc3"/>
+            <stop offset="100%" stop-color="#8562af"/>
           </linearGradient>
           <linearGradient id="heroPetalCore" x1="0%" y1="50%" x2="100%" y2="50%">
-            <stop offset="0%"   stop-color="#7a56aa"/>
-            <stop offset="26%"  stop-color="#9d7cc7"/>
-            <stop offset="56%"  stop-color="#bda9e0"/>
-            <stop offset="82%"  stop-color="#946fbf"/>
-            <stop offset="100%" stop-color="#734ea2"/>
+            <stop offset="0%"   stop-color="#8158aa"/>
+            <stop offset="30%"  stop-color="#9a7ac1"/>
+            <stop offset="58%"  stop-color="#ab96d0"/>
+            <stop offset="84%"  stop-color="#8d6bb7"/>
+            <stop offset="100%" stop-color="#7951a2"/>
           </linearGradient>
           <!-- The throat. Rays overlap heavily where they meet the disc and no
                light reaches in there; without it a dense head reads as a flat
@@ -3781,8 +3781,8 @@ body.in-bloom-zoom .ambient-petals {
           <!-- Drawn after every ray and before the disc, so it deepens where
                the blades pile up without touching the disc itself. -->
           <circle r="118" fill="url(#heroThroat)"/>
-          <circle r="22" fill="url(#heroDisc)"/>
-          <circle r="13" fill="#a8603a" fill-opacity="0.55"/>
+          <circle r="30" fill="url(#heroDisc)"/>
+          <circle r="18" fill="#a8603a" fill-opacity="0.55"/>
           <!-- Pollen, on the golden angle. A composite flower's disc really is
                a phyllotactic spiral, and the eye knows the difference between
                that and a plain filled circle even when it can't name it. -->
@@ -4714,10 +4714,16 @@ body.in-bloom-zoom .ambient-petals {
   // Four rings, not three. The head is now the hero's whole subject at 0.72
   // opacity rather than a 42% watermark, so it is being looked at directly and
   // the gaps between rings that a watermark hid are now visible.
-  buildPetals(document.getElementById("heroOuter"), 38, 172, 9,   "url(#heroPetalOuter)", 0,  20260829);
-  buildPetals(document.getElementById("heroMid"),   30, 142, 8.5, "url(#heroPetalMid)",   5,  50913377);
-  buildPetals(document.getElementById("heroInner"), 21, 108, 8,   "url(#heroPetalInner)", 9,  77345201);
-  buildPetals(document.getElementById("heroCore"),  15,  68, 7,   "url(#heroPetalCore)",  13, 41556207);
+  // Ray count is set by the TIPS, not the middle. A straight-sided strap keeps
+  // a constant width while the circumference it has to cover grows with radius,
+  // so any count that looks right at mid-length leaves the outer third gappy
+  // and the head reads as a sea urchin. Packing for the tips means the middles
+  // overlap heavily — which is correct: that overlap is what the throat radial
+  // then reads as depth.
+  buildPetals(document.getElementById("heroOuter"), 48, 168, 9,   "url(#heroPetalOuter)", 0,  20260829);
+  buildPetals(document.getElementById("heroMid"),   38, 138, 8.5, "url(#heroPetalMid)",   5,  50913377);
+  buildPetals(document.getElementById("heroInner"), 26, 108, 8,   "url(#heroPetalInner)", 9,  77345201);
+  buildPetals(document.getElementById("heroCore"),  17,  70, 7,   "url(#heroPetalCore)",  13, 41556207);
   // Bracts land between the two innermost ray rings, so their tips finish as a
   // green fringe under the open flower instead of vanishing beneath it or
   // sticking out past it.
@@ -4731,17 +4737,17 @@ body.in-bloom-zoom .ambient-petals {
     const disc = document.getElementById("heroPollen");
     if (!disc) return;
     const GA = Math.PI * (3 - Math.sqrt(5));
-    const N = 46;
+    const N = 74;
     const shades = ["#f3d070", "#e6b248", "#cf9234", "#f7e09a"];
     const frag = document.createDocumentFragment();
     for (let i = 0; i < N; i++) {
       const t = (i + 0.5) / N;
-      const rr = Math.sqrt(t) * 19;
+      const rr = Math.sqrt(t) * 26;
       const ang = i * GA;
       const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
       c.setAttribute("cx", (Math.cos(ang) * rr).toFixed(2));
       c.setAttribute("cy", (Math.sin(ang) * rr).toFixed(2));
-      c.setAttribute("r", (1.5 + t * 1.1).toFixed(2));
+      c.setAttribute("r", (1.9 + t * 1.5).toFixed(2));
       c.setAttribute("fill", shades[i & 3]);
       c.setAttribute("class", "hero-grain");
       frag.appendChild(c);
