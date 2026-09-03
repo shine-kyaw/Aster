@@ -926,12 +926,17 @@ button:focus-visible,
 }
 
 @media (max-width: 980px) {
-  /* Behind the type on a phone, held well back so it reads as a watermark. */
+  /* Behind the type on a phone, held well back so it reads as a watermark.
+     Bigger and higher than it was: at 112% and top 46% the head sat low and
+     left roughly 300px of bare cream above it, since the copy block is short
+     and `justify-content: center` puts the free space at both ends. Filling
+     the upper screen is what makes the watermark read as a ground for the
+     whole view rather than a shape parked behind the headline. */
   .hero-flower {
-    right: -26%;
-    top: 46%;
-    width: min(112%, 560px);
-    opacity: 0.30;
+    right: -24%;
+    top: 40%;
+    width: min(134%, 620px);
+    opacity: 0.34;
   }
   .hero-title { max-width: none; }
 }
