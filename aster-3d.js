@@ -748,6 +748,22 @@
         renderer.dispose();
         canvas.remove();
       },
+      // Move the canvas to a different host element. The bloom appears in two
+      // places on the page and they are never on screen together, so one
+      // context serves both — two would mean two shadow passes and two copies
+      // of every buffer for a flower you can only look at one of at a time.
+      setHost: function (el) {
+        if (!el || el === container || dragging) return false;
+        ro.unobserve(container);
+        container = el;
+        container.appendChild(canvas);
+        ro.observe(container);
+        resize();
+        lastVisCheck = -1e9;   // re-measure against the new host immediately
+        return true;
+      },
+      host: function () { return container; },
+      isDragging: function () { return dragging; },
       reveal: function () { triggerReveal(performance.now()); },
       scene: scene, camera: camera, renderer: renderer, root: root, bloom: bloom,
     };
