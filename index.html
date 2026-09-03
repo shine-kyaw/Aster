@@ -704,13 +704,18 @@ button:focus-visible,
   font-size: clamp(38px, 6.5vw, 100px);
   line-height: 0.88;
   letter-spacing: -0.034em;
-  margin: 0 0 clamp(22px, 2.4vw, 32px);
+  /* 0.88 line-height leaves the "y" descender of "purely" hanging low, so the
+     gap the eye actually sees is smaller than the margin. */
+  margin: 0 0 clamp(28px, 3.1vw, 44px);
   max-width: none;      /* the line breaks are explicit spans; the column caps width */
 }
+/* 42ch, measured, is where this copy breaks after "one at a time." — two whole
+   sentences on two lines. At 40ch it broke after "Nothing", orphaning the word
+   from its own clause. */
 .hero-lede {
   font-size: clamp(18px, 1.35vw, 22px);
-  margin-bottom: clamp(28px, 3vw, 38px);
-  max-width: 40ch;
+  margin-bottom: clamp(30px, 3.2vw, 40px);
+  max-width: 42ch;
 }
 
 .hero-grid {
@@ -933,16 +938,18 @@ button:focus-visible,
    A square cell in the right-hand grid track. Square because the bloom is
    radially symmetric and any other ratio wastes one axis; capped in svh as
    well as px so it can never grow taller than the room it is centred in. */
+/* One `min()` rather than a width plus a max-height, which fight: aspect-ratio
+   loses to max-height and the canvas ends up squashed. 112% lets the stage
+   spill a little past its track into the wrap's padding — the object being
+   slightly larger than its column is what stops the composition reading as two
+   tidy boxes side by side. The svh term shrinks it on short windows so it can
+   never be taller than the room it stands in. */
 .hero-stage {
   position: relative;
   z-index: 1;
-  width: 100%;
   aspect-ratio: 1;
-  max-height: min(62svh, 560px);
-  margin-inline: auto;
-  /* aspect-ratio alone loses to max-height, which would squash the canvas;
-     capping the width by the same figure keeps the cell square. */
-  max-width: min(62svh, 560px);
+  width: min(112%, 66svh, 570px);
+  margin-left: auto;
 }
 .hero-aster-3d {
   position: absolute;
@@ -957,11 +964,13 @@ button:focus-visible,
 /* The affordance. A dark canvas with no cursor over it gives no clue that it
    can be grabbed, and "drag to turn" is the entire reason the object is a live
    render rather than a rendered still. */
+/* Right-aligned, not centred: the stem exits the bottom of the canvas dead
+   centre, so a centred caption sits directly across it and both become hard to
+   read. */
 .hero-stage-hint {
   position: absolute;
-  left: 50%;
-  bottom: -6px;
-  transform: translateX(-50%);
+  right: 2px;
+  bottom: -4px;
   display: inline-flex;
   align-items: center;
   gap: 9px;
@@ -1037,14 +1046,14 @@ button:focus-visible,
   .hero-grid { grid-template-columns: 1fr; gap: clamp(18px, 5vw, 34px); }
   .hero-stage {
     order: -1;
-    max-height: min(34svh, 300px);
-    max-width: min(34svh, 300px);
+    width: min(88%, 34svh, 300px);
+    margin-inline: auto;
   }
   .hero-title { max-width: none; }
   .hero-proof { font-size: 10.5px; gap: 6px 14px; }
 }
 @media (max-width: 560px) {
-  .hero-stage { max-height: min(30svh, 250px); max-width: min(30svh, 250px); }
+  .hero-stage { width: min(92%, 30svh, 250px); }
   .hero-stage-hint { font-size: 9.5px; letter-spacing: 0.2em; }
   /* Two full-width stacked buttons plus a proof row is a lot of vertical
      spend on a small screen; the label goes and the names carry it. */
