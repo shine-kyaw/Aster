@@ -566,18 +566,30 @@
     }
 
     // ── Visibility. The old build kept a WebGL context churning through every
-    // frame of the page it was nowhere near; now the loop only runs on screen.
-    let onScreen = false;
-    const io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        onScreen = en.isIntersecting;
-        if (en.isIntersecting) {
-          triggerReveal(performance.now());
-          if (rafId == null) { lastFrame = performance.now(); rafId = requestAnimationFrame(tick); }
-        }
-      });
-    }, { threshold: 0.08 });
-    io.observe(container);
+    // frame of the page it was nowhere near; the render is now skipped when the
+    // section is off screen.
+    //
+    // Deliberately NOT gated on an IntersectionObserver alone. Cancelling the
+    // rAF and waiting for the observer to restart it means anything that stops
+    // the observer reporting an intersection — a zero-size viewport being the
+    // one I hit — leaves the canvas permanently blank with no way back. The
+    // loop therefore always schedules; only the GPU work is conditional, and
+    // the test is a rect read (throttled to 10/s, since it flushes layout) that
+    // falls back to "assume visible" when the viewport measures as nothing.
+    let onScreen = true;
+    let wasOnScreen = false;
+    let lastVisCheck = -1e9;
+
+    function checkVisible(now) {
+      if (now - lastVisCheck < 100) return;
+      lastVisCheck = now;
+      const vh = window.innerHeight || document.documentElement.clientHeight || 0;
+      const vw = window.innerWidth || document.documentElement.clientWidth || 0;
+      if (!vh || !vw) { onScreen = true; return; }
+      const r = container.getBoundingClientRect();
+      if (!r.width || !r.height) { onScreen = false; return; }
+      onScreen = r.bottom > -80 && r.top < vh + 80 && r.right > -80 && r.left < vw + 80;
+    }
 
     // ── Pointer (custom, not OrbitControls — the feel matters).
     let dragging = false;
@@ -657,6 +669,17 @@
     let rafId = null;
 
     function tick(now) {
+      rafId = requestAnimationFrame(tick);
+
+      checkVisible(now);
+      if (!onScreen) {
+        wasOnScreen = false;
+        lastFrame = now;   // so returning to view doesn't arrive with a huge dt
+        return;
+      }
+      // Greet front-first on every entry into view, as before.
+      if (!wasOnScreen) { wasOnScreen = true; triggerReveal(now); }
+
       const dt = Math.min(50, now - lastFrame);
       lastFrame = now;
       const f = dt / 16.6667;
@@ -711,12 +734,6 @@
       root.position.y = hoverLift;
 
       renderer.render(scene, camera);
-
-      if (onScreen) {
-        rafId = requestAnimationFrame(tick);
-      } else {
-        rafId = null;   // parked; the observer restarts it on re-entry
-      }
     }
     rafId = requestAnimationFrame(tick);
 
@@ -724,7 +741,6 @@
       dispose: function () {
         if (rafId != null) cancelAnimationFrame(rafId);
         ro.disconnect();
-        io.disconnect();
         if (envRT) envRT.dispose();
         store.geometries.forEach(function (g) { g.dispose(); });
         store.materials.forEach(function (m) { m.dispose(); });
