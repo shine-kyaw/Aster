@@ -331,23 +331,27 @@
       new Float32Array(floretGeo.attributes.position.count * 3).fill(1), 3));
     const floretMat = new T.MeshStandardMaterial({
       color: 0xffffff, vertexColors: true, roughness: 0.74, metalness: 0.0,
-      emissive: new T.Color(0x4a2f0c), emissiveIntensity: 0.10,
+      emissive: new T.Color(0x5c3a0e), emissiveIntensity: 0.16,
     });
     store.geometries.push(floretGeo);
     store.materials.push(floretMat);
     const florets = new T.InstancedMesh(floretGeo, floretMat, N);
-    florets.castShadow = true;
-    const cCore = new T.Color(0xc9762a);   // deep coral, matching the SVG asters
-    const cMidD = new T.Color(0xe8a63a);
-    const cRim  = new T.Color(0xf8dc90);
+    // Deliberately NOT a shadow caster. At this scale each floret shadows its
+    // own neighbours into a single muddy tan disc — the granularity that makes
+    // the eye read "pollen" disappears and you get a flat brown button.
+    florets.castShadow = false;
+    florets.receiveShadow = false;
+    const cCore = new T.Color(0xd98a2c);   // warm amber at the packed centre
+    const cMidD = new T.Color(0xf2b544);
+    const cRim  = new T.Color(0xffe9a8);
     const sv = new T.Vector3();
     for (let i = 0; i < N; i++) {
       const t = (i + 0.5) / N;
       const rr = Math.sqrt(t) * DR;
       const ang = i * GA;
       const j = hash(i, 5.1);
-      const zz = 0.115 * (1 - (rr / DR) * (rr / DR)) + 0.03 + (j - 0.5) * 0.008;
-      const sc = 0.0155 + 0.0085 * t + (hash(i, 23.7) - 0.5) * 0.004;
+      const zz = 0.160 * (1 - (rr / DR) * (rr / DR)) + 0.03 + (j - 0.5) * 0.008;
+      const sc = 0.0180 + 0.0100 * t + (hash(i, 23.7) - 0.5) * 0.005;
       out.makeTranslation(Math.cos(ang) * rr, Math.sin(ang) * rr, zz);
       sv.set(sc, sc, sc * 0.82);
       out.scale(sv);
@@ -440,8 +444,8 @@
     const leafGeo = makeBladeGeo(0.22);
     store.geometries.push(leafGeo);
     [
-      { t: 0.30, len: 0.92, wid: 0.42, spin: 0.46, lift: -0.34, roll: 0.30 },
-      { t: 0.55, len: 0.76, wid: 0.36, spin: -2.68, lift: -0.28, roll: -0.26 },
+      { t: 0.66, len: 0.92, wid: 0.42, spin: 0.46, lift: -0.34, roll: 0.30 },
+      { t: 0.86, len: 0.76, wid: 0.36, spin: -2.68, lift: -0.28, roll: -0.26 },
     ].forEach(function (L) {
       const leaf = new T.Mesh(leafGeo, greenMat);
       path.getPointAt(L.t, centre);
