@@ -40,8 +40,8 @@
     // as layered rather than printed. The margin pales but never goes white —
     // white tips are what made the old bloom look like cut plastic.
     const cThroat = new T.Color(0x4a3a8e);
-    const cBody   = new T.Color(0x8b7ed2);
-    const cEdge   = new T.Color(0xcdc6f0);
+    const cBody   = new T.Color(0x8578cf);
+    const cEdge   = new T.Color(0xbfb6ea);
     const tmp = new T.Color();
 
     for (let i = 0; i < pos.count; i++) {
@@ -229,7 +229,7 @@
       specularIntensity: 0.45,
       emissive: new T.Color(0x8f74cf),
       emissiveMap: glowTex,
-      emissiveIntensity: 0.30,
+      emissiveIntensity: 0.22,
       envMapIntensity: 0.85,
     });
     petalMat.shadowSide = T.DoubleSide;
@@ -301,10 +301,10 @@
     // ── Disc. Radius 0.40 — deliberately WIDER than every whorl's baseRadius,
     // so the petal claws pass underneath it and the ring of daylight that used
     // to sit between the rays and the centre is gone.
-    const DR = 0.40;
+    const DR = 0.46;
     const discGeo = new T.SphereGeometry(DR * 1.02, 40, 22, 0, Math.PI * 2, 0, Math.PI / 2.05);
     const discMat = new T.MeshStandardMaterial({
-      color: 0x63340f, roughness: 0.92, metalness: 0.0, side: T.DoubleSide,
+      color: 0x8a5a22, roughness: 0.92, metalness: 0.0, side: T.DoubleSide,
     });
     store.geometries.push(discGeo);
     store.materials.push(discMat);
@@ -320,7 +320,7 @@
     // scattered dots even when it can't name it. Outer florets are open and
     // larger; the centre is still packed buds.
     const GA = Math.PI * (3 - Math.sqrt(5));
-    const N = 520;
+    const N = 640;
     const floretGeo = new T.SphereGeometry(1, 6, 5);
     // r160 only folds instanceColor into diffuse under USE_COLOR — i.e. only
     // when the material has vertexColors on. And USE_COLOR without a `color`
@@ -337,9 +337,9 @@
     store.materials.push(floretMat);
     const florets = new T.InstancedMesh(floretGeo, floretMat, N);
     florets.castShadow = true;
-    const cCore = new T.Color(0xa8511d);   // deep coral, matching the SVG asters
-    const cMidD = new T.Color(0xdd922c);
-    const cRim  = new T.Color(0xf7d885);
+    const cCore = new T.Color(0xc9762a);   // deep coral, matching the SVG asters
+    const cMidD = new T.Color(0xe8a63a);
+    const cRim  = new T.Color(0xf8dc90);
     const sv = new T.Vector3();
     for (let i = 0; i < N; i++) {
       const t = (i + 0.5) / N;
@@ -364,7 +364,7 @@
     // ── Receptacle: the green underside of the head. Without this, turning the
     // bloom showed a hollow shell — which is most of why the old one fell apart
     // the moment you dragged it.
-    const recGeo = new T.SphereGeometry(0.46, 32, 18, 0, Math.PI * 2, 0, Math.PI / 2);
+    const recGeo = new T.SphereGeometry(0.53, 32, 18, 0, Math.PI * 2, 0, Math.PI / 2);
     store.geometries.push(recGeo);
     const receptacle = new T.Mesh(recGeo, greenMat);
     receptacle.rotation.x = -Math.PI / 2;
@@ -413,7 +413,9 @@
       new T.Vector3(0.00, -0.14, -0.12),
       new T.Vector3(0.07, -0.90, -0.28),
       new T.Vector3(-0.05, -1.72, -0.42),
-      new T.Vector3(0.06, -2.62, -0.54),
+      // Runs past the bottom of the frame on purpose. Ending it just inside
+      // read as an amputated stub with the bloom balanced on a nub.
+      new T.Vector3(0.06, -3.70, -0.62),
     ]);
     const TSEG = 44, RSEG = 12;
     const stemGeo = new T.TubeGeometry(path, TSEG, 0.058, RSEG, false);
@@ -438,8 +440,8 @@
     const leafGeo = makeBladeGeo(0.22);
     store.geometries.push(leafGeo);
     [
-      { t: 0.34, len: 0.86, wid: 0.40, spin: 0.42, lift: -0.34, roll: 0.30 },
-      { t: 0.63, len: 0.70, wid: 0.34, spin: -2.72, lift: -0.28, roll: -0.26 },
+      { t: 0.30, len: 0.92, wid: 0.42, spin: 0.46, lift: -0.34, roll: 0.30 },
+      { t: 0.55, len: 0.76, wid: 0.36, spin: -2.68, lift: -0.28, roll: -0.26 },
     ].forEach(function (L) {
       const leaf = new T.Mesh(leafGeo, greenMat);
       path.getPointAt(L.t, centre);
@@ -471,8 +473,8 @@
     let height = container.clientHeight || 800;
 
     const camera = new T.PerspectiveCamera(33, width / height, 0.1, 50);
-    camera.position.set(0, -0.18, 9.4);
-    camera.lookAt(0, -0.18, 0);
+    camera.position.set(0, 0, 9.4);
+    camera.lookAt(0, 0, 0);
 
     const renderer = new T.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -507,13 +509,13 @@
     scene.add(new T.HemisphereLight(0xfff3e8, 0x76855a, 0.46));
 
     const key = new T.DirectionalLight(0xfff1de, 2.5);
-    key.position.set(-2.8, 4.6, 3.6);
+    key.position.set(-3.4, 3.6, 2.0);
     key.castShadow = true;
     key.shadow.mapSize.set(1024, 1024);
     key.shadow.camera.left = -3.0;
     key.shadow.camera.right = 3.0;
     key.shadow.camera.top = 3.0;
-    key.shadow.camera.bottom = -3.4;
+    key.shadow.camera.bottom = -4.4;
     key.shadow.camera.near = 0.5;
     key.shadow.camera.far = 22;
     key.shadow.bias = 0.0;
