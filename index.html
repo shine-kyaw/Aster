@@ -1069,6 +1069,19 @@ button:focus-visible,
   }
   /* The flower leads on a phone, so the hero starts higher up. */
   .hero { padding-top: clamp(104px, 13vh, 132px); }
+  /* The spotlight has to follow the subject. Anchored to the right edge at
+     46% it stayed put while the stage moved to the top of the stack, leaving a
+     bright lavender blob sitting behind the headline and lede — light where
+     there is no object, and a tint under body copy, which this palette cannot
+     afford. Centred on the stage instead, and eased back. */
+  .hero > .hero-glow {
+    right: auto;
+    left: 50%;
+    top: 26%;
+    width: min(560px, 118vw);
+    transform: translate(-50%, -50%);
+    opacity: 0.40;
+  }
   .hero-title { max-width: none; }
   .hero-proof { font-size: 10.5px; gap: 6px 14px; }
 }
