@@ -3115,7 +3115,13 @@ body.in-bloom-zoom .ambient-petals {
 .strip-track {
   display: flex;
   align-items: center;
-  gap: clamp(28px, 4vw, 56px);
+  /* Spacing lives on the items, NOT in `gap`, and that is the difference
+     between a seamless loop and one that hitches.
+     `gap` sits BETWEEN items, so 24 items have 23 gaps: half the track width
+     is 12 items + 11.5 gaps, while item 13 actually starts at 12 items + 12
+     gaps. translateX(-50%) therefore lands half a gap short and the strip
+     jumps ~28px every time it wraps. Giving each item its own trailing margin
+     makes the track exactly two identical halves, so -50% is exact. */
   width: max-content;
   /* 49s, not 42s. The keyframe travels -50% — one full set — so the duration
      IS the read time for the whole list, and the new copy is about 17% longer
@@ -3132,6 +3138,7 @@ body.in-bloom-zoom .ambient-petals {
   color: var(--ink);
   letter-spacing: -0.012em;
   line-height: 1;
+  margin-right: clamp(28px, 4vw, 56px);   /* see .strip-track — was `gap` */
 }
 .strip-track span.sep {
   font-style: normal;
