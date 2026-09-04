@@ -3117,7 +3117,10 @@ body.in-bloom-zoom .ambient-petals {
   align-items: center;
   gap: clamp(28px, 4vw, 56px);
   width: max-content;
-  animation: marqueeRoll 42s linear infinite;
+  /* 49s, not 42s. The keyframe travels -50% — one full set — so the duration
+     IS the read time for the whole list, and the new copy is about 17% longer
+     in characters. Left at 42s the strip simply scrolled 17% faster. */
+  animation: marqueeRoll 49s linear infinite;
   white-space: nowrap;
   will-change: transform;
 }
@@ -3822,34 +3825,52 @@ body.in-bloom-zoom .ambient-petals {
   </a>
 </header>
 
-<!-- ============ MARQUEE STRIP (cycling words) ============ -->
-<section class="strip" aria-hidden="true">
+<!-- ============ MARQUEE STRIP (who the work is for) ============
+     Was "For weddings & love stories / For events & gatherings / For ideas,
+     not yet named". Read against the actual portfolio that was the wrong
+     signal: the live work is an industrial packaging manufacturer and a
+     multi-locale B2B site, and this strip is the first thing under the hero —
+     the line that tells a visiting business whether the studio is for them.
+
+     These are audience and positioning statements, not claims about past
+     results. Each is grounded in work that exists: industrial and B2B from
+     KTK, market entry from the tri-locale build, portfolios from Foliyo. The
+     one creative segment worth keeping is studios and makers; the motto stays
+     as the anchor the loop comes back to.
+
+     The `aria-hidden` moved off the section and onto the DUPLICATE set plus the
+     separators. The duplicate exists only so the loop has no seam, and the
+     glyphs are decoration — but the first set is the only place on the page
+     that says who Aster builds for, and hiding the whole strip took that away
+     from anyone using a screen reader. Under reduced motion the global rule
+     collapses the animation, so it settles as plain readable text. -->
+<section class="strip">
   <div class="strip-track">
+    <span>Bespoke websites, built by hand</span>
+    <span class="sep" aria-hidden="true">✻</span>
+    <span>For founders &amp; small teams</span>
+    <span class="sep" aria-hidden="true">✻</span>
+    <span>For industrial &amp; B2B brands</span>
+    <span class="sep" aria-hidden="true">✻</span>
+    <span>For studios, makers &amp; portfolios</span>
+    <span class="sep" aria-hidden="true">✻</span>
+    <span>For brands entering a new market</span>
+    <span class="sep" aria-hidden="true">✻</span>
     <span>Designed to bloom</span>
-    <span class="sep">✻</span>
-    <span>For weddings &amp; love stories</span>
-    <span class="sep">✻</span>
-    <span>For makers &amp; portfolios</span>
-    <span class="sep">✻</span>
-    <span>For brands with personality</span>
-    <span class="sep">✻</span>
-    <span>For events &amp; gatherings</span>
-    <span class="sep">✻</span>
-    <span>For ideas, not yet named</span>
-    <span class="sep">✻</span>
+    <span class="sep" aria-hidden="true">✻</span>
     <!-- duplicate set keeps the loop seamless -->
-    <span>Designed to bloom</span>
-    <span class="sep">✻</span>
-    <span>For weddings &amp; love stories</span>
-    <span class="sep">✻</span>
-    <span>For makers &amp; portfolios</span>
-    <span class="sep">✻</span>
-    <span>For brands with personality</span>
-    <span class="sep">✻</span>
-    <span>For events &amp; gatherings</span>
-    <span class="sep">✻</span>
-    <span>For ideas, not yet named</span>
-    <span class="sep">✻</span>
+    <span aria-hidden="true">Bespoke websites, built by hand</span>
+    <span class="sep" aria-hidden="true">✻</span>
+    <span aria-hidden="true">For founders &amp; small teams</span>
+    <span class="sep" aria-hidden="true">✻</span>
+    <span aria-hidden="true">For industrial &amp; B2B brands</span>
+    <span class="sep" aria-hidden="true">✻</span>
+    <span aria-hidden="true">For studios, makers &amp; portfolios</span>
+    <span class="sep" aria-hidden="true">✻</span>
+    <span aria-hidden="true">For brands entering a new market</span>
+    <span class="sep" aria-hidden="true">✻</span>
+    <span aria-hidden="true">Designed to bloom</span>
+    <span class="sep" aria-hidden="true">✻</span>
   </div>
 </section>
 
