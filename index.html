@@ -5687,17 +5687,22 @@ body.in-bloom-zoom .ambient-petals {
         }, 0.95);
       }
 
-      // Slow continuous rotation, once the bloom has settled.
-      if (!reduce) {
-        gsap.to("#heroHead", {
-          rotation: "+=360",
-          duration: 96,
-          ease: "none",
-          repeat: -1,
-          transformOrigin: "0px 0px",
-          delay: 3.1,
-        });
-      }
+      // There is deliberately NO continuous rotation here any more.
+      //
+      // The head used to turn 360° every 96 seconds. That was invisible while
+      // the bloom was a near-symmetric disc at a flat opacity — but the fade
+      // that now dissolves its left edge into the headline is fixed to the
+      // BOX, not to the flower. Put a turning flower under a stationary mask
+      // and every ray has to travel through the faded zone: each one vanishes
+      // as it swings left and does not return for a minute and a half.
+      //
+      // Speeding it up is not the fix, it is the same fault more often. The
+      // two are simply incompatible, and of the two the fade is worth more.
+      //
+      // The hero is not static without it: the bloom still opens on arrival,
+      // the whole specimen tilts toward the pointer, the rings counter-rotate
+      // against the scroll, and the halo breathes. A slowly spinning flower
+      // reads as a loading spinner anyway.
     }
 
 
