@@ -903,12 +903,15 @@ button:focus-visible,
   position: absolute;
   z-index: 0;
   pointer-events: none;
-  /* Pushed far enough right that its left petals only graze the headline
-     rather than its bright centre landing on the word "Aster" — measured, the
-     longest line ends near 1008px at 1440 wide, and -14vw of offset puts the
-     flower's left edge at almost exactly that. Large type crossing a soft
-     low-opacity graphic reads as layering; large type crossing the middle of a
-     high-contrast one reads as a mistake. */
+  /* The old note here said: "Large type crossing a soft low-opacity graphic
+     reads as layering; large type crossing the middle of a high-contrast one
+     reads as a mistake." That is right, and the answer it reached — hold the
+     flower back so the two never touch — was the timid half of it. Every ray
+     then ended at the same radius against bare cream, which is a hard edge in
+     open space: the head stopped at an invisible line about 70px short of
+     "Aster." and simply ceased.
+     The other half of that same insight is the mask below. Make the approach
+     soft and the overlap becomes the layering, not the mistake. */
   right: clamp(-210px, -12vw, -70px);
   top: 50%;
   /* Centred with a calc'd margin, NOT `transform: translateY(-42%)`.
@@ -919,10 +922,38 @@ button:focus-visible,
      head was sliding off the bottom-right corner with its disc below the fold
      and only a fan of petals in frame.
      The width is a variable so the half-height can be derived from it rather
-     than duplicating the clamp. */
-  --fw: clamp(350px, 50vw, 745px);
+     than duplicating the clamp.
+
+     Grown from 50vw so the dissolving edge actually reaches the words. At 50vw
+     the leftmost tip landed at x=813 with the headline ending at 744 — the
+     fade would have finished in empty cream and you would still read a boundary,
+     just a blurry one. At 58vw the tips arrive around x=707 and the faint end
+     of the bloom passes behind "Aster." */
+  --fw: clamp(360px, 58vw, 860px);
   width: var(--fw);
   margin-top: calc(var(--fw) * -0.46);
+
+  /* ── The dissolve ──
+     An ellipse anchored at 78% across, so the solid core covers the disc and
+     the whole right of the head while the left runs out of radius and fades.
+     Deliberately NOT a `linear-gradient(to right, …)`: a straight ramp fades
+     the upper-left, mid-left and lower-left tips by the same amount at the
+     same x, which reads as a wipe passing over the flower. A radius falls away
+     from a point, so the tips nearest the type dissolve first and the ones
+     above and below it hold — the head looks like it is turning into light,
+     not being erased by a rectangle.
+     rx 78% / ry 130%: tall enough that the vertical falloff is negligible and
+     the top and bottom rays stay crisp. Measured against this geometry, the
+     disc sits at 36% of the radius (untouched), the left tips at about 90%
+     (roughly a tenth of an alpha), and the left edge of the box at 100%. */
+  --flower-fade: radial-gradient(78% 130% at 78% 50%,
+    #000 34%,
+    rgba(0, 0, 0, 0.92) 52%,
+    rgba(0, 0, 0, 0.55) 72%,
+    rgba(0, 0, 0, 0.18) 88%,
+    transparent 100%);
+  -webkit-mask-image: var(--flower-fade);
+          mask-image: var(--flower-fade);
   /* 0.42 was the price of the collision above: at any real opacity the petals
      crossing the headline read as a mistake rather than as layering. With the
      type no longer reaching this far, the specimen can be a specimen. It stays
@@ -951,6 +982,15 @@ button:focus-visible,
     width: var(--fw);
     margin-top: calc(var(--fw) * -0.46);
     opacity: 0.34;
+    /* In one column the flower sits centred BEHIND the copy rather than
+       approaching it from one side, so a left-biased dissolve would be
+       asymmetric for no reason. Softened evenly instead — same intent, no
+       direction. */
+    --flower-fade: radial-gradient(closest-side,
+      #000 44%,
+      rgba(0, 0, 0, 0.72) 66%,
+      rgba(0, 0, 0, 0.26) 85%,
+      transparent 100%);
   }
   .hero-title { max-width: none; }
 }
