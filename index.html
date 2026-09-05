@@ -982,14 +982,19 @@ button:focus-visible,
     width: var(--fw);
     margin-top: calc(var(--fw) * -0.46);
     opacity: 0.34;
-    /* In one column the flower sits centred BEHIND the copy rather than
-       approaching it from one side, so a left-biased dissolve would be
-       asymmetric for no reason. Softened evenly instead — same intent, no
-       direction. */
-    --flower-fade: radial-gradient(closest-side,
-      #000 44%,
-      rgba(0, 0, 0, 0.72) 66%,
-      rgba(0, 0, 0, 0.26) 85%,
+    /* Same idea as the desktop dissolve, turned through ninety degrees.
+       In one column the type is BELOW the flower rather than beside it, so the
+       bloom is solid at the top and runs out downward, into the headline —
+       solid away from the words, dissolving toward them, exactly as it reads
+       on a wide screen.
+       Anchored at 22% with ry 70%: measured against this layout the headline
+       crosses the flower between 62% and 93% of the radius, which is where the
+       ramp does most of its work. */
+    --flower-fade: radial-gradient(110% 70% at 50% 22%,
+      #000 30%,
+      rgba(0, 0, 0, 0.88) 50%,
+      rgba(0, 0, 0, 0.48) 72%,
+      rgba(0, 0, 0, 0.14) 90%,
       transparent 100%);
   }
   .hero-title { max-width: none; }
@@ -3457,8 +3462,11 @@ body.in-bloom-zoom .ambient-petals {
   .hero-meta .item span { font-size: 18px; }
   .hero-meta--line, .hero-meta--mixed { gap: 14px; }
 
-  /* Hero flower: cap size so it doesn't dominate on small viewports */
-  .hero-flower svg { max-width: 360px; margin: 0 auto; }
+  /* The two `.hero-flower svg { max-width }` caps that used to live here and
+     at 480px are gone. They predate `--fw`, which now sizes the flower
+     directly, so all they did was shrink the SVG INSIDE its box — leaving the
+     head at about 67% of the mask radius, sitting in the mask's solid centre,
+     which is why the dissolve barely showed on a phone. */
 
   /* Section padding tighter on phones */
   .section { padding-top: clamp(60px, 10vw, 90px); padding-bottom: clamp(60px, 10vw, 90px); }
@@ -3546,9 +3554,6 @@ body.in-bloom-zoom .ambient-petals {
   /* Tier price + name sizing */
   .tier-name { font-size: 28px; }
   .tier-price { font-size: 28px; }
-
-  /* Hero flower: smaller still */
-  .hero-flower svg { max-width: 280px; }
 
   /* Hero meta line (italic byline) — keep punchy but readable */
   .hero-meta-line { font-size: 14px; }
