@@ -1013,6 +1013,83 @@ button:focus-visible,
           mask-image: radial-gradient(circle closest-side, #000 10%, rgba(0, 0, 0, 0.46) 38%, rgba(0, 0, 0, 0.14) 64%, transparent 88%);
 }
 
+/* ============================================================
+   STICKY MOBILE ACTION BAR
+   Phone only, and hidden until it is useful — see the markup for why.
+   ============================================================ */
+.mobile-cta {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 8900;              /* under #aster-chat-btn's 9000 */
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 12px var(--pad-x) calc(12px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg, rgba(245, 237, 224, 0), rgba(245, 237, 224, 0.94) 42%, var(--cream) 100%);
+  transform: translateY(115%);
+  transition: transform 0.5s var(--ease), opacity 0.4s var(--ease);
+  opacity: 0;
+  pointer-events: none;
+}
+.mobile-cta.is-up {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+.mobile-cta-main {
+  flex: 1 1 auto;
+  justify-content: center;
+  min-height: 52px;
+  padding: 15px 22px;
+}
+/* The chat launcher is a 56px circle; matching it keeps the row balanced. */
+.mobile-cta-mail {
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.mobile-cta-mail svg { width: 21px; height: 21px; }
+
+@media (max-width: 760px) {
+  .mobile-cta { display: flex; }
+  /* Lift the chat launcher clear of the bar. An ID selector plus `body` so it
+     beats aster-chat.js's own `#aster-chat-btn`, whose stylesheet is injected
+     at runtime and therefore lands after this one. */
+  body #aster-chat-btn { bottom: calc(88px + env(safe-area-inset-bottom, 0px)); }
+  body #aster-chat-panel { bottom: calc(156px + env(safe-area-inset-bottom, 0px)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mobile-cta { transition: opacity 0.2s; }
+}
+
+/* ============================================================
+   MOBILE TOUCH + LEGIBILITY
+   Measured on a 375x812 viewport: the nav drawer's links were 32px tall, the
+   footer's 17px, and the chat chips 30px, against the 44px that a thumb
+   actually needs. Several micro-labels sat at 10px, which is under the 11px
+   floor where letterspaced uppercase stops being readable at arm's length.
+   ============================================================ */
+@media (max-width: 760px) {
+  .nav-menu-inner a { padding: 15px 16px; }
+  .footer-col a { padding: 12px 0; }
+  .footer-bottom { font-size: 13px; }
+  .hero-scroll { padding: 12px 0; }
+  .eyebrow { font-size: 11.5px; }
+  .brand-sub { font-size: 11px; }
+  .ovule-label, .case .label { font-size: 11.5px; }
+  /* aster-chat.js styles these inline at runtime, hence the !important. */
+  .ac-chip { min-height: 42px !important; }
+}
+
 /* ========== Section divider ========== */
 .fine-divide {
   height: 1px;
@@ -3051,7 +3128,16 @@ body.in-bloom-zoom .ambient-petals {
    blown past. The flower fills more of the small viewport, and the
    ovule phase text is sized up for legibility. */
 @media (max-width: 760px) {
-  .bloom-zoom { height: 480vh; }
+  /* 480vh -> 230vh. Measured, the bloom-zoom was 4.8 of the 14.8 screens this
+     page occupies on a phone — a third of the whole site spent on one
+     decorative animation, sitting between the hero and any evidence of what
+     the studio has actually built. The work section that follows it is 1.2
+     screens: four times less than its own preamble.
+     The animation is scroll-scrubbed, so halving the runway does not cut
+     anything out of it — every beat still plays, in half the flicks. On a
+     phone that is straightforwardly better; a visitor who has to swipe five
+     times to reach the proof mostly does not. */
+  .bloom-zoom { height: 230vh; }
   .zoom-flower { width: min(92vmin, 560px); height: min(92vmin, 560px); }
   .ovule-reveal { padding: clamp(20px, 5vw, 32px); max-width: 90vw; }
   .ovule-title { font-size: clamp(30px, 9vw, 44px); }
@@ -3708,8 +3794,17 @@ body.in-bloom-zoom .ambient-petals {
         <span class="l"><span>Your identity,</span></span>
         <span class="l"><span>purely <em class="italic">Aster.</em></span></span>
       </h1>
+      <!-- This line does the explaining, because the headline does not.
+           "Your identity, purely Aster." is the brand talking, and it is the
+           right headline — but someone who arrives from an ad has no idea yet
+           what is being sold, and "Your digital presence, built to bloom" did
+           not tell them. Six words of metaphor restating the metaphor above it.
+           Cold traffic needs the offer, the audience and the difference inside
+           two seconds, which is what this now says. Grounded in the studio's
+           own claim from the philosophy section, not a new promise. -->
       <p class="lede hero-lede">
-        Your digital presence, <em>built to bloom</em>.
+        We build websites by hand for founders and growing businesses.
+        <em>No templates, no shortcuts.</em>
       </p>
       <div class="hero-actions">
         <a class="btn btn-primary glow-track glow-warm" href="#connect">
@@ -4538,6 +4633,29 @@ body.in-bloom-zoom .ambient-petals {
     <span>Handcrafted with care.</span>
   </div>
 </footer>
+
+<!-- ============ STICKY MOBILE ACTION BAR ============
+     Phone only. This page is a dozen screens on a phone and the only way to
+     act was the button in the hero — which scrolls away in one flick and does
+     not come back until the contact section, ten screens later. Anyone arriving
+     from an ad and getting interested three screens in had nothing to tap.
+
+     Appears once the hero's own button has left the screen, and gets out of the
+     way again when the contact form is in view, so it never covers the thing it
+     is pointing at. The mail link is the low-friction path: the form asks for a
+     name, an email and a message, and a good share of cold traffic will not
+     fill in three fields but will happily send one line. -->
+<div class="mobile-cta" id="mobileCta" aria-hidden="true">
+  <a class="btn btn-primary mobile-cta-main" href="#connect">
+    Start your project
+    <svg class="ar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M6 18 L18 6 M9 6 H18 V15"/></svg>
+  </a>
+  <a class="mobile-cta-mail" href="mailto:shine@astermade.com" aria-label="Email Aster directly">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M3 7l9 6 9-6"/>
+    </svg>
+  </a>
+</div>
 
 <!-- ============ AMBIENT DRIFTING PETALS — REMOVED ============
      Eight coloured ellipses (lavender, peach, sage) drifting across a
@@ -5529,27 +5647,52 @@ body.in-bloom-zoom .ambient-petals {
 
 <!-- Three.js — used only for the interactive 3D aster that replaces
      the cyclical philosophy ring. -->
-<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
-<script src="aster-3d.js"></script>
 <script>
-  // Mount the 3D aster inside the philosophy section's cyclical stage.
-  // Falls back silently if Three.js fails to load (the container just
-  // stays empty — the rest of the page is unaffected).
+  // ── The 3D aster now loads LATE, and only if you scroll toward it.
+  //
+  // three.js r160 is roughly 160KB gzipped and it exists for exactly one
+  // canvas, in the philosophy section, about ten screens down. Loading it from
+  // the document meant every visitor paid for it up front — including the ones
+  // who look at the hero and leave. Traffic arriving from an ad lands on a
+  // phone, on mobile data, and that cost came straight off the conversion rate.
+  //
+  // Injected when the stage comes within two viewports, so anyone who actually
+  // reaches the section still gets the whole thing, and the landing costs
+  // nothing. Falls back silently: if either script fails the stage stays empty
+  // and the rest of the page is unaffected.
   (function () {
-    function mountAster3D() {
-      // Dev/preview escape hatch: ?no3d skips the WebGL mount so headless
-      // screenshot tooling (which hangs on a live WebGL context) can capture
-      // static layout. Invisible to real visitors.
-      if (/(\?|&|#)no3d\b/.test(window.location.href)) return;
-      const stage = document.getElementById('philosophyAster3D');
-      if (!stage || !window.AsterFlower3D || !window.THREE) return;
-      window.__aster3d = window.AsterFlower3D.mount(stage);
+    // Dev/preview escape hatch: ?no3d skips the WebGL mount so headless
+    // screenshot tooling (which hangs on a live WebGL context) can capture
+    // static layout. Invisible to real visitors.
+    if (/(\?|&|#)no3d\b/.test(window.location.href)) return;
+    const stage = document.getElementById('philosophyAster3D');
+    if (!stage || !('IntersectionObserver' in window)) return;
+
+    let started = false;
+    function inject(src, onload) {
+      const s = document.createElement('script');
+      s.src = src;
+      s.async = true;
+      s.onload = onload;
+      document.body.appendChild(s);
     }
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', mountAster3D);
-    } else {
-      mountAster3D();
+    function load() {
+      if (started) return;
+      started = true;
+      io.disconnect();
+      inject('https://unpkg.com/three@0.160.0/build/three.min.js', function () {
+        inject('aster-3d.js', function () {
+          if (window.AsterFlower3D && window.THREE) {
+            window.__aster3d = window.AsterFlower3D.mount(stage);
+          }
+        });
+      });
     }
+
+    const io = new IntersectionObserver(function (entries) {
+      for (const e of entries) if (e.isIntersecting) { load(); return; }
+    }, { rootMargin: '200% 0px' });
+    io.observe(stage);
   })();
 </script>
 
@@ -6548,6 +6691,51 @@ body.in-bloom-zoom .ambient-petals {
       });
   }
 })();
+</script>
+
+<script>
+  // ── Sticky mobile action bar: show it only when it is the best thing to tap.
+  //
+  // Two IntersectionObservers rather than a scroll handler, so this costs
+  // nothing per frame. Deliberately NOT gated on GSAP — the bar is the primary
+  // conversion path on a phone and must not depend on a CDN.
+  (function () {
+    const bar = document.getElementById('mobileCta');
+    const heroBtn = document.querySelector('.hero-actions');
+    const connect = document.getElementById('connect');
+    if (!bar || !('IntersectionObserver' in window)) return;
+
+    let heroVisible = true;    // assume visible: the page opens on the hero
+    let connectVisible = false;
+
+    function apply() {
+      const show = !heroVisible && !connectVisible;
+      bar.classList.toggle('is-up', show);
+      // The bar is a duplicate of actions that exist in the page; when it is
+      // down it should not be in the tab order or read out at all.
+      bar.setAttribute('aria-hidden', show ? 'false' : 'true');
+    }
+
+    if (heroBtn) {
+      new IntersectionObserver(function (es) {
+        heroVisible = es[0].isIntersecting;
+        apply();
+      }, { threshold: 0 }).observe(heroBtn);
+    } else {
+      heroVisible = false;
+    }
+
+    if (connect) {
+      // A generous margin: the bar should be gone before you reach the form,
+      // not slide away as you arrive at it.
+      new IntersectionObserver(function (es) {
+        connectVisible = es[0].isIntersecting;
+        apply();
+      }, { rootMargin: '0px 0px -18% 0px', threshold: 0 }).observe(connect);
+    }
+
+    apply();
+  })();
 </script>
 
 <script src="aster-chat.js"></script>
