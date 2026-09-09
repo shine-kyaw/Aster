@@ -3,8 +3,30 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Aster Studio — A deeply personal design journey</title>
-<meta name="description" content="Aster is a bespoke design studio. Every project blooms from a single seed into a wholly handcrafted brand identity." />
+<!-- Title and description both used to lead with the metaphor: "A deeply
+     personal design journey" and "Every project blooms from a single seed".
+     Lovely, and useless to someone deciding in a search result or a link
+     preview whether this is a business that can build them a website. The
+     offer goes first now; the studio's own language still follows it. -->
+<title>Aster Studio — Bespoke websites, built by hand</title>
+<meta name="description" content="Aster is a bespoke design studio. We build websites by hand for founders and growing businesses — no templates, no shortcuts. See the work and start a project." />
+
+<!-- Share card. There was none at all: the link previewed as bare text
+     wherever it was pasted, which for a promoted link is a straight loss of
+     clicks. 1200x630, the size every platform crops from. -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Aster Studio" />
+<meta property="og:url" content="https://astermade.com/" />
+<meta property="og:title" content="Bespoke websites, built by hand" />
+<meta property="og:description" content="Aster builds websites by hand for founders and growing businesses. No templates, no shortcuts." />
+<meta property="og:image" content="https://astermade.com/assets/og-card.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Aster Studio — bespoke websites, built by hand" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Bespoke websites, built by hand" />
+<meta name="twitter:description" content="Aster builds websites by hand for founders and growing businesses. No templates, no shortcuts." />
+<meta name="twitter:image" content="https://astermade.com/assets/og-card.jpg" />
 
 <link rel="icon" type="image/png" href="favicon.png" />
 <link rel="apple-touch-icon" href="logo.png" />
@@ -3728,7 +3750,12 @@ body.in-bloom-zoom .ambient-petals {
   .eyebrow, .hero-eyebrow { font-size: 11.5px; }
   .brand-sub { font-size: 11px; }
   .brand { padding: 5px 0; }
-  .ovule-label, .case .label, .receipt-label { font-size: 11.5px; }
+  /* Specificity matched deliberately: `.contact-receipt .receipt-label` and
+     `.case .preview .label` are two and three classes deep, so the single-class
+     versions I first wrote lost to them even from the end of the sheet. */
+  .ovule-label { font-size: 11.5px; }
+  .case .preview .label { font-size: 11.5px; }
+  .contact-receipt .receipt-label { font-size: 11.5px; }
   /* aster-chat.js injects its stylesheet at runtime, so it always lands after
      this one — !important is the only way to reach it from here. */
   .ac-chip { min-height: 42px !important; }
