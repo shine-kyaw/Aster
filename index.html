@@ -1071,24 +1071,6 @@ button:focus-visible,
   .mobile-cta { transition: opacity 0.2s; }
 }
 
-/* ============================================================
-   MOBILE TOUCH + LEGIBILITY
-   Measured on a 375x812 viewport: the nav drawer's links were 32px tall, the
-   footer's 17px, and the chat chips 30px, against the 44px that a thumb
-   actually needs. Several micro-labels sat at 10px, which is under the 11px
-   floor where letterspaced uppercase stops being readable at arm's length.
-   ============================================================ */
-@media (max-width: 760px) {
-  .nav-menu-inner a { padding: 15px 16px; }
-  .footer-col a { padding: 12px 0; }
-  .footer-bottom { font-size: 13px; }
-  .hero-scroll { padding: 12px 0; }
-  .eyebrow { font-size: 11.5px; }
-  .brand-sub { font-size: 11px; }
-  .ovule-label, .case .label { font-size: 11.5px; }
-  /* aster-chat.js styles these inline at runtime, hence the !important. */
-  .ac-chip { min-height: 42px !important; }
-}
 
 /* ========== Section divider ========== */
 .fine-divide {
@@ -3725,6 +3707,31 @@ body.in-bloom-zoom .ambient-petals {
 }
 @media (prefers-reduced-motion: reduce) {
   .page-veil { display: none; }
+}
+
+/* ============================================================
+   MOBILE TOUCH + LEGIBILITY — deliberately the LAST rules in the sheet
+   Measured on 375x812: the nav drawer's links were 32px tall, the footer's
+   17px and the chat chips 30px, against the 44px a thumb needs; several
+   micro-labels sat at 10px, under the floor where letterspaced uppercase
+   stays readable at arm's length.
+   These sit at the end because the 760px and 480px blocks above set the same
+   properties at the same specificity, so on a 375px screen the last
+   declaration is the one that wins. Placed earlier in the sheet — where I
+   first put them — every one of these was silently overridden.
+   ============================================================ */
+@media (max-width: 760px) {
+  .nav-menu-inner a { padding: 15px 16px; }
+  .footer-col a { padding: 12px 0; }
+  .footer-bottom { font-size: 13px; }
+  .hero-scroll { padding: 12px 0; }
+  .eyebrow, .hero-eyebrow { font-size: 11.5px; }
+  .brand-sub { font-size: 11px; }
+  .brand { padding: 5px 0; }
+  .ovule-label, .case .label, .receipt-label { font-size: 11.5px; }
+  /* aster-chat.js injects its stylesheet at runtime, so it always lands after
+     this one — !important is the only way to reach it from here. */
+  .ac-chip { min-height: 42px !important; }
 }
 </style>
 </head>
