@@ -467,8 +467,20 @@ button:focus-visible,
   justify-content: space-between;
   align-items: center;
   background: linear-gradient(180deg, rgba(245, 237, 224, 0.84), rgba(245, 237, 224, 0));
-  backdrop-filter: blur(14px) saturate(150%);
-  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  /* Was blur(14px) saturate(150%). The nav is fixed and on screen for the
+     entire time anyone scrolls this page — nothing else here runs on every
+     single scroll frame the way this does. backdrop-filter has to resample
+     and re-blur whatever is moving underneath it each frame, and the cost
+     scales with the blur radius; saturate() was a second filter pass over
+     the same pixels for a difference nobody was going to notice next to the
+     blur itself. Cutting the radius and dropping saturate keeps the frosted
+     look — still clearly blurred, still lifts the bar off the page — while
+     removing most of the per-frame resampling cost. This was the single
+     biggest continuous-scroll expense on the page: everything else here
+     only costs while it is animating; this cost while you merely scrolled
+     past it. */
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   transition: padding 0.4s var(--ease), background 0.4s;
 }
 .nav.scrolled {
@@ -1858,6 +1870,19 @@ footer {
   background: var(--ink);
   color: var(--cream);
   padding: 80px var(--pad-x) 40px;
+  /* The footer is the last thing on a long page and nothing on the page
+     depends on measuring it early — no ScrollTrigger targets it, no
+     IntersectionObserver needs it before it is actually near the viewport.
+     `content-visibility: auto` lets a supporting browser skip layout, paint
+     and rendering for it entirely until it is close to scrolling into view,
+     which is real work saved on every page load and on scrolling PAST it
+     without ever reaching it. `contain-intrinsic-size` gives it a stand-in
+     height up front so the page's total scroll height does not jump once
+     the real footer is measured; the browser remembers the true size after
+     that first measurement. No effect at all in a browser that does not
+     support the property — this is additive, not a replacement for anything. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 600px;
 }
 .footer-inner {
   max-width: var(--max);
@@ -1912,11 +1937,20 @@ footer {
 }
 
 /* ========== Reveal animations ========== */
+/* No `will-change` here — see the JS that adds `.in`. Declared statically like
+   this it applied to every `.reveal` element the moment the page loaded,
+   which promotes each one to its own GPU layer for as long as it sits
+   unrevealed below the fold. On a page this long that is a standing cost —
+   layers the compositor has to track and hold in GPU memory scroll after
+   scroll, for elements nobody has scrolled to yet. `will-change` is supposed
+   to be a short-lived hint right before a change, not a permanent property;
+   it is now added by the IntersectionObserver just before `.in` lands and
+   dropped again once the transition finishes, same as it already was for
+   every OTHER promoted element on this page. */
 .reveal {
   opacity: 0;
   transform: translateY(36px);
   transition: opacity 1s var(--ease), transform 1s var(--ease);
-  will-change: transform, opacity;
 }
 .reveal.in {
   opacity: 1;
@@ -5151,6 +5185,15 @@ body.in-bloom-zoom .ambient-petals {
       function (entries) {
         entries.forEach(function (e) {
           if (e.isIntersecting) {
+            // `.reveal` no longer carries `will-change` in the stylesheet —
+            // see the CSS. Set it here instead, right before the transition
+            // it is for, and `releaseLayer` below still drops it once that
+            // transition has finished. `.reveal-stagger` and `.reveal-type`
+            // never had a static will-change to begin with, so this only
+            // restores what plain `.reveal` needs.
+            if (e.target.classList.contains("reveal")) {
+              e.target.style.willChange = "transform, opacity";
+            }
             e.target.classList.add("in");
             io.unobserve(e.target);
             releaseLayer(e.target);
@@ -5640,13 +5683,33 @@ body.in-bloom-zoom .ambient-petals {
   // ============================================================
   // MTK · Radial mouse-follow glow
   // ============================================================
-  document.addEventListener("pointermove", function (e) {
-    const target = e.target.closest(".glow-track");
-    if (!target) return;
-    const r = target.getBoundingClientRect();
-    target.style.setProperty("--mx", ((e.clientX - r.left) / r.width) * 100 + "%");
-    target.style.setProperty("--my", ((e.clientY - r.top) / r.height) * 100 + "%");
-  }, { passive: true });
+  // Batched to one rect-read-and-write per animation frame, same pattern as
+  // the on-ink lamp below. A raw `pointermove` listener can fire far more
+  // often than the screen repaints — high-poll-rate mice and trackpads
+  // routinely deliver several hundred events a second — and this one was
+  // doing a `getBoundingClientRect()` (a forced layout read) on every single
+  // one, for as long as the pointer sat over any `.glow-track` element. The
+  // screen only ever shows the last value before each repaint anyway, so
+  // every read between frames was wasted work competing with scrolling for
+  // the same main thread.
+  (function () {
+    let queued = false;
+    let pending = null;
+    document.addEventListener("pointermove", function (e) {
+      const target = e.target.closest(".glow-track");
+      if (!target) return;
+      pending = { target: target, x: e.clientX, y: e.clientY };
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(function () {
+        queued = false;
+        const p = pending;
+        const r = p.target.getBoundingClientRect();
+        p.target.style.setProperty("--mx", ((p.x - r.left) / r.width) * 100 + "%");
+        p.target.style.setProperty("--my", ((p.y - r.top) / r.height) * 100 + "%");
+      });
+    }, { passive: true });
+  })();
 
   // ============================================================
   // MTK · Aurora parallax background
@@ -5656,11 +5719,24 @@ body.in-bloom-zoom .ambient-petals {
     const a1 = document.querySelector(".aurora.a1");
     const a2 = document.querySelector(".aurora.a2");
     if (!a1 || !a2) return;
+    // Same batching as the glow-track handler above: the transform write
+    // itself is cheap, but with no throttling at all this ran once per raw
+    // pointer event rather than once per frame, for the whole time the
+    // pointer was anywhere on the page (not just over an element, the whole
+    // document).
+    let queued = false;
+    let lastX = 0, lastY = 0;
     document.addEventListener("pointermove", function (e) {
-      const px = (e.clientX / window.innerWidth)  - 0.5;
-      const py = (e.clientY / window.innerHeight) - 0.5;
-      a1.style.transform = "translate(" + (px *  40) + "px, " + (py *  40) + "px)";
-      a2.style.transform = "translate(" + (px * -50) + "px, " + (py * -50) + "px)";
+      lastX = e.clientX; lastY = e.clientY;
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(function () {
+        queued = false;
+        const px = (lastX / window.innerWidth)  - 0.5;
+        const py = (lastY / window.innerHeight) - 0.5;
+        a1.style.transform = "translate(" + (px *  40) + "px, " + (py *  40) + "px)";
+        a2.style.transform = "translate(" + (px * -50) + "px, " + (py * -50) + "px)";
+      });
     }, { passive: true });
   })();
 
