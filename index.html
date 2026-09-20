@@ -39,6 +39,21 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
+<!-- LCP fix. The hero's largest painted element isn't an <img> — it's
+     `.hero-flower-halo`, a div whose CSS background stacks two JPEGs under
+     `background-blend-mode`. That matters because a background-image is
+     invisible to the browser's preload scanner: it isn't discovered until
+     the ~4600 lines of inlined CSS above it have been parsed and this
+     specific rule is reached, well after the point a same-priority <img>
+     would already be mid-fetch. These two explicit preloads are the
+     equivalent of an <img>'s fetchpriority="high" for a background-image —
+     there is no such attribute for CSS backgrounds, this is the real
+     mechanism. Both are needed: `screen`/`normal` blending means the
+     element's final paint isn't complete until both have decoded, so
+     preloading only one still gates on the other. -->
+<link rel="preload" as="image" href="assets/env/hero-wash.webp" fetchpriority="high" />
+<link rel="preload" as="image" href="assets/env/glow-aster.webp" fetchpriority="high" />
+
 <style>
 /* ========== Design tokens ========== */
 :root {
@@ -3531,10 +3546,19 @@ body.in-bloom-zoom .ambient-petals {
      well inside the mask's opaque zone. A JPEG's "black" ground is never quite
      black, and under `screen` that residue drew a visible rectangle around the
      flower. At 106% the plate's edge lands where the mask has already faded
-     out, so there is nothing there to see. */
+     out, so there is nothing there to see.
+
+     WebP, not JPEG: this element is the page's actual LCP — a non-repeating,
+     near-viewport-scale background image is a valid LCP candidate by spec,
+     and on mobile widths this box runs bigger than the headline text block.
+     Re-encoded at quality 82: glow-aster 18.9KB -> 5.9KB, hero-wash 44.3KB ->
+     28.0KB, both re-checked visually for banding at this exact opacity and
+     blend mode before shipping. The two original JPEGs stay in
+     assets/env/ (nothing else in the CSS references either .webp name), so
+     this is reversible without regenerating anything. */
   background:
-    url("assets/env/glow-aster.jpg") center / 106% 106% no-repeat,
-    url("assets/env/hero-wash.jpg") center / cover no-repeat;
+    url("assets/env/glow-aster.webp") center / 106% 106% no-repeat,
+    url("assets/env/hero-wash.webp") center / cover no-repeat;
   background-blend-mode: screen, normal;
   will-change: transform, opacity;
 }
