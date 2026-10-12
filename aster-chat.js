@@ -372,6 +372,7 @@ TONE GUIDELINES FOR YOU (Aster the AI):
   btn.id = 'aster-chat-btn';
   btn.setAttribute('aria-label', 'Chat with Aster');
   btn.setAttribute('aria-expanded', 'false');
+  btn.setAttribute('aria-controls', 'aster-chat-panel');
   btn.innerHTML = `<div id="aster-chat-pip"></div>${CHAT_ICON}${CLOSE_ICON}`;
 
   const panel = document.createElement('div');
@@ -379,6 +380,8 @@ TONE GUIDELINES FOR YOU (Aster the AI):
   panel.setAttribute('role', 'dialog');
   panel.setAttribute('aria-modal', 'false');
   panel.setAttribute('aria-label', 'Aster Studio chat');
+  panel.setAttribute('aria-hidden', 'true');
+  panel.inert = true;
   panel.innerHTML = `
     <div class="ac-header">
       ${BLOOM_SVG}
@@ -387,7 +390,7 @@ TONE GUIDELINES FOR YOU (Aster the AI):
         <div class="ac-header-status"><span class="ac-status-dot"></span>Studio concierge</div>
       </div>
     </div>
-    <div class="ac-messages" id="ac-messages">
+    <div class="ac-messages" id="ac-messages" role="log" aria-live="polite" aria-relevant="additions text">
       <div class="ac-msg ai">
         <div class="ac-bubble">
           Hello — I'm Aster, the studio's concierge. Whether you're curious about our process, pricing, or have a project in mind, I'm here to help it bloom. What brings you in today?
@@ -428,6 +431,9 @@ TONE GUIDELINES FOR YOU (Aster the AI):
     btn.classList.toggle('open', isOpen);
     panel.classList.toggle('open', isOpen);
     btn.setAttribute('aria-expanded', String(isOpen));
+    if (!isOpen) btn.focus({ preventScroll: true });
+    panel.inert = !isOpen;
+    panel.setAttribute('aria-hidden', String(!isOpen));
     if (isOpen) {
       // Hide pip once opened
       const pip = document.getElementById('aster-chat-pip');
@@ -449,6 +455,19 @@ TONE GUIDELINES FOR YOU (Aster the AI):
     inputEl.style.height = Math.min(inputEl.scrollHeight, 100) + 'px';
   });
 
+  // Escape visitor and AI text before adding the small set of supported markup.
+  function formatMessage(text) {
+    return String(text == null ? '' : text)
+      .replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+      })
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+      .replace(/\[([^\]]+)\]\((\/(?!\/)[^\s\)]*)\)/g, '<a href="$2">$1</a>')
+      .replace(/\n/g, '<br>');
+  }
+
   // ─── Add message to UI ───
   function addMessage(role, text) {
     // Remove typing indicator before adding message
@@ -458,11 +477,7 @@ TONE GUIDELINES FOR YOU (Aster the AI):
     const div = document.createElement('div');
     div.className = `ac-msg ${role}`;
     // Basic markdown: **bold**, *italic*, links
-    const formatted = text
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
-      .replace(/\n/g, '<br>');
+    const formatted = formatMessage(text);
     div.innerHTML = `<div class="ac-bubble">${formatted}</div>`;
     messagesEl.appendChild(div);
     messagesEl.appendChild(typingEl); // re-add typing at end
@@ -544,11 +559,7 @@ TONE GUIDELINES FOR YOU (Aster the AI):
       messagesEl.appendChild(div);
       messagesEl.appendChild(typingEl);
 
-      const renderMd = (t) => t
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
-        .replace(/\n/g, '<br>');
+      const renderMd = formatMessage;
 
       let fullText = '';
       for await (const part of response) {
@@ -622,7 +633,7 @@ TONE GUIDELINES FOR YOU (Aster the AI):
 
     isTyping = false;
     sendEl.disabled = false;
-    inputEl.focus();
+    if (isOpen) inputEl.focus();
   }
 
   sendEl.addEventListener('click', () => sendMessage());
