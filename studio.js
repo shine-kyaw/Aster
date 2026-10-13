@@ -171,6 +171,14 @@
     if (overlay && overlay.contains(link)) closeDrawer(false);
     const temporaryTabIndex = !target.hasAttribute("tabindex") && !target.matches(focusable);
     if (temporaryTabIndex) target.tabIndex = -1;
+    event.preventDefault();
+    if (location.hash !== url.hash) history.pushState(null, "", url.hash);
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (window.__asterLenis && !reduce) {
+      window.__asterLenis.scrollTo(target.getBoundingClientRect().top + window.scrollY - 96);
+    } else {
+      target.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+    }
     window.setTimeout(function () { target.focus({ preventScroll: true }); }, 0);
     if (temporaryTabIndex) target.addEventListener("blur", function () { target.removeAttribute("tabindex"); }, { once: true });
   });
