@@ -35,7 +35,9 @@ textarea:focus-visible, select:focus-visible {
 
 /* The bloom is the signature; the headline remains the focus. */
 .hero {
-  min-height: min(880px, 100svh);
+  min-height: 100vh;
+  min-height: 100svh;
+  min-height: 100dvh;
   padding-top: clamp(154px, 20vh, 220px);
   padding-bottom: 120px;
   justify-content: center;
@@ -114,7 +116,7 @@ textarea:focus-visible, select:focus-visible {
 @media (max-width: 1050px) {
   .nav { gap: 20px; }
   .nav-studio-links { gap: 24px; }
-  .hero { min-height: 800px; padding-top: 168px; }
+  .hero { padding-top: clamp(120px, 16svh, 168px); }
   .hero-flower { right: -16%; opacity: .5; }
   .hero-title { font-size: clamp(48px, 6.7vw, 72px); }
   .expertise-head { gap: 20px 40px; }
@@ -130,7 +132,7 @@ textarea:focus-visible, select:focus-visible {
   .brand { gap: 9px; }
   .brand-word { font-size: 23px; }
   .brand-sub { font-size: 8px; }
-  .hero { min-height: 740px; padding-top: 150px; padding-bottom: 125px; }
+  .hero { padding-top: max(112px, 14svh); padding-bottom: calc(104px + env(safe-area-inset-bottom, 0px)); }
   .hero-eyebrow { margin-bottom: 26px; font-size: 10px; letter-spacing: .11em; }
   .hero-title { font-size: clamp(38px, 12vw, 64px); line-height: 1.1; margin-bottom: 26px; letter-spacing: -.052em; }
   .hero-lede { font-size: 16px; max-width: 37ch; line-height: 1.7; }
@@ -154,7 +156,7 @@ textarea:focus-visible, select:focus-visible {
   .nav .brand-mark { width: 28px; height: 28px; }
   .nav-project-link { padding: 9px 12px; gap: 9px; }
   .brand-word { font-size: 21px; }
-  .hero { min-height: 730px; padding-top: 130px; }
+  .hero { padding-top: 104px; }
   .hero-title { font-size: clamp(35px, 11.8vw, 44px); }
   .hero-eyebrow { font-size: 9px; }
   .hero-lede { font-size: 15px; }
@@ -174,3 +176,36 @@ textarea:focus-visible, select:focus-visible {
 .tier.featured .ribbon { top: 20px; right: 18px; width: auto; transform: none; padding: 7px 12px; border-radius: 999px; background: #c4a5e0; color: #211b28; font-size: 10px; letter-spacing: .03em; box-shadow: none; }
 .aster-static { display: block; width: 48%; height: auto; max-height: 85%; object-fit: contain; margin: 7% auto 0; }
 .cyclical-stage:has(canvas) .aster-static { display: none; }
+
+/* Phone layouts follow the visible viewport, including browser chrome changes. */
+@media (max-width: 760px) {
+  .nav-toggle { min-width: 44px; min-height: 44px; }
+  .nav-project-link { min-height: 44px; }
+  .nav-menu { max-height: calc(100dvh - 100px); overflow-y: auto; overscroll-behavior: contain; }
+  .hero-title { text-wrap: balance; }
+  .hero-lede { margin-bottom: 26px; }
+  .hero-actions { flex-direction: column; align-items: stretch; gap: 12px; }
+  .hero-actions .btn { width: 100%; min-height: 52px; flex: none; }
+  .hero-secondary { align-self: flex-start; min-height: 44px; }
+  .hero-scroll { bottom: calc(24px + env(safe-area-inset-bottom, 0px)); }
+  .hero-flower { --fw: clamp(380px, 112vw, 510px); right: -58%; top: 44%; margin-top: calc(var(--fw) * -.46); }
+  .expertise-number { margin-bottom: 16px; }
+  .expertise-grid { gap: 28px; }
+  .connect-form input, .connect-form select, .connect-form textarea { font-size: 16px; }
+  .connect-form input, .connect-form select { min-height: 48px; }
+  .connect-form textarea { min-height: 144px; }
+  .footer a { display: flex; align-items: center; min-height: 44px; }
+}
+@media (max-width: 760px) and (max-height: 700px) {
+  .hero { padding-top: 100px; padding-bottom: 76px; }
+  .hero-eyebrow { margin-bottom: 18px; }
+  .hero-title { margin-bottom: 18px; }
+  .hero-lede { margin-bottom: 20px; }
+  .hero-actions { gap: 8px; }
+  .hero-scroll { bottom: 12px; }
+}
+
+@media (max-width: 760px) {
+  /* Keep pointer lights inside their sections without breaking sticky animation. */
+  .on-ink { overflow-x: clip; }
+}
