@@ -35,7 +35,7 @@ PORTFOLIO / WORK:
 These four are the studio's complete public portfolio. Never invent, imply, or describe any other client, project, or result — if asked for more examples, say these are the sites currently published and invite them to get in touch.
 
 CONTACT:
-Email: marketing@astermade.com (general and new enquiries) or shine@astermade.com (direct)
+Email: marketing@astermade.com (general and new enquiries) or hello@astermade.com (direct)
 Contact form: Available on the Connect section of the homepage (index.html#connect)
 Instagram: instagram.com/astermade_studio
 TikTok: tiktok.com/@astermade.studio
