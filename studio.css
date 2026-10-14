@@ -221,3 +221,101 @@ textarea:focus-visible, select:focus-visible {
   /* Keep pointer lights inside their sections without breaking sticky animation. */
   .on-ink { overflow-x: clip; }
 }
+
+/* ========== Expertise: vine, glyphs, faint aster ==========
+   Kept at the end of the sheet so it wins over the phone blocks above. The
+   drawing is driven by two custom properties that expertise.js sets:
+   --draw (0..1) on each glyph and the vine, --fill (0..1) for the washes.
+   Both default to 1, so with no JS every stroke is simply there. */
+.expertise { position: relative; overflow: hidden; overflow: clip; isolation: isolate; }
+.expertise > .wrap { position: relative; z-index: 1; }
+.expertise-head > p { align-self: end; justify-self: start; }
+
+.exp-aster {
+  position: absolute; z-index: 0; pointer-events: none;
+  width: min(46vw, 640px); aspect-ratio: 1;
+  right: max(-15vw, -220px); top: -18%;
+  color: #b49bd0;
+  opacity: .34;
+  will-change: transform;
+}
+.exp-aster path, .exp-aster circle {
+  fill: none; stroke: currentColor; stroke-width: .9; vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1; stroke-dashoffset: calc(1 - var(--draw, 1));
+}
+.exp-aster .a-disc { stroke-dasharray: .012 .02; stroke-dashoffset: 0; opacity: calc(var(--draw, 1)); }
+
+.expertise-grid { position: relative; margin-top: 128px; }
+.exp-vine {
+  position: absolute; left: 0; top: -14px; width: 100%; height: 28px;
+  overflow: visible; pointer-events: none; color: #a58cc6;
+}
+.exp-vine-path {
+  fill: none; stroke: currentColor; stroke-width: 1.15; stroke-linecap: round;
+  stroke-dasharray: 1; stroke-dashoffset: calc(1 - var(--draw, 1));
+}
+.expertise.exp-live .expertise-item { border-top-color: transparent; }
+
+.expertise-item { position: relative; }
+.exp-glyph {
+  position: absolute; left: -12.5px; top: -90px; width: 80px; height: 90px;
+  overflow: visible; color: var(--aster-deep);
+  transform-origin: 12.5px 90px;
+  transition: transform .9s cubic-bezier(.2, .7, .2, 1);
+}
+.exp-glyph .g-line, .exp-glyph .g-fill {
+  stroke: currentColor; stroke-width: 1.1; stroke-linecap: round; stroke-linejoin: round;
+  stroke-dasharray: 1; stroke-dashoffset: calc(1 - var(--draw, 1));
+}
+.exp-glyph .g-line { fill: none; }
+.exp-glyph .g-vein { stroke-width: .8; opacity: .7; }
+.exp-glyph .g-fill { fill-opacity: calc(var(--fill, 1) * .5); transition: fill-opacity .6s ease; }
+.exp-glyph .g-seed { fill: #c79a6e; }
+.exp-glyph .g-leaf { fill: #9db58c; }
+.exp-glyph .g-bud  { fill: #9db58c; }
+.exp-glyph .g-tip  { fill: #b490d8; fill-opacity: calc(var(--fill, 1) * .9); }
+.exp-glyph .g-ray  { fill: #c4a5e0; }
+.exp-glyph .g-ray use { stroke-width: 1; }
+.exp-glyph .g-disc { fill: #e3b552; fill-opacity: calc(var(--fill, 1) * .95); }
+
+/* A soft light that follows the pointer inside the hovered discipline. */
+.expertise-item::before {
+  content: ""; position: absolute; inset: -6px -28px -12px; z-index: -1;
+  border-radius: 18px; pointer-events: none;
+  background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 40%),
+    rgba(196, 165, 224, .34), rgba(196, 165, 224, 0) 70%);
+  opacity: 0; transition: opacity .5s ease;
+}
+.expertise-item:hover::before { opacity: 1; }
+.expertise-number { transition: color .4s ease, letter-spacing .5s ease; }
+.expertise-item:hover .expertise-number { letter-spacing: .14em; }
+.expertise-item h3 { transition: transform .6s cubic-bezier(.2, .7, .2, 1); }
+.expertise-item:hover h3 { transform: translateX(4px); }
+.expertise-item:hover .exp-glyph { animation: exp-sway 3.2s ease-in-out infinite; }
+@keyframes exp-sway {
+  0%, 100% { transform: rotate(0deg); }
+  30% { transform: rotate(-4deg); }
+  70% { transform: rotate(3deg); }
+}
+.expertise-tags { margin-top: auto; }
+.expertise-tags span { letter-spacing: .08em; text-transform: uppercase; border-bottom-color: rgba(94, 61, 138, .22); }
+
+@media (max-width: 1050px) {
+  .exp-aster { width: 62vw; right: -22vw; top: -2%; opacity: .38; }
+}
+@media (max-width: 760px) {
+  .exp-aster { width: 118vw; right: -58vw; top: -40px; opacity: .3; }
+  .expertise-grid { margin-top: 112px; gap: 104px; }
+  .exp-vine { display: none; }
+  .expertise.exp-live .expertise-item { border-top-color: #c8bbce; }
+  .exp-glyph { left: -4px; }
+  .expertise-grid { margin-top: 132px; gap: 120px; }
+}
+@media (hover: none) {
+  .expertise-item::before { display: none; }
+  .expertise-item:hover .exp-glyph { animation: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .exp-aster { transform: none !important; }
+  .expertise-item:hover .exp-glyph, .expertise-item:hover h3 { animation: none; transform: none; }
+}

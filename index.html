@@ -1947,6 +1947,21 @@ footer {
   transition: color 0.25s var(--ease), transform 0.3s var(--ease);
 }
 .footer-col a:hover { color: var(--aster); transform: translateX(3px); }
+/* Social links: quiet pills under the brand line, icon plus name, so they
+   read as part of the studio's signature rather than a row of badges. */
+.footer-social { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+.footer-social a {
+  display: inline-flex; align-items: center; gap: 9px;
+  min-height: 40px; padding: 8px 16px 8px 12px;
+  border: 1px solid rgba(245, 237, 224, 0.16); border-radius: 999px;
+  color: rgba(245, 237, 224, 0.82); font-size: 13px; letter-spacing: .01em;
+  transition: color .3s var(--ease), border-color .3s var(--ease), background .3s var(--ease), transform .3s var(--ease);
+}
+.footer-social svg { width: 17px; height: 17px; flex: none; }
+.footer-social a:hover, .footer-social a:focus-visible {
+  color: var(--cream); border-color: rgba(196, 165, 224, 0.6);
+  background: rgba(196, 165, 224, 0.1); transform: translateY(-2px);
+}
 .footer-bottom {
   max-width: var(--max);
   margin: 60px auto 0;
@@ -4135,21 +4150,42 @@ body.in-bloom-zoom .ambient-petals {
       <div class="zoom-aura" aria-hidden="true"></div>
       <svg class="zoom-flower" viewBox="-200 -200 400 400" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
         <defs>
-          <linearGradient id="petalSheenLight" x1="50%" y1="0%" x2="50%" y2="100%">
-            <stop offset="0%"  stop-color="#e6d7f1"/>
-            <stop offset="60%" stop-color="#c4a5e0"/>
-            <stop offset="100%" stop-color="#a78ace"/>
+          <!-- Ray shading runs ACROSS each blade, the way the hero's does:
+               shadowed at both margins, lit through the belly, highlight held a
+               touch off centre so the blade reads as a curved strap rather than
+               a flat cut-out. The light-to-dark step between rings is kept, and
+               the base darkening the old tip-to-base ramp gave now comes from
+               #zoomThroat, which does it properly where the rays pile up. -->
+          <linearGradient id="petalSheenLight" x1="0%" y1="50%" x2="100%" y2="50%">
+            <stop offset="0%"   stop-color="#a083cc"/>
+            <stop offset="30%"  stop-color="#c3a9e4"/>
+            <stop offset="56%"  stop-color="#ddd0f2"/>
+            <stop offset="82%"  stop-color="#bca0df"/>
+            <stop offset="100%" stop-color="#9c7cc8"/>
           </linearGradient>
-          <linearGradient id="petalSheenMid" x1="50%" y1="0%" x2="50%" y2="100%">
-            <stop offset="0%"  stop-color="#c4a5e0"/>
-            <stop offset="60%" stop-color="#8b5fbf"/>
-            <stop offset="100%" stop-color="#6b4596"/>
+          <linearGradient id="petalSheenMid" x1="0%" y1="50%" x2="100%" y2="50%">
+            <stop offset="0%"   stop-color="#8661b5"/>
+            <stop offset="30%"  stop-color="#a685cf"/>
+            <stop offset="56%"  stop-color="#c0a8e2"/>
+            <stop offset="82%"  stop-color="#9d7cc6"/>
+            <stop offset="100%" stop-color="#7f5aad"/>
           </linearGradient>
-          <linearGradient id="petalSheenDeep" x1="50%" y1="0%" x2="50%" y2="100%">
-            <stop offset="0%"  stop-color="#8b5fbf"/>
-            <stop offset="60%" stop-color="#5e3d8a"/>
-            <stop offset="100%" stop-color="#3d2660"/>
+          <linearGradient id="petalSheenDeep" x1="0%" y1="50%" x2="100%" y2="50%">
+            <stop offset="0%"   stop-color="#5f3f8a"/>
+            <stop offset="30%"  stop-color="#7f5cad"/>
+            <stop offset="56%"  stop-color="#9c7cc6"/>
+            <stop offset="82%"  stop-color="#7a56a7"/>
+            <stop offset="100%" stop-color="#5a3a84"/>
           </linearGradient>
+          <!-- The throat: no light reaches where ~95 rays overlap at the disc.
+               Safe to paint plainly here because the stage behind is near
+               black, so the haze it leaves in the gaps between rays vanishes. -->
+          <radialGradient id="zoomThroat" cx="50%" cy="50%" r="50%">
+            <stop offset="0%"   stop-color="#1e1030" stop-opacity="0.70"/>
+            <stop offset="38%"  stop-color="#2c1a46" stop-opacity="0.48"/>
+            <stop offset="62%"  stop-color="#4a2f70" stop-opacity="0.18"/>
+            <stop offset="100%" stop-color="#4a2f70" stop-opacity="0"/>
+          </radialGradient>
           <!-- Bracts run darker at the base and lighter at the tip, the
                opposite way round from the petals, so the two rings read as
                different material rather than a green copy of the same shape. -->
@@ -4158,11 +4194,18 @@ body.in-bloom-zoom .ambient-petals {
             <stop offset="55%"  stop-color="#6f8d5e"/>
             <stop offset="100%" stop-color="#8fae7a"/>
           </linearGradient>
-          <radialGradient id="zoomDiscGrad" cx="50%" cy="50%" r="50%">
-            <stop offset="0%"   stop-color="#fbd9be"/>
-            <stop offset="22%"  stop-color="#e89a7c"/>
-            <stop offset="60%"  stop-color="#d97757"/>
-            <stop offset="100%" stop-color="#9a5232"/>
+          <!-- A domed disc lit from the upper left, deep amber at the rim -
+               the colour a real aster's disc florets actually are - instead of
+               a flat terracotta plate. The florets on it are drawn in JS. -->
+          <radialGradient id="zoomDiscGrad" cx="42%" cy="38%" r="64%">
+            <stop offset="0%"   stop-color="#e2a84c"/>
+            <stop offset="50%"  stop-color="#c3822f"/>
+            <stop offset="85%"  stop-color="#975622"/>
+            <stop offset="100%" stop-color="#6a3a18"/>
+          </radialGradient>
+          <radialGradient id="zoomDiscShade" cx="50%" cy="50%" r="50%">
+            <stop offset="70%"  stop-color="#2a1608" stop-opacity="0"/>
+            <stop offset="100%" stop-color="#2a1608" stop-opacity="0.55"/>
           </radialGradient>
           <radialGradient id="zoomOvuleGrad" cx="50%" cy="42%" r="58%">
             <stop offset="0%"   stop-color="#ffffff"/>
@@ -4244,12 +4287,14 @@ body.in-bloom-zoom .ambient-petals {
         <g id="zoomL3"></g>
         <g id="zoomL4"></g>
 
+        <circle class="zoom-throat" r="150" fill="url(#zoomThroat)"/>
+
         <g class="zoom-disc">
           <circle r="58" fill="url(#zoomDiscGrad)"/>
-          <circle r="58" fill="none" stroke="#7a4530" stroke-width="0.7" stroke-dasharray="2 4" opacity="0.5"/>
         </g>
 
         <g id="discFlorets"></g>
+        <circle class="zoom-disc-shade" r="58" fill="url(#zoomDiscShade)"/>
         <g id="stamens"></g>
 
         <g class="zoom-ovule">
@@ -4452,16 +4497,70 @@ body.in-bloom-zoom .ambient-petals {
 
 <div class="fine-divide"></div>
 
+<!-- Expertise. The three disciplines are the same story the process section
+     tells — seed, bud, bloom — so they are drawn as one: a single fine vine
+     runs under the three columns and grows left to right as the section
+     scrolls in, and each discipline's glyph draws itself when the vine reaches
+     it. Line art only, in the botanical-plate register the rest of the site
+     uses, so it fills the section without competing with the type.
+     expertise.js drives it; without JS every stroke is simply drawn. -->
 <section class="section expertise" id="expertise" aria-labelledby="expertiseTitle">
+  <svg class="exp-aster" viewBox="-200 -200 400 400" aria-hidden="true" focusable="false"></svg>
   <div class="wrap">
     <div class="expertise-head">
       <span class="eyebrow">Our expertise</span>
       <h2 id="expertiseTitle">From first idea.<br /><em>To what’s next.</em></h2>
+      <p>Three disciplines under one roof, so nothing gets lost between the plan, the look, and the build.</p>
     </div>
     <div class="expertise-grid">
-      <article class="expertise-item"><span class="expertise-number" aria-hidden="true">01</span><h3>Direction.</h3><p>Strategy, story, and a clear plan.</p></article>
-      <article class="expertise-item"><span class="expertise-number" aria-hidden="true">02</span><h3>Design.</h3><p>Identity, websites, and considered motion.</p></article>
-      <article class="expertise-item"><span class="expertise-number" aria-hidden="true">03</span><h3>Development.</h3><p>Custom builds, CMS, and ongoing care.</p></article>
+      <svg class="exp-vine" aria-hidden="true" focusable="false"><path class="exp-vine-path" pathLength="1" /></svg>
+      <article class="expertise-item">
+        <svg class="exp-glyph" viewBox="0 0 64 72" aria-hidden="true" focusable="false">
+          <ellipse class="g-fill g-seed" cx="11" cy="66" rx="6.5" ry="4" transform="rotate(-14 11 66)" pathLength="1" />
+          <path class="g-line" d="M10 63 C10 55 12 47 17 40" pathLength="1" />
+          <path class="g-fill g-leaf" d="M17 40 C 9 39, 4 33, 5 26 C 12 27, 17 32, 17 40 Z" pathLength="1" />
+          <path class="g-fill g-leaf" d="M17 40 C 22 33, 30 30, 38 32 C 34 39, 26 42, 17 40 Z" pathLength="1" />
+          <path class="g-line g-vein" d="M16 38 C 12 35, 9 32, 7 28 M19 39 C 24 36, 29 34, 35 33" pathLength="1" />
+        </svg>
+        <span class="expertise-number" aria-hidden="true">01</span>
+        <h3>Direction.</h3>
+        <p>Strategy, story, and a clear plan.</p>
+        <div class="expertise-tags" aria-label="Includes"><span>Discovery</span><span>Site structure</span><span>Content plan</span></div>
+      </article>
+      <article class="expertise-item">
+        <svg class="exp-glyph" viewBox="0 0 64 72" aria-hidden="true" focusable="false">
+          <path class="g-line" d="M10 72 C10 58 13 44 19 31" pathLength="1" />
+          <path class="g-fill g-leaf" d="M12 57 C 20 50, 30 50, 37 54 C 29 61, 19 61, 12 57 Z" pathLength="1" />
+          <path class="g-line g-vein" d="M14 57 C 21 55, 28 55, 34 55" pathLength="1" />
+          <path class="g-fill g-bud" d="M19 31 C 11 27, 12 15, 23 6 C 29 15, 29 27, 19 31 Z" pathLength="1" />
+          <path class="g-fill g-tip" d="M20.5 10.5 C 21.5 8.5, 22.2 7.4, 23 6 C 23.9 7.4, 24.6 8.6, 25.6 10.6 C 24 11.6, 22 11.6, 20.5 10.5 Z" pathLength="1" />
+          <path class="g-line g-vein" d="M19 31 C 16 24, 16 18, 19 12 M19 31 C 23 25, 25 19, 24.5 13" pathLength="1" />
+        </svg>
+        <span class="expertise-number" aria-hidden="true">02</span>
+        <h3>Design.</h3>
+        <p>Identity, websites, and considered motion.</p>
+        <div class="expertise-tags" aria-label="Includes"><span>Identity</span><span>Interface</span><span>Motion</span></div>
+      </article>
+      <article class="expertise-item">
+        <svg class="exp-glyph" viewBox="0 0 64 72" aria-hidden="true" focusable="false">
+          <defs><ellipse id="expRay" cx="27" cy="13" rx="2.5" ry="7.6" pathLength="1" /></defs>
+          <path class="g-line" d="M10 72 C10 60 14 49 24 39" pathLength="1" />
+          <path class="g-fill g-leaf" d="M13 60 C 20 53, 30 54, 35 59 C 27 64, 19 64, 13 60 Z" pathLength="1" />
+          <path class="g-line g-vein" d="M15 60 C 21 58, 27 58, 32 59" pathLength="1" />
+          <g class="g-fill g-ray">
+            <use href="#expRay" /><use href="#expRay" transform="rotate(25.7 27 24)" /><use href="#expRay" transform="rotate(51.4 27 24)" />
+            <use href="#expRay" transform="rotate(77.1 27 24)" /><use href="#expRay" transform="rotate(102.9 27 24)" /><use href="#expRay" transform="rotate(128.6 27 24)" />
+            <use href="#expRay" transform="rotate(154.3 27 24)" /><use href="#expRay" transform="rotate(180 27 24)" /><use href="#expRay" transform="rotate(205.7 27 24)" />
+            <use href="#expRay" transform="rotate(231.4 27 24)" /><use href="#expRay" transform="rotate(257.1 27 24)" /><use href="#expRay" transform="rotate(282.9 27 24)" />
+            <use href="#expRay" transform="rotate(308.6 27 24)" /><use href="#expRay" transform="rotate(334.3 27 24)" />
+          </g>
+          <circle class="g-fill g-disc" cx="27" cy="24" r="4.6" pathLength="1" />
+        </svg>
+        <span class="expertise-number" aria-hidden="true">03</span>
+        <h3>Development.</h3>
+        <p>Custom builds, CMS, and ongoing care.</p>
+        <div class="expertise-tags" aria-label="Includes"><span>Custom code</span><span>CMS</span><span>Multilingual</span></div>
+      </article>
     </div>
   </div>
 </section>
@@ -4470,7 +4569,7 @@ body.in-bloom-zoom .ambient-petals {
 <section class="section pricing" id="pricing">
   <div class="wrap">
     <div class="pricing-intro reveal">
-      <span class="eyebrow">05 / Ways to work together</span>
+      <span class="eyebrow">Ways to work together</span>
       <h2 class="h-lg reveal-type">Room for your <em class="italic">next chapter.</em></h2>
       <p class="lede">From a first launch to a complete digital presence. Find a starting point, and we’ll shape the scope together.</p>
     </div>
@@ -4728,6 +4827,16 @@ body.in-bloom-zoom .ambient-petals {
         </span>
       </div>
       <p>Independent web design and development for growing businesses. Your digital presence, built to bloom.</p>
+      <div class="footer-social">
+        <a href="https://www.instagram.com/astermade_studio" target="_blank" rel="noopener noreferrer me" aria-label="Aster Studio on Instagram">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="5.2"/><circle cx="12" cy="12" r="4.1"/><circle cx="17.4" cy="6.6" r="1.05" fill="currentColor" stroke="none"/></svg>
+          <span>Instagram</span>
+        </a>
+        <a href="https://www.tiktok.com/@astermade.studio" target="_blank" rel="noopener noreferrer me" aria-label="Aster Studio on TikTok">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="currentColor"><path d="M16.6 5.82A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 0 1-2.59 2.5c-1.42 0-2.6-1.16-2.6-2.6 0-1.72 1.66-3.01 3.37-2.48V9.66c-3.45-.46-6.47 2.22-6.47 5.64 0 3.33 2.76 5.7 5.69 5.7 3.14 0 5.69-2.55 5.69-5.7V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3s-1.88.09-3.24-1.48z"/></svg>
+          <span>TikTok</span>
+        </a>
+      </div>
     </div>
     <div class="footer-col">
       <h5>Studio</h5>
@@ -4802,6 +4911,7 @@ body.in-bloom-zoom .ambient-petals {
      provider key is a private env var rather than public HTML.
      ============================================================ -->
 <script src="studio.js"></script>
+<script src="expertise.js" defer></script>
 <script>
   /* Real-footage bloom. Dormant by default: nothing below runs and bloom-seq.js
      is never requested unless scripts/build-bloom.py has processed footage and
@@ -4946,7 +5056,7 @@ body.in-bloom-zoom .ambient-petals {
   // — a real aster ray — and the tips form a rim instead of a star.
   // Defaulted off so the bloom-zoom and the tier marks, which are tuned around
   // the old profile, are untouched.
-  function buildPetals(container, count, length, width, fill, offsetDeg, seed, blunt) {
+  function buildPetals(container, count, length, width, fill, offsetDeg, seed, blunt, veins) {
     if (!container) return;
     offsetDeg = offsetDeg || 0;
     blunt = blunt || 0;
@@ -5029,6 +5139,24 @@ body.in-bloom-zoom .ambient-petals {
       path.setAttribute("fill", fill);
       path.setAttribute("fill-opacity", (0.82 + rnd() * 0.18).toFixed(3));
       inner.appendChild(path);
+      // Veins: a ray floret is ribbed lengthwise - a midrib and two fainter
+      // parallel nerves that converge toward the tip. One path per ray, no
+      // extra randomness drawn, so the seeded shapes above are unchanged.
+      if (veins) {
+        const v = document.createElementNS(ns, "path");
+        v.setAttribute("d",
+          "M 0 " + n(-L * 0.10) + " C " + n(lean * 0.2) + " " + n(-L * 0.45) + ", " +
+            n(lean * 0.6) + " " + n(-L * 0.75) + ", " + n(lean * 0.9) + " " + n(-L * 0.93) +
+          " M " + n(-W * 0.42) + " " + n(-L * 0.18) + " C " + n(-W * 0.50) + " " + n(-L * 0.50) + ", " +
+            n(-W * 0.40 + lean * 0.5) + " " + n(-L * 0.74) + ", " + n(-W * 0.16 + lean * 0.8) + " " + n(-L * 0.88) +
+          " M " + n(W * 0.42) + " " + n(-L * 0.18) + " C " + n(W * 0.50) + " " + n(-L * 0.50) + ", " +
+            n(W * 0.40 + lean * 0.5) + " " + n(-L * 0.74) + ", " + n(W * 0.16 + lean * 0.8) + " " + n(-L * 0.88));
+        v.setAttribute("fill", "none");
+        v.setAttribute("stroke", veins);
+        v.setAttribute("stroke-width", "0.5");
+        v.setAttribute("stroke-linecap", "round");
+        inner.appendChild(v);
+      }
       g.appendChild(inner);
       frag.appendChild(g);
     }
@@ -5108,10 +5236,10 @@ body.in-bloom-zoom .ambient-petals {
   // Same correction as the hero: these were 10–16 rays at widths 12–18, which
   // is a ring of paddles. An aster is many fine rays. Seeded so the head is
   // identical on every load rather than re-rolled.
-  buildPetals(document.getElementById("zoomL1"), 34, 178, 9.0, "url(#petalSheenLight)", 0,  60214877);
-  buildPetals(document.getElementById("zoomL2"), 27, 148, 8.5, "url(#petalSheenLight)", 7,  31905513);
-  buildPetals(document.getElementById("zoomL3"), 20, 116, 8.0, "url(#petalSheenMid)",   12, 88410267);
-  buildPetals(document.getElementById("zoomL4"), 14,  86, 7.0, "url(#petalSheenDeep)",  17, 15773049);
+  buildPetals(document.getElementById("zoomL1"), 34, 178, 9.0, "url(#petalSheenLight)", 0,  60214877, 0, "rgba(250,244,255,0.30)");
+  buildPetals(document.getElementById("zoomL2"), 27, 148, 8.5, "url(#petalSheenLight)", 7,  31905513, 0, "rgba(250,244,255,0.26)");
+  buildPetals(document.getElementById("zoomL3"), 20, 116, 8.0, "url(#petalSheenMid)",   12, 88410267, 0, "rgba(244,236,255,0.22)");
+  buildPetals(document.getElementById("zoomL4"), 14,  86, 7.0, "url(#petalSheenDeep)",  17, 15773049, 0, "rgba(236,226,250,0.18)");
   // Bracts: longer than the innermost ray ring (86) and shorter than the next
   // one out (116), so their tips finish between the two and show as a fringe
   // rather than either vanishing under the head or sticking out past it.
@@ -5187,9 +5315,40 @@ body.in-bloom-zoom .ambient-petals {
     }
     container.appendChild(frag);
   }
-  buildDotRing(document.getElementById("discFlorets"), 32, 52, 1.9, "#7a4530");
-  buildDotRing(document.getElementById("discFlorets"), 26, 44, 1.7, "#8d4f2e", 6);
-  buildDotRing(document.getElementById("discFlorets"), 20, 35, 1.5, "#a5613a", 9);
+  // Disc florets on the golden angle, like the hero's pollen: a composite
+  // flower's disc is a phyllotactic spiral, and concentric rings of dots read
+  // as a graphic. Spaced by equal area (sqrt) across the annulus between the
+  // ovule and the rim; the outer florets are larger and paler because they
+  // open first, and every few carries a dark throat so the disc has grain.
+  (function () {
+    const host = document.getElementById("discFlorets");
+    if (!host) return;
+    const GA = Math.PI * (3 - Math.sqrt(5));
+    const N = 150, r0 = 27, r1 = 55;
+    const shades = ["#f3cf6a", "#ebbd52", "#e2ab44", "#f6dc8c", "#d99c3c"];
+    const frag = document.createDocumentFragment();
+    for (let i = 0; i < N; i++) {
+      const t = (i + 0.5) / N;
+      const rr = Math.sqrt(r0 * r0 + t * (r1 * r1 - r0 * r0));
+      const ang = i * GA;
+      const x = Math.cos(ang) * rr, y = Math.sin(ang) * rr;
+      const c = document.createElementNS(ns, "circle");
+      c.setAttribute("cx", x.toFixed(2));
+      c.setAttribute("cy", y.toFixed(2));
+      c.setAttribute("r", (2.55 + t * 1.15).toFixed(2));
+      c.setAttribute("fill", shades[(i * 3) % 5]);
+      frag.appendChild(c);
+      if (i % 3 === 0) {
+        const d = document.createElementNS(ns, "circle");
+        d.setAttribute("cx", x.toFixed(2));
+        d.setAttribute("cy", y.toFixed(2));
+        d.setAttribute("r", (0.7 + t * 0.4).toFixed(2));
+        d.setAttribute("fill", "#b0702c");
+        frag.appendChild(d);
+      }
+    }
+    host.appendChild(frag);
+  })();
   buildDotRing(document.getElementById("stamens"),     14, 26, 1.3, "#5e3520");
   buildDotRing(document.getElementById("stamens"),     10, 18, 1.1, "#3d2218", 12);
   buildDotRing(document.getElementById("ovuleTexture"), 8,  5, 0.65, "#a85d3a", 7);
@@ -6018,6 +6177,10 @@ body.in-bloom-zoom .ambient-petals {
       // The disc is the last thing visible in a real bud — the ray florets
       // wrap it — so it arrives with the innermost ring rather than up front.
       gsap.set(".zoom-disc", { scale: 0.34, transformOrigin: "50% 50%" });
+      // The florets, the disc's rim shadow and the throat all belong to the
+      // open head, so they start tucked with the disc and open with it.
+      gsap.set("#discFlorets, .zoom-disc-shade", { scale: 0.34, transformOrigin: "50% 50%" });
+      gsap.set(".zoom-throat", { scale: 0.3, opacity: 0, transformOrigin: "50% 50%" });
 
       // ── The plant, before it has grown ──
       // The stem is drawn with stroke-dashoffset, the oldest and still the most
@@ -6077,7 +6240,8 @@ body.in-bloom-zoom .ambient-petals {
         gsap.set("#zoomL1 .petal, #zoomL2 .petal, #zoomL3 .petal, #zoomL4 .petal", {
           scaleY: 1, scaleX: 1, rotation: 0,
         });
-        gsap.set(".zoom-disc", { scale: 1 });
+        gsap.set(".zoom-disc, #discFlorets, .zoom-disc-shade", { scale: 1 });
+        gsap.set(".zoom-throat", { scale: 1, opacity: 1 });
         gsap.set(zoomFlower, { scale: 1, rotation: 0 });
         gsap.set(stemLine, { strokeDashoffset: 0 });
         gsap.set(".stem-leaf", { scale: 1, rotation: 0 });
@@ -6253,11 +6417,16 @@ body.in-bloom-zoom .ambient-petals {
         }, at);
       });
 
-      zoomTl.to(".zoom-disc", {
+      zoomTl.to(".zoom-disc, #discFlorets, .zoom-disc-shade", {
         scale: 1,
         ease: "back.out(1.8)",
         duration: 0.20,
       }, 0.18);
+      zoomTl.to(".zoom-throat", {
+        scale: 1, opacity: 1,
+        ease: "power2.out",
+        duration: 0.24,
+      }, 0.16);
 
       // ── BREATH (0.22 → 0.28) ── brief held inhale
       zoomTl.to(zoomFlower, {

@@ -612,6 +612,9 @@ img, svg { display: block; max-width: 100%; }
   color: var(--ink-mute);
   text-align: center;
 }
+.footer-social { display: flex; justify-content: center; gap: 12px; margin-bottom: 14px; }
+.footer-social a { color: var(--ink); text-decoration: none; border-bottom: 1px solid transparent; transition: color .25s ease, border-color .25s ease; }
+.footer-social a:hover, .footer-social a:focus-visible { color: var(--aster); border-bottom-color: currentColor; }
 
 /* ============================================================
    MOBILE TUNING — pricing page responsiveness pass
@@ -1096,7 +1099,14 @@ img, svg { display: block; max-width: 100%; }
 </main>
 
 <footer class="footer">
-  <div class="wrap">© Aster Studio — Hand-built, hand-tended.</div>
+  <div class="wrap">
+    <nav class="footer-social" aria-label="Aster Studio on social media">
+      <a href="https://www.instagram.com/astermade_studio" target="_blank" rel="noopener noreferrer me">Instagram</a>
+      <span aria-hidden="true">·</span>
+      <a href="https://www.tiktok.com/@astermade.studio" target="_blank" rel="noopener noreferrer me">TikTok</a>
+    </nav>
+    © Aster Studio — Hand-built, hand-tended.
+  </div>
 </footer>
 
 <script>
