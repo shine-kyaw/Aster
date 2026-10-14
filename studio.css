@@ -71,7 +71,19 @@ textarea:focus-visible, select:focus-visible {
 .work-intro { margin-top: 18px; max-width: 48ch; color: var(--ink-soft); }
 
 /* Capabilities are presented as a considered editorial spread. */
-.expertise { background: #eee7f0; }
+/* Was a flat #eee7f0 block: two hard horizontal edges against cream above and
+   below, so it read as a slab dropped into the page rather than part of it. A
+   feathered lavender wash instead — transparent at both edges, so the paper
+   grain and the neighbouring sections run straight through it. The tint stays
+   light (≤ 9% alpha) because body copy sits on it and this palette has little
+   contrast to spare under text. */
+.expertise {
+  background: linear-gradient(180deg,
+    rgba(196, 165, 224, 0) 0%,
+    rgba(196, 165, 224, 0.09) 24%,
+    rgba(196, 165, 224, 0.09) 76%,
+    rgba(196, 165, 224, 0) 100%);
+}
 .expertise-head { display: grid; grid-template-columns: 1.4fr 1fr; gap: 22px 72px; align-items: end; }
 .expertise-head > .eyebrow { grid-column: 1 / -1; }
 .expertise-head h2 { font: 400 clamp(38px, 4.6vw, 66px)/1.1 var(--serif); letter-spacing: -.035em; margin: 0; }

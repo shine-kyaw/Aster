@@ -10,8 +10,13 @@
      powertagun.vercel.app) and KTK is a verified industrial-packaging
      manufacturer, so this is naming what two of the four real projects
      already are, not a new claim about them. -->
-<title>Aster Studio | Bespoke Websites, Built to Bloom</title>
-<meta name="description" content="Bespoke websites for growing businesses. Aster brings together considered design, clear storytelling and thoughtful development to create a digital presence built to bloom." />
+<!-- Positioning is deliberate, not generic: manufacturers and multilingual /
+     export-facing brands, which is what two of the four real projects are
+     (Power Tagun is a verified trilingual build — /en /my /zh — and KTK is an
+     industrial-packaging manufacturer). An outside tool reset this to the
+     generic "Built to Bloom" line; restored to the copy Shine specified. -->
+<title>Aster | Bespoke Websites for Manufacturers & Multilingual Brands</title>
+<meta name="description" content="Aster builds custom websites and CMS platforms for manufacturers and export-facing businesses — trilingual builds, real ownership of your own content, no template decisions made for someone else's business." />
 <!-- www is canonical: the bare apex (astermade.com) 307-redirects here. -->
 <link rel="canonical" href="https://www.astermade.com/" />
 
@@ -21,15 +26,15 @@
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Aster Studio" />
 <meta property="og:url" content="https://www.astermade.com/" />
-<meta property="og:title" content="Aster Studio | Bespoke Websites, Built to Bloom" />
-<meta property="og:description" content="Considered design. Clear storytelling. Thoughtful development. Bespoke websites for growing businesses, built to bloom." />
+<meta property="og:title" content="Aster | Bespoke Websites for Manufacturers & Multilingual Brands" />
+<meta property="og:description" content="Aster builds custom websites and CMS platforms for manufacturers and export-facing businesses — trilingual builds, real ownership of your own content." />
 <meta property="og:image" content="https://www.astermade.com/assets/og-card.jpg" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 <meta property="og:image:alt" content="Aster Studio — bespoke websites, built by hand" />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Aster Studio | Bespoke Websites, Built to Bloom" />
-<meta name="twitter:description" content="Bespoke websites for growing businesses. Considered design and thoughtful development, built to bloom." />
+<meta name="twitter:title" content="Aster | Bespoke Websites for Manufacturers & Multilingual Brands" />
+<meta name="twitter:description" content="Aster builds custom websites and CMS platforms for manufacturers and export-facing businesses." />
 <meta name="twitter:image" content="https://www.astermade.com/assets/og-card.jpg" />
 
 <link rel="icon" type="image/png" href="favicon.png" />
@@ -4332,12 +4337,12 @@ body.in-bloom-zoom .ambient-petals {
             <img src="assets/work/powertagun-desktop.jpg" width="1440" height="497" loading="lazy" decoding="async"
                  alt="The Power Tagun Engineering site: a power transformer render above the headline Built to international standards." />
           </picture>
-          <span class="label">01 / Corporate website</span>
+          <span class="label">Live · Flagship project · Electrical engineering</span>
         </div>
         <div class="body">
-          <h3>Power Tagun <em>Engineering</em></h3>
-          <p>A clear digital presence for complex engineering. Products, procurement and EPC expertise, brought together with a searchable project library.</p>
-          <div class="row"><span>Corporate · Multilingual</span><strong>Explore the site ↗</strong></div>
+          <h3>Power Tagun — <em>engineering group</em></h3>
+          <p>Our largest build to date — a full corporate site for a Myanmar electrical engineering group: product supply, procurement, and EPC turnkey delivery, with a project-reference library buyers can search.</p>
+          <div class="row"><span>Live · Myanmar · Trilingual</span><strong>Visit Power Tagun ↗</strong></div>
         </div>
       </a>
 
@@ -4349,12 +4354,12 @@ body.in-bloom-zoom .ambient-petals {
             <img src="assets/work/ktk-desktop.jpg" width="1440" height="645" loading="lazy" decoding="async"
                  alt="The KTK site: a woven cement sack lit against black beside the headline Strength, woven in." />
           </picture>
-          <span class="label">02 / Brand website</span>
+          <span class="label">Live · Industrial packaging</span>
         </div>
         <div class="body">
-          <h3>KTK <em>Woven Packaging</em></h3>
-          <p>Turning industrial strength into a distinctive digital story. A website built around the material, craft and scale of woven packaging.</p>
-          <div class="row"><span>Manufacturing · Brand experience</span><strong>Explore the site ↗</strong></div>
+          <h3>KTK — <em>woven packaging</em></h3>
+          <p>Cement sacks and PP woven bags for Myanmar's industrial packaging manufacturer, told through the weave.</p>
+          <div class="row"><span>Live · Myanmar</span><strong>Visit KTK ↗</strong></div>
         </div>
       </a>
 
@@ -4367,7 +4372,7 @@ body.in-bloom-zoom .ambient-petals {
             <rect x="17" y="17" width="7" height="16" rx="2.5" fill="#06b6d4" opacity="0.72"/>
             <rect x="27" y="9"  width="7" height="24" rx="2.5" fill="#06b6d4"/>
           </svg>
-          <span class="label">03 / Digital product</span>
+          <span class="label">Live · Fintech web app</span>
         </div>
         <div class="body">
           <h3>Foliyo — <em>stock app</em></h3>
@@ -4386,7 +4391,7 @@ body.in-bloom-zoom .ambient-petals {
             <circle cx="0" cy="0" r="11" fill="currentColor" stroke="none"/>
             <circle cx="80" cy="0" r="6" fill="currentColor" stroke="none"/>
           </svg>
-          <span class="label">04 / Interactive experiment</span>
+          <span class="label">Live · Orbital physics sim</span>
         </div>
         <div class="body">
           <h3>Gateway Orbital — <em>physics sim</em></h3>
@@ -4797,6 +4802,17 @@ body.in-bloom-zoom .ambient-petals {
      provider key is a private env var rather than public HTML.
      ============================================================ -->
 <script src="studio.js"></script>
+<script>
+  /* Real-footage bloom. Dormant by default: nothing below runs and bloom-seq.js
+     is never requested unless scripts/build-bloom.py has processed footage and
+     set data-bloom-seq on <html>. Until then the SVG flower is the experience. */
+  if (document.documentElement.hasAttribute("data-bloom-seq")) {
+    var bloomSeq = document.createElement("script");
+    bloomSeq.src = "bloom-seq.js";
+    bloomSeq.defer = true;
+    document.body.appendChild(bloomSeq);
+  }
+</script>
 <script>
   window.AsterEnquiry = (function () {
     var ENDPOINT = "/api/enquiry";
@@ -6078,6 +6094,10 @@ body.in-bloom-zoom .ambient-petals {
         paused: true,
         defaults: { force3D: true },
       });
+      // Exposed so bloom-seq.js (real-footage mode) can read the SAME smoothed
+      // progress that times the four phase texts, instead of running a second
+      // scroll listener that would drift out of step with them.
+      window.__asterBloomTl = zoomTl;
 
       // ─────────────────────────────────────────────────────────────────
       //  TIMELINE STRUCTURE — flower keeps GROWING (diving) while phases
