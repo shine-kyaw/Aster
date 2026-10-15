@@ -65,13 +65,13 @@
   --mono: "JetBrains Mono", monospace;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 
-  --max: 1180px;
+  --max: 1240px;
   --pad-x: clamp(20px, 4vw, 56px);
   --pad-section: clamp(80px, 9vw, 140px);
 }
 
 * { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: 88px; }
 body {
   margin: 0;
   /* Same cotton-rag ground as the homepage. The design system living only in
@@ -95,73 +95,154 @@ a { color: inherit; text-decoration: none; }
 img, svg { display: block; max-width: 100%; }
 .wrap { max-width: var(--max); margin: 0 auto; padding-left: var(--pad-x); padding-right: var(--pad-x); }
 
+/* ========== Drawn line art ==========
+   Every botanical stroke on this page is one of these. Each carries --o (when
+   it starts) and --k (how fast it draws) and reads one shared --p (0..1) from
+   its svg. --p defaults to 1, so with no script, or with reduced motion, every
+   stroke is simply there. Dash pattern is "1 2" so a fully undrawn stroke
+   leaves no round-cap speck behind. */
+.dr {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1 2;
+  stroke-dashoffset: calc(1 - clamp(0, (var(--p, 1) - var(--o, 0)) * var(--k, 1), 1));
+}
+.dr.vein { opacity: 0.5; }
+.dr.fillable {
+  fill: currentColor;
+  fill-opacity: calc(clamp(0, (var(--p, 1) - var(--o, 0) - 0.08) * var(--k, 1), 1) * var(--fa, 0.12));
+}
+.dot {
+  fill: currentColor;
+  stroke: none;
+  opacity: calc(clamp(0, (var(--p, 1) - var(--o, 0)) * var(--k, 1), 1));
+}
+
 /* ========== NAV ========== */
 .nav {
-  position: sticky;
-  top: 0;
+  --nav-bg: rgba(245, 237, 224, 0.94);
+  position: fixed;
+  top: 0; left: 0; right: 0;
   z-index: 100;
-  background: rgba(245, 237, 224, 0.78);
-  backdrop-filter: blur(14px) saturate(150%);
-  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  background: transparent;
   border-bottom: 1px solid transparent;
-  transition: border-color 0.4s var(--ease);
+  transition: background-color 0.45s var(--ease), border-color 0.45s var(--ease), color 0.45s var(--ease);
 }
-.nav.scrolled { border-bottom-color: var(--line-soft); }
+.nav.scrolled, .nav.menu-open { background: var(--nav-bg); border-bottom-color: var(--line-soft); }
+/* Over the dark stage the bar re-maps its tokens, exactly as the homepage's
+   nav does, so the brand, links and pill all follow from the same lines. */
+.nav.on-dark {
+  --ink: #f2e9d9;
+  --ink-soft: #cdc3ad;
+  --paper: #17150f;
+  --line: rgba(242, 233, 217, 0.18);
+  --line-soft: rgba(242, 233, 217, 0.09);
+  --aster-deep: #c4a5e0;
+  --nav-bg: rgba(19, 17, 11, 0.92);
+  color: var(--ink);
+}
 .nav-inner {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 18px 0;
-  max-width: var(--max);
+  gap: 20px;
+  padding: 16px var(--pad-x);
+  max-width: calc(var(--max) + 2 * var(--pad-x));
   margin: 0 auto;
-  padding-left: var(--pad-x);
-  padding-right: var(--pad-x);
 }
 .nav-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  min-height: 44px;
   font-family: var(--serif);
-  font-size: 22px;
   font-weight: 500;
   letter-spacing: -0.01em;
 }
-.brand-mark {
-  width: 34px; height: 34px;
-  object-fit: contain;
-  transition: transform 0.6s var(--ease);
-}
+.brand-mark { width: 34px; height: 34px; object-fit: contain; transition: transform 0.7s var(--ease); }
 .nav-brand:hover .brand-mark { transform: rotate(45deg); }
+.brand-text { display: flex; flex-direction: column; line-height: 1; }
+.brand-word { font-size: 22px; letter-spacing: -0.02em; }
+.brand-sub { font-family: var(--sans); font-size: 8.5px; font-weight: 500; letter-spacing: 0.26em; text-transform: uppercase; color: var(--ink-mute); margin-top: 4px; }
+.nav.on-dark .brand-sub { color: #9a927e; }
 .nav-links {
   display: flex;
-  gap: clamp(20px, 3vw, 40px);
-  font-size: 14px;
-  font-weight: 400;
-  color: var(--ink-soft);
   align-items: center;
+  gap: clamp(22px, 3vw, 40px);
+  font-size: 14px;
+  color: var(--ink-soft);
 }
-.nav-links a { transition: color 0.3s var(--ease); }
-.nav-links a:hover, .nav-links a.active { color: var(--ink); }
+.nl { position: relative; display: inline-flex; align-items: center; min-height: 44px; transition: color 0.3s var(--ease); }
+.nl::after {
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: 8px; height: 1px;
+  background: currentColor;
+  transform: scaleX(0); transform-origin: right;
+  transition: transform 0.5s var(--ease);
+}
+.nl:hover, .nl.active { color: var(--ink); }
+.nl:hover::after, .nl.active::after { transform: scaleX(1); transform-origin: left; }
+.nl.active::after { background: var(--aster); }
 .nav-cta {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 44px;
   background: var(--ink);
   color: var(--paper);
-  padding: 11px 20px;
+  padding: 0 22px;
   border-radius: 999px;
   font-weight: 500;
   font-size: 13px;
   letter-spacing: 0.02em;
-  transition: background 0.3s var(--ease), color 0.3s var(--ease);
+  transition: background 0.3s var(--ease), color 0.3s var(--ease), transform 0.5s var(--ease);
 }
-.nav-cta:hover { background: var(--aster-deep); color: var(--paper); }
-@media (max-width: 700px) {
-  .nav-links .nav-link-text { display: none; }
-}
+.nav-cta:hover { background: var(--aster-deep); color: #fff; transform: translateY(-1px); }
+.nav.on-dark .nav-cta:hover { background: var(--aster-light); color: #17150f; }
+.nav-cta .short { display: none; }
+.nav-toggle { display: none; }
+.nav-menu { display: none; }
 
 /* ========== HERO ========== */
 .hero {
-  padding: clamp(80px, 12vw, 150px) 0 clamp(50px, 7vw, 90px);
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
+  padding: clamp(120px, 16vh, 170px) 0 clamp(96px, 13vh, 140px);
+  overflow: hidden;
+  overflow: clip;
+  isolation: isolate;
 }
+.hero::before {
+  content: "";
+  position: absolute; inset: 0; z-index: -2;
+  background:
+    radial-gradient(58% 52% at 50% 44%, rgba(196, 165, 224, 0.22) 0%, rgba(196, 165, 224, 0) 70%),
+    radial-gradient(38% 36% at 84% 86%, rgba(232, 154, 124, 0.09) 0%, rgba(232, 154, 124, 0) 70%);
+  pointer-events: none;
+}
+.hero-bloom {
+  --bw: min(118vw, 960px);
+  position: absolute; z-index: -1;
+  left: 50%; top: 50%;
+  width: var(--bw); height: var(--bw);
+  margin-left: calc(var(--bw) / -2);
+  margin-top: calc(var(--bw) / -2 + 10px);
+  color: #a58cc6;
+  opacity: 0.36;
+  pointer-events: none;
+  will-change: transform;
+  -webkit-mask-image: radial-gradient(closest-side, #000 62%, transparent 100%);
+          mask-image: radial-gradient(closest-side, #000 62%, transparent 100%);
+}
+.hero-bloom svg { width: 100%; height: 100%; overflow: visible; }
+.hero-inner { position: relative; }
 .eyebrow {
   font-family: var(--mono);
   font-size: 11px;
@@ -181,357 +262,545 @@ img, svg { display: block; max-width: 100%; }
 .hero h1 {
   font-family: var(--serif);
   font-weight: 400;
-  font-size: clamp(46px, 7vw, 92px);
+  font-size: clamp(46px, 7.2vw, 100px);
   line-height: 1.02;
-  letter-spacing: -0.02em;
-  margin: clamp(20px, 2.5vw, 30px) 0 clamp(20px, 2vw, 26px);
+  letter-spacing: -0.025em;
+  margin: clamp(22px, 2.6vw, 32px) auto clamp(22px, 2.2vw, 28px);
   color: var(--ink);
-  max-width: 16ch;
-  margin-left: auto;
-  margin-right: auto;
+  max-width: 15ch;
+  text-wrap: balance;
 }
+.hero h1 .hl { display: block; }
 .hero h1 em { font-style: italic; color: var(--aster-deep); }
 .hero p.lede {
   font-size: clamp(16px, 1.4vw, 19px);
   color: var(--ink-soft);
-  max-width: 56ch;
+  max-width: 54ch;
   margin: 0 auto;
-  line-height: 1.6;
+  line-height: 1.65;
+}
+.scroll-cue {
+  position: absolute; left: 50%; bottom: clamp(14px, 3vh, 30px);
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  min-width: 44px; padding: 6px 12px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--ink-mute);
+  transition: color 0.3s var(--ease);
+}
+.scroll-cue:hover { color: var(--aster-deep); }
+.scroll-cue .stem { position: relative; width: 1px; height: 42px; background: var(--line); overflow: hidden; }
+.scroll-cue .stem::after {
+  content: ""; position: absolute; left: 0; top: 0; width: 1px; height: 14px;
+  background: var(--aster);
+  transform: translate3d(0, -14px, 0);
 }
 
+/* Entry — only when the head script has said motion is welcome. */
+.motion .hl, .motion .hero .eyebrow, .motion .hero p.lede, .motion .scroll-cue {
+  animation: rise 1.2s var(--ease) calc(0.28s + var(--n, 0) * 0.13s) backwards;
+}
+.motion .hero-bloom { animation: fadeIn 2.4s var(--ease) 0.1s backwards; }
+.motion .scroll-cue .stem::after { animation: cueDrop 2.6s var(--ease) 1.8s infinite; }
+.motion .scroll-cue.paused .stem::after { animation-play-state: paused; }
+@keyframes rise { from { opacity: 0; transform: translate3d(0, 26px, 0); } }
+@keyframes fadeIn { from { opacity: 0; } }
+@keyframes cueDrop {
+  0% { transform: translate3d(0, -14px, 0); }
+  70%, 100% { transform: translate3d(0, 42px, 0); }
+}
+.motion .scroll-cue { animation-name: riseCue; }
+@keyframes riseCue { from { opacity: 0; } }
+
 /* ========== Section scaffolding ========== */
-.section { padding: clamp(60px, 8vw, 110px) 0; }
-.section-head { margin-bottom: clamp(40px, 5vw, 64px); }
+.section { padding: clamp(64px, 8.5vw, 124px) 0; }
+.section-head { margin-bottom: clamp(40px, 5vw, 68px); }
 .section-head .eyebrow { margin-bottom: 18px; }
 .section-head h2 {
   font-family: var(--serif);
   font-weight: 400;
-  font-size: clamp(32px, 4.4vw, 56px);
-  line-height: 1.04;
+  font-size: clamp(32px, 4.4vw, 58px);
+  line-height: 1.05;
   letter-spacing: -0.02em;
   margin: 0;
   max-width: 20ch;
+  text-wrap: balance;
 }
 .section-head h2 em { font-style: italic; color: var(--aster-deep); }
+
+/* Reveal — hidden states exist only under .motion, which JS adds. */
+.motion .rv:not(.in) { opacity: 0; transform: translate3d(0, 28px, 0); }
+.motion .rv.in { animation: rvIn 1.05s var(--ease) var(--d, 0s) backwards; }
+@keyframes rvIn { from { opacity: 0; transform: translate3d(0, 28px, 0); } }
 
 /* ========== What we make — product cards ========== */
 .make { background: var(--cream-soft); border-top: 1px solid var(--line-soft); }
 .make-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: clamp(20px, 2.4vw, 28px);
+  gap: clamp(20px, 2.4vw, 30px);
 }
-@media (max-width: 860px) { .make-grid { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; } }
 .make-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   background: var(--paper);
   border: 1px solid var(--line-soft);
-  border-radius: 18px;
-  padding: clamp(28px, 3vw, 38px);
-  transition: transform 0.5s var(--ease), box-shadow 0.6s var(--ease), border-color 0.5s var(--ease);
+  border-radius: 20px;
+  padding: clamp(30px, 3vw, 42px);
+  transition: transform 0.6s var(--ease), box-shadow 0.7s var(--ease), border-color 0.5s var(--ease);
 }
-.make-card:hover {
-  transform: translateY(-4px);
-  border-color: var(--aster-light);
-  box-shadow: 0 26px 54px -30px rgba(139, 95, 191, 0.20);
+/* The light that follows the pointer, kept behind the type... */
+.make-card::before {
+  content: "";
+  position: absolute; inset: 0; z-index: -1;
+  background: radial-gradient(300px circle at var(--mx, 50%) var(--my, 0%), rgba(196, 165, 224, 0.30), rgba(196, 165, 224, 0) 70%);
+  opacity: 0; transition: opacity 0.5s var(--ease);
+  pointer-events: none;
 }
+/* ...and the same light catching only the card's edge. */
+.make-card::after {
+  content: "";
+  position: absolute; inset: 0; z-index: 1;
+  border-radius: inherit;
+  padding: 1px;
+  background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 0%), rgba(139, 95, 191, 0.75), rgba(139, 95, 191, 0) 70%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: 0; transition: opacity 0.5s var(--ease);
+  pointer-events: none;
+}
+.make-card:hover { transform: translateY(-5px); box-shadow: 0 30px 56px -32px rgba(94, 61, 138, 0.34); }
+.make-card:hover::before, .make-card:hover::after { opacity: 1; }
 .make-card .mk-flower {
-  width: 40px; height: 40px;
+  width: 52px; height: 52px;
   color: var(--aster);
-  margin-bottom: 22px;
-  transition: transform 0.6s var(--ease);
+  margin-bottom: 26px;
+  overflow: visible;
+  transition: transform 0.8s var(--ease);
 }
 .make-card:hover .mk-flower { transform: rotate(45deg) scale(1.08); }
+.mk-flower .ln {
+  fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round;
+  stroke-dasharray: 1 2; stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1.8s var(--ease) calc(var(--g, 0) * 0.1s + 0.25s);
+}
+.mk-flower .wash { fill: currentColor; fill-opacity: 0.12; transition: fill-opacity 1.2s var(--ease) 0.9s; }
+.mk-flower .core { fill: var(--bloom); transition: opacity 0.9s var(--ease) 1.1s; }
+.motion .make-card:not(.in) .mk-flower .ln { stroke-dashoffset: 1; }
+.motion .make-card:not(.in) .mk-flower .wash { fill-opacity: 0; }
+.motion .make-card:not(.in) .mk-flower .core { opacity: 0; }
 .make-card h3 {
   font-family: var(--serif);
   font-weight: 400;
-  font-size: clamp(22px, 2vw, 27px);
-  margin: 0 0 10px;
+  font-size: clamp(23px, 2.1vw, 29px);
+  margin: 0 0 12px;
   letter-spacing: -0.01em;
 }
 .make-card h3 em { font-style: italic; color: var(--aster-deep); }
-.make-card p { color: var(--ink-soft); font-size: 15px; margin: 0 0 18px; line-height: 1.6; }
+.make-card p { color: var(--ink-soft); font-size: 15px; margin: 0 0 22px; line-height: 1.65; }
 .make-card .mk-meta {
+  align-self: flex-start;
+  margin-top: auto;
+  display: inline-block;
   font-family: var(--mono);
   font-size: 11px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--ink-mute);
+  padding-bottom: 6px;
+  background: linear-gradient(var(--aster), var(--aster)) left bottom / 0 1px no-repeat;
+  transition: background-size 0.7s var(--ease), color 0.4s var(--ease);
 }
+.make-card:hover .mk-meta { background-size: 100% 1px; color: var(--aster-deep); }
 
-/* ========== How we work — process steps ========== */
-.process-steps {
+/* ========== How we work — a vine through four stages ========== */
+.process-layout {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: clamp(28px, 3.4vw, 52px);
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  gap: clamp(40px, 7vw, 110px);
+  align-items: start;
 }
-@media (max-width: 860px) { .process-steps { grid-template-columns: 1fr 1fr; gap: clamp(32px, 5vw, 48px); } }
-@media (max-width: 520px) { .process-steps { grid-template-columns: 1fr; } }
+.process-aside { position: sticky; top: 112px; }
+.process-aside .section-head { margin-bottom: clamp(20px, 3vw, 36px); }
+.plant { width: min(100%, 300px); margin-left: clamp(0px, 2vw, 24px); color: var(--leaf); }
+.plant svg { width: 100%; height: auto; overflow: visible; }
+.plant .bloom { color: var(--aster); }
+.timeline { position: relative; }
+.steps { list-style: none; margin: 0; padding: 0; }
 .p-step {
   position: relative;
-  border-top: 1px solid var(--line);
-  padding-top: 30px;
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  column-gap: clamp(20px, 3vw, 36px);
+  padding-bottom: clamp(44px, 6vw, 80px);
 }
-/* A small diamond node where each step meets its hairline — echoes the
-   brand's petal-bullet motif and marks the start of each stage. */
-.p-step::before {
-  content: "";
-  position: absolute;
-  top: -4.5px;
-  left: 0;
-  width: 8px;
-  height: 8px;
-  background: var(--aster);
-  transform: rotate(45deg);
-  transition: transform 0.5s var(--ease);
+.p-step:last-child { padding-bottom: 0; }
+/* The unplanted track. The grown vine is drawn over it; if the script never
+   runs, this plain hairline is the thread through the four stages. */
+.p-step:not(:last-child)::after {
+  content: ""; position: absolute; left: 31.5px; top: 64px; bottom: 0; width: 1px;
+  background: var(--line);
 }
-.p-step:hover::before { transform: rotate(135deg); }
-/* Large, light serif numeral — the elegant focal marker of each stage. */
+.timeline.vine-live .p-step::after { display: none; }
+.vine { position: absolute; left: 0; top: 0; width: 64px; overflow: visible; pointer-events: none; color: var(--aster); z-index: 0; }
+.vine .lf { color: var(--leaf); }
+.p-node {
+  position: relative; z-index: 1;
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: var(--cream);
+  border: 1px solid var(--line);
+  display: grid; place-items: center;
+  color: var(--aster-deep);
+  transition: border-color 0.7s var(--ease), box-shadow 0.9s var(--ease);
+}
+.p-node svg { width: 40px; height: 40px; overflow: visible; }
+.gl {
+  fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round;
+  stroke-dasharray: 1 2; stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1.5s var(--ease) calc(var(--g, 0) * 0.09s);
+}
+.gf { fill: var(--leaf); opacity: 0.22; transition: opacity 1s var(--ease) 0.7s; }
+.gf.sun { fill: var(--bloom); opacity: 0.9; }
+.gl.leaf { color: var(--leaf); }
+.motion .p-step:not(.on) .gl { stroke-dashoffset: 1; }
+.motion .p-step:not(.on) .gf { opacity: 0; }
+.p-step.on .p-node { border-color: var(--aster-light); box-shadow: 0 0 0 7px rgba(196, 165, 224, 0.15); }
+.p-step .p-head { display: flex; align-items: baseline; gap: 16px; margin: 4px 0 14px; }
 .p-step .p-num {
-  display: block;
   font-family: var(--serif);
   font-weight: 300;
-  font-size: clamp(38px, 3.6vw, 54px);
+  font-size: clamp(38px, 3.4vw, 50px);
   line-height: 1;
   letter-spacing: -0.02em;
   color: var(--aster-light);
-  margin-bottom: 18px;
+  transition: color 0.8s var(--ease);
 }
+.p-step.on .p-num { color: var(--aster); }
 .p-step .p-phase {
   font-family: var(--mono);
   font-size: 10.5px;
   letter-spacing: 0.3em;
   text-transform: uppercase;
   color: var(--aster-deep);
-  display: block;
-  margin-bottom: 14px;
 }
-.p-step h4 {
+.p-step h3 {
   font-family: var(--serif);
   font-weight: 400;
-  font-size: clamp(20px, 1.8vw, 25px);
+  font-size: clamp(22px, 2vw, 28px);
   line-height: 1.18;
   margin: 0 0 12px;
   letter-spacing: -0.01em;
 }
-.p-step h4 em { font-style: italic; color: var(--aster-deep); }
-.p-step p {
-  color: var(--ink-soft);
-  font-size: 14px;
-  margin: 0;
-  line-height: 1.62;
-  max-width: 30ch;
-}
+.p-step h3 em { font-style: italic; color: var(--aster-deep); }
+.p-step p { color: var(--ink-soft); font-size: 15px; margin: 0; line-height: 1.65; max-width: 40ch; }
 
-/* ========== Sites created — portfolio grid ========== */
+/* ========== Sites we've grown — the gallery ========== */
 .sites { background: var(--cream-soft); border-top: 1px solid var(--line-soft); }
-/* Featured Foliyo card spans the row; the three remaining projects
-   fill an even row beneath it, so no card is left orphaned. */
 .sites-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: clamp(20px, 2.4vw, 28px);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(22px, 2.6vw, 36px);
 }
-/* At two columns the 1 + 3 split would leave a lone card on the last
-   row, so the final card widens to fill it. */
-@media (min-width: 861px) and (max-width: 1080px) {
-  .sites-grid { grid-template-columns: 1fr 1fr; }
-  .sites-grid > .case:last-child { grid-column: 1 / -1; }
-  .sites-grid > .case:last-child .preview { aspect-ratio: 24 / 7; }
-}
-@media (max-width: 860px) { .sites-grid { grid-template-columns: 1fr; } }
 .case {
+  --acc: var(--aster-deep);
+  position: relative;
+  isolation: isolate;
   background: var(--paper);
   border: 1px solid var(--line-soft);
-  border-radius: 22px;
+  border-radius: 24px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.5s var(--ease), box-shadow 0.5s, border-color 0.5s;
+  transition: transform 0.7s var(--ease), box-shadow 0.7s var(--ease), border-color 0.5s var(--ease);
+}
+.case::before {
+  content: "";
+  position: absolute; inset: 0; z-index: -1;
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 40%), rgba(196, 165, 224, 0.26), rgba(196, 165, 224, 0) 70%);
+  opacity: 0; transition: opacity 0.5s var(--ease);
+  pointer-events: none;
 }
 .case:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 30px 60px -30px rgba(31, 20, 36, 0.22);
+  transform: translateY(-6px);
+  box-shadow: 0 44px 74px -40px rgba(31, 20, 36, 0.36);
   border-color: var(--aster-light);
 }
-.case .preview { aspect-ratio: 16 / 10; position: relative; overflow: hidden; }
-.case .preview svg.deco {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
-  opacity: 0.4; color: var(--paper);
-  transition: transform 1.2s var(--ease), opacity 0.5s;
+.case:hover::before { opacity: 1; }
+.case-wide { grid-column: 1 / -1; }
+
+/* The plate: the frame every project hangs in, photographed or drawn. */
+.case .preview {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background-color: #0b0a08;
 }
-.case:hover .preview svg.deco { transform: rotate(30deg) scale(1.15); opacity: 0.6; }
+.case .preview::after {
+  content: "";
+  position: absolute; inset: 0; z-index: 4;
+  background: radial-gradient(360px circle at var(--px, 50%) var(--py, 40%), rgba(255, 240, 225, 0.13), rgba(255, 240, 225, 0) 70%);
+  opacity: 0; transition: opacity 0.6s var(--ease);
+  pointer-events: none;
+}
+.case:hover .preview::after { opacity: 1; }
 .case .preview .label {
-  position: absolute; top: 18px; left: 18px;
+  position: absolute; top: 18px; left: 20px; z-index: 5;
   font-family: var(--sans); font-weight: 500;
   font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
-  color: rgba(253, 249, 241, 0.92);
-  background: rgba(31, 20, 36, 0.28);
-  padding: 6px 12px; border-radius: 999px;
-  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  color: rgba(253, 249, 241, 0.94);
+  background: rgba(15, 12, 18, 0.5);
+  padding: 7px 13px; border-radius: 999px;
+  max-width: calc(100% - 40px);
 }
-/* Let the body absorb the leftover height so each card's meta row
-   lands on the same baseline, whatever the length of its copy. */
+.shot-preview { padding: 66px 5.5% clamp(34px, 4.6vw, 60px); }
+.shot {
+  position: relative; z-index: 1;
+  width: 84%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 34px 70px -24px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+.shot-bar {
+  display: flex; align-items: center; gap: 6px;
+  height: 28px; padding: 0 14px;
+  background: #1d1b17;
+}
+.shot-bar i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255, 255, 255, 0.22); }
+.shot-bar span { margin-left: 12px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.04em; color: rgba(255, 255, 255, 0.5); }
+.shot-view { overflow: hidden; background: #0b0a08; }
+.shot-view img, .phone img {
+  width: 100%; height: auto;
+  transform-origin: 50% 0;
+  transition: transform 2s var(--ease);
+}
+.case:hover .shot-view img { transform: scale(1.05) translate3d(0, -1.2%, 0); }
+.phone {
+  position: absolute; z-index: 2;
+  right: 5%; bottom: 0;
+  width: 15.5%; min-width: 78px;
+  border: 5px solid #0d0c0a; border-bottom: 0;
+  border-radius: 22px 22px 0 0;
+  background: #0d0c0a;
+  overflow: hidden;
+  box-shadow: 0 30px 56px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  transform: translate3d(0, 7%, 0);
+  transition: transform 1.2s var(--ease);
+}
+.phone img { border-radius: 16px 16px 0 0; }
+.case:hover .phone { transform: translate3d(0, -2%, 0); }
+.case:hover .phone img { transform: scale(1.03); }
+
 .case .body {
-  padding: 26px 28px 28px;
+  padding: clamp(26px, 3vw, 40px);
   flex: 1;
   display: flex;
   flex-direction: column;
 }
 .case .body h3 {
   font-family: var(--serif); font-weight: 400;
-  font-size: 24px; line-height: 1.15; letter-spacing: -0.01em;
-  margin: 0 0 10px;
+  font-size: clamp(25px, 2.4vw, 32px); line-height: 1.12; letter-spacing: -0.015em;
+  margin: 0 0 12px;
 }
 .case .body h3 em { font-style: italic; color: var(--aster-deep); }
-.case .body p { color: var(--ink-soft); font-size: 14.5px; margin: 0 0 18px; line-height: 1.55; }
+.case .body p { color: var(--ink-soft); font-size: 15px; margin: 0 0 24px; line-height: 1.65; max-width: 52ch; }
 .case .body .row {
-  display: flex; justify-content: space-between; align-items: baseline;
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
   font-size: 12px; color: var(--ink-mute);
   margin-top: auto;
-  border-top: 1px solid var(--line-soft); padding-top: 14px;
+  border-top: 1px solid var(--line-soft); padding-top: 16px;
   font-family: var(--mono); letter-spacing: 0.04em;
 }
-.case .body .row strong { color: var(--aster-deep); font-weight: 500; }
-
-/* Featured project — full-width, biggest card. Structural only, kept
-   separate from any one project's identity so the flagship spot can
-   move to whichever engagement is the studio's largest without
-   re-deriving this layout each time. */
-.case-featured {
-  grid-column: 1 / -1;
-  cursor: pointer;
+.case .body .row strong {
+  display: inline-flex; align-items: center; gap: 12px;
+  color: var(--acc); font-weight: 500;
 }
-.case-featured .preview svg.deco {
-  position: absolute; inset: auto; top: 50%; left: 50%;
-  width: clamp(78px, 24%, 132px); height: auto;
-  transform: translate(-50%, -50%); opacity: 1;
+.arr {
+  flex: none;
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 1px solid currentColor;
+  display: grid; place-items: center;
+  overflow: hidden;
+  transition: background-color 0.4s var(--ease), color 0.4s var(--ease), transform 0.6s var(--ease);
 }
-.case-featured:hover .preview svg.deco { transform: translate(-50%, -50%) scale(1.06); opacity: 1; }
-@media (min-width: 760px) {
-  .case-featured { flex-direction: row; align-items: stretch; }
-  .case-featured .preview { flex: 0 0 46%; aspect-ratio: auto; min-height: 280px; }
-  .case-featured .body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: clamp(32px, 4vw, 52px);
-  }
-  .case-featured .body h3 { font-size: clamp(28px, 3vw, 38px); }
-  .case-featured .body p { font-size: clamp(15px, 1.3vw, 18px); max-width: 46ch; }
+.arr svg { width: 12px; height: 12px; transition: transform 0.5s var(--ease); }
+.case:hover .arr { background: var(--acc); color: #fff; transform: scale(1.06); }
+.case:hover .arr svg { transform: translate3d(2px, -2px, 0); }
+
+/* Power Tagun — engineering navy and the firm's signal red. The studio's
+   largest engagement, so it leads: full width, the screens on a navy stage. */
+.case-tagun { --acc: #c0161c; }
+.case-tagun .preview {
+  background-image:
+    url("assets/env/dark-grain.jpg"),
+    radial-gradient(70% 90% at 70% 100%, rgba(192, 22, 28, 0.20) 0%, rgba(192, 22, 28, 0) 64%),
+    linear-gradient(145deg, #07111d 0%, #101f33 55%, #1b2c44 100%);
+  background-size: 300px, auto, auto;
+  background-blend-mode: soft-light, normal, normal;
 }
-
-/* Foliyo — cyan fintech preview. */
-.case-foliyo .preview {
-  background: radial-gradient(130% 120% at 28% 22%, #0e5563 0%, #082530 38%, #05070e 100%);
-}
-.case-foliyo .body .row strong { color: #0e7490; }
-.case-foliyo .preview svg.deco { filter: drop-shadow(0 10px 26px rgba(6, 182, 212, 0.30)); }
-
-.case-gateway .preview { background: linear-gradient(135deg, #0b1026 0%, #1f2a63 50%, #45357f 100%); }
-.case-gateway .preview svg.deco { color: #d9e0ff; opacity: 0.5; }
-.case-gateway .body .row strong { color: #5a6ae0; }
-
-/* Power Tagun — deep engineering navy with the firm's signal red.
-   The studio's largest engagement to date, so this is the featured
-   card (see .case-featured above) — first in the grid, full width. */
-.case-tagun .preview { background: linear-gradient(145deg, #07111d 0%, #101f33 55%, #1b2c44 100%); }
-.case-tagun .body .row strong { color: #c0161c; }
-
 /* KTK — woven-sack umber and the group's red. */
-.case-ktk .preview { background: linear-gradient(150deg, #16130e 0%, #33291d 55%, #4d3d29 100%); }
-.case-ktk .body .row strong { color: #b1341f; }
+.case-ktk { --acc: #b1341f; }
+.case-ktk .preview {
+  background-image:
+    url("assets/env/dark-grain.jpg"),
+    radial-gradient(70% 80% at 30% 100%, rgba(177, 52, 31, 0.22) 0%, rgba(177, 52, 31, 0) 64%),
+    linear-gradient(150deg, #16130e 0%, #33291d 55%, #4d3d29 100%);
+  background-size: 300px, auto, auto;
+  background-blend-mode: soft-light, normal, normal;
+}
+.case-split .shot { width: 88%; }
 
-/* Real client wordmarks (Power Tagun, KTK) — centred, not stretched
-   to fill the frame the way the abstract decorative marks are. */
-.case .preview .logo-plate {
-  position: absolute; top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  display: flex; align-items: center; justify-content: center;
-  transition: transform 0.4s var(--ease);
+/* Foliyo and Gateway have no screenshots to show, so they keep their drawn
+   marks, hung in the same plate and grain as the photographed projects. */
+.plain-preview { aspect-ratio: 16 / 10; }
+.plain-preview svg.deco {
+  position: absolute; z-index: 1;
+  top: 50%; left: 50%;
+  width: clamp(88px, 26%, 140px); height: auto;
+  margin: calc(clamp(88px, 26%, 140px) / -2) 0 0 calc(clamp(88px, 26%, 140px) / -2);
+  transition: transform 1.6s var(--ease), opacity 0.6s;
 }
-.case:hover .preview .logo-plate { transform: translate(-50%, -50%) scale(1.05); }
-.logo-plate img { display: block; }
-.case-tagun .logo-plate img {
-  width: clamp(130px, 40%, 220px); height: auto;
-  filter: drop-shadow(0 10px 26px rgba(229, 29, 36, 0.32));
+.case-foliyo .preview {
+  background-image:
+    url("assets/env/dark-grain.jpg"),
+    radial-gradient(60% 70% at 70% 100%, rgba(6, 182, 212, 0.14) 0%, rgba(6, 182, 212, 0) 66%),
+    radial-gradient(130% 120% at 28% 22%, #0e5563 0%, #082530 38%, #05070e 100%);
+  background-size: 300px, auto, auto;
+  background-blend-mode: soft-light, normal, normal;
 }
-.case-featured.case-tagun .logo-plate img { width: clamp(190px, 40%, 360px); }
-/* KTK's source file is opaque white, so it sits on a white plate
-   rather than floating a stray white box on the dark preview. */
-.case-ktk .logo-plate {
-  background: #fdfaf3;
-  padding: 18px 28px;
-  border-radius: 16px;
-  box-shadow: 0 16px 32px -14px rgba(0, 0, 0, 0.5);
-}
-.case-ktk .logo-plate img { width: clamp(160px, 82%, 300px); height: auto; }
+.case-foliyo { --acc: #0e7490; }
+.case-foliyo .preview svg.deco { filter: drop-shadow(0 10px 26px rgba(6, 182, 212, 0.30)); }
+.case-foliyo .bar { transform-box: fill-box; transform-origin: 50% 100%; transition: transform 1.4s var(--ease) calc(var(--g, 0) * 0.14s + 0.2s); }
+.motion .case-foliyo:not(.in) .bar { transform: scaleY(0.04); }
+.case-foliyo:hover .preview svg.deco { transform: scale(1.07); }
 
-/* ========== Final CTA ========== */
-.final-cta-section {
-  background: var(--ink);
-  color: var(--paper);
-  padding: clamp(80px, 10vw, 130px) 0;
+.case-gateway { --acc: #5a6ae0; }
+.case-gateway .preview {
+  background-image:
+    url("assets/env/dark-grain.jpg"),
+    radial-gradient(60% 70% at 30% 100%, rgba(120, 100, 220, 0.20) 0%, rgba(120, 100, 220, 0) 66%),
+    linear-gradient(135deg, #0b1026 0%, #1f2a63 50%, #45357f 100%);
+  background-size: 300px, auto, auto;
+  background-blend-mode: soft-light, normal, normal;
+}
+.case-gateway .preview svg.deco { color: #d9e0ff; }
+.case-gateway .orb {
+  stroke-dasharray: 1 2; stroke-dashoffset: 0;
+  transition: stroke-dashoffset 2.4s var(--ease) calc(var(--g, 0) * 0.22s + 0.1s);
+}
+.case-gateway .orb-dot { transition: opacity 1s var(--ease) 1.6s; }
+.motion .case-gateway:not(.in) .orb { stroke-dashoffset: 1; }
+.motion .case-gateway:not(.in) .orb-dot { opacity: 0; }
+.case-gateway:hover .preview svg.deco { transform: rotate(30deg) scale(1.1); }
+
+/* ========== Final CTA — a candlelit stage ========== */
+.stage {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  overflow: clip;
+  color: #f2e9d9;
   text-align: center;
+  padding: clamp(120px, 14vw, 200px) 0;
 }
+/* The room itself sits on its own layer so its top and bottom edges can be
+   masked away: the page paper shows through the fade, so the descent into the
+   dark and the climb back out are seamless, grain and all. */
+.stage > .stage-bg {
+  position: absolute; inset: 0; z-index: 0;
+  pointer-events: none;
+  background:
+    url("assets/env/dark-grain.jpg"),
+    radial-gradient(130% 90% at 50% -10%, rgba(196, 165, 224, 0.10) 0%, transparent 62%),
+    radial-gradient(100% 70% at 50% 108%, rgba(232, 154, 124, 0.07) 0%, transparent 66%),
+    linear-gradient(180deg, rgba(20, 18, 12, 0.60) 0%, rgba(15, 13, 9, 0.74) 54%, rgba(20, 18, 12, 0.64) 100%),
+    url("assets/env/wall-candlelit.jpg");
+  background-size: 300px, auto, auto, auto, cover;
+  background-position: center, center, center, center, center 40%;
+  background-repeat: repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+  background-blend-mode: soft-light, screen, screen, normal, normal;
+  background-color: #17150f;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 clamp(90px, 11vw, 170px), #000 calc(100% - clamp(90px, 11vw, 170px)), transparent 100%);
+          mask-image: linear-gradient(to bottom, transparent 0, #000 clamp(90px, 11vw, 170px), #000 calc(100% - clamp(90px, 11vw, 170px)), transparent 100%);
+}
+.stage > .wrap { position: relative; z-index: 1; }
+.stage > .stage-glow {
+  position: absolute; z-index: 0;
+  left: 50%; top: 50%;
+  width: min(900px, 140%); aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(closest-side, rgba(255, 214, 164, 0.22) 0%, rgba(232, 154, 124, 0.09) 48%, transparent 100%);
+  pointer-events: none;
+}
+.stage > .cta-bloom {
+  position: absolute; z-index: 0;
+  left: 50%; top: 50%;
+  width: min(120vw, 820px); aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  color: #b9a0d8;
+  opacity: 0.44;
+  pointer-events: none;
+}
+.cta-bloom svg { width: 100%; height: 100%; overflow: visible; }
+/* The pointer as a light source: a separate element moved by transform only,
+   so it costs no repaint as it travels. */
+.stage > .lamp {
+  position: absolute; top: 0; left: 0; z-index: 0;
+  width: 720px; height: 720px; margin: -360px 0 0 -360px;
+  pointer-events: none;
+  opacity: 0; transition: opacity 0.6s var(--ease);
+  background: radial-gradient(closest-side, rgba(255, 228, 182, 0.15) 0%, rgba(255, 214, 164, 0.08) 34%, rgba(232, 154, 124, 0.03) 60%, transparent 100%);
+  will-change: transform;
+}
+.stage > .lamp.lit { opacity: 1; }
 .final-cta-section h2 {
   font-family: var(--serif);
   font-weight: 400;
-  font-size: clamp(40px, 5.5vw, 68px);
+  font-size: clamp(40px, 5.8vw, 76px);
   line-height: 1.04;
-  letter-spacing: -0.02em;
-  margin: 0 0 24px;
-  max-width: 18ch;
-  margin-left: auto; margin-right: auto;
+  letter-spacing: -0.025em;
+  margin: 0 auto 26px;
+  max-width: 16ch;
+  text-wrap: balance;
+  color: #f7efe0;
 }
 .final-cta-section h2 em { font-style: italic; color: var(--aster-light); }
 .final-cta-section p {
-  color: rgba(251, 246, 234, 0.7);
-  max-width: 48ch; margin: 0 auto 40px; font-size: 17px;
+  color: rgba(242, 233, 217, 0.74);
+  max-width: 46ch; margin: 0 auto 44px; font-size: 17px;
 }
 .final-cta-btn {
-  display: inline-flex; align-items: center; gap: 12px;
-  background: var(--paper); color: var(--ink);
-  padding: 16px 32px; border-radius: 999px;
+  position: relative;
+  display: inline-flex; align-items: center; gap: 14px;
+  min-height: 52px;
+  background: #f7efe0; color: #1f1d18;
+  padding: 0 34px; border-radius: 999px;
   font-weight: 500; font-size: 15px; letter-spacing: 0.02em;
-  transition: background 0.3s var(--ease), color 0.3s var(--ease);
+  box-shadow: 0 0 0 0 rgba(196, 165, 224, 0), 0 22px 40px -22px rgba(0, 0, 0, 0.8);
+  transition: background 0.4s var(--ease), color 0.4s var(--ease), box-shadow 0.7s var(--ease), transform 0.6s var(--ease);
 }
-.final-cta-btn:hover { background: var(--aster); color: var(--paper); }
+.final-cta-btn svg { transition: transform 0.5s var(--ease); }
+.final-cta-btn:hover {
+  background: var(--aster-light); color: #1b1424;
+  box-shadow: 0 0 0 8px rgba(196, 165, 224, 0.16), 0 22px 40px -22px rgba(0, 0, 0, 0.8);
+  transform: translateY(-2px);
+}
+.final-cta-btn:hover svg { transform: translate3d(2px, -2px, 0); }
 
 /* ========== Footer ========== */
 .footer {
-  padding: 50px 0;
-  border-top: 1px solid var(--line-soft);
+  padding: 48px 0 56px;
   font-size: 13px; color: var(--ink-mute);
   text-align: center;
 }
-.footer-social { display: flex; justify-content: center; gap: 12px; margin-bottom: 14px; }
-.footer-social a { color: var(--ink); text-decoration: none; border-bottom: 1px solid transparent; transition: color .25s ease, border-color .25s ease; }
+.footer-social { display: flex; justify-content: center; align-items: center; gap: 12px; margin-bottom: 8px; }
+.footer-social a { display: inline-flex; align-items: center; min-height: 44px; color: var(--ink); text-decoration: none; border-bottom: 1px solid transparent; transition: color .25s ease, border-color .25s ease; }
 .footer-social a:hover, .footer-social a:focus-visible { color: var(--aster); border-bottom-color: currentColor; }
-
-/* ========== Mobile ========== */
-@media (max-width: 760px) {
-  html, body { max-width: 100vw; }
-  .nav-inner { padding: 14px 0; }
-  .nav-brand { font-size: 18px; gap: 8px; }
-  .brand-mark { width: 24px; height: 24px; }
-  .nav-links { gap: 16px; font-size: 13px; }
-  .nav-cta { padding: 10px 16px; font-size: 12px; }
-  .hero { padding: 80px 0 50px; }
-  .hero h1 { font-size: clamp(36px, 11vw, 56px); }
-  .section-head h2 { font-size: clamp(28px, 8vw, 40px); }
-  .final-cta-section h2 { font-size: clamp(32px, 9vw, 48px); }
-  .final-cta-btn { min-height: 48px; }
-}
-@media (max-width: 480px) {
-  :root { --pad-x: 18px; }
-  .hero h1 { font-size: clamp(30px, 12vw, 46px); }
-  .nav-brand { font-size: 16px; }
-}
-@media (hover: none) {
-  .make-card:hover, .case:hover { transform: none; box-shadow: none; }
-}
 
 /* Skip link — first thing in the tab order, hidden until focused. */
 .skip-link {
@@ -565,38 +834,149 @@ img, svg { display: block; max-width: 100%; }
 @media (prefers-reduced-motion: reduce) { .page-veil { display: none; } }
 
 /* ========== Keyboard focus ==========
-   This page previously had no focus styling at all, so anyone
-   tabbing through it had no idea where they were. Only :focus-visible
-   is styled, so a mouse click never paints a ring. */
+   Only :focus-visible is styled, so a mouse click never paints a ring. */
 :where(a, button, input, textarea, select, [tabindex]):focus-visible {
   outline: 2px solid var(--aster-deep);
   outline-offset: 3px;
   border-radius: 4px;
 }
-.case:focus-visible {
-  outline: 2px solid var(--aster-deep);
-  outline-offset: 4px;
-  border-radius: 22px;
-}
-/* The dark final-CTA panel needs a light ring to stay visible. */
-.final-cta-section a:focus-visible,
-.final-cta-btn:focus-visible {
+.case:focus-visible, .case:has(:focus-visible) { outline: 2px solid var(--aster-deep); outline-offset: 4px; }
+.case:focus-visible { border-radius: 24px; }
+.nav-cta:focus-visible, .final-cta-btn:focus-visible { border-radius: 999px; }
+/* The dark panels need a light ring to stay visible. */
+.stage a:focus-visible, .nav.on-dark :where(a, button):focus-visible {
   outline: 2px solid var(--aster-light);
   outline-offset: 3px;
 }
 
-/* Respect a reduced-motion preference across the page, not just the
-   page veil — the cards, reveals, and hover lifts all animate. */
+/* No pointer to follow: leave the cards still. */
+@media (hover: none) {
+  .make-card:hover, .case:hover { transform: none; box-shadow: none; }
+  .make-card::before, .make-card::after, .case::before, .case .preview::after { display: none; }
+}
+
+/* ========== Tablet and phone ==========
+   Kept last so these win over everything above. */
+@media (min-width: 901px) {
+  .case-split { flex-direction: row-reverse; align-items: stretch; }
+  .case-split .preview { flex: 0 0 58%; }
+  .case-split .body { flex: 1; justify-content: center; padding: clamp(32px, 4vw, 56px); }
+  .case-split .body .row { margin-top: 28px; }
+}
+@media (max-width: 1000px) and (min-width: 761px) {
+  .nav-links { gap: 22px; }
+}
+@media (max-height: 760px) {
+  .process-aside { position: static; }
+}
+@media (max-width: 900px) {
+  .process-layout { grid-template-columns: 1fr; gap: 20px; }
+  .process-aside { position: static; }
+  .plant { display: none; }
+  .make-grid { grid-template-columns: 1fr; max-width: 520px; margin: 0 auto; }
+  .sites-grid { grid-template-columns: 1fr; }
+  .case-wide { grid-column: auto; }
+  .plain-preview { aspect-ratio: 16 / 9; }
+}
+@media (max-width: 760px) {
+  html { scroll-padding-top: 76px; }
+  html, body { max-width: 100vw; }
+  .nav-inner { padding-top: 10px; padding-bottom: 10px; gap: 10px; }
+  .brand-mark { width: 28px; height: 28px; }
+  .brand-word { font-size: 20px; }
+  .nav-brand { gap: 9px; }
+  .nav-links { gap: 10px; }
+  .nl { display: none; }
+  .nav-cta { padding: 0 16px; font-size: 12px; }
+  .nav-cta .long { display: none; }
+  .nav-cta .short { display: inline; }
+  .nav-toggle {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    width: 44px; height: 44px; padding: 0; margin-right: -8px;
+    background: none; border: 0; cursor: pointer; color: var(--ink);
+  }
+  .nav-toggle span { display: block; width: 22px; height: 1.5px; background: currentColor; border-radius: 2px; transition: transform 0.5s var(--ease); }
+  .nav.menu-open .nav-toggle span:first-child { transform: translate3d(0, 3.75px, 0) rotate(45deg); }
+  .nav.menu-open .nav-toggle span:last-child { transform: translate3d(0, -3.75px, 0) rotate(-45deg); }
+  .nav-menu { padding: 4px var(--pad-x) 14px; border-top: 1px solid var(--line-soft); }
+  .nav.menu-open .nav-menu { display: block; }
+  .nav-menu a {
+    display: flex; align-items: center; min-height: 52px;
+    font-family: var(--serif); font-size: 22px; letter-spacing: -0.01em;
+    border-bottom: 1px solid var(--line-soft);
+    color: var(--ink);
+  }
+  .nav-menu a:last-child { border-bottom: 0; }
+  .nav-menu a[aria-current="page"] { color: var(--aster-deep); font-style: italic; }
+  /* No script: the links stay in the bar and wrap beneath the brand. */
+  html:not(.js) .nav-inner { flex-wrap: wrap; }
+  html:not(.js) .nl { display: inline-flex; }
+  html:not(.js) .nav-links { flex-wrap: wrap; }
+
+  .hero { padding: 110px 0 96px; }
+  .hero h1 { font-size: clamp(40px, 12.4vw, 56px); }
+  .hero-bloom { --bw: 150vw; opacity: 0.26; }
+  .section-head h2 { font-size: clamp(30px, 8.4vw, 42px); }
+  .final-cta-section h2 { font-size: clamp(36px, 10.2vw, 50px); }
+  .final-cta-section p { font-size: 16px; }
+  .make-card { padding: 28px 24px; }
+  .p-step { grid-template-columns: 52px minmax(0, 1fr); column-gap: 18px; }
+  .p-node { width: 52px; height: 52px; }
+  .p-node svg { width: 32px; height: 32px; }
+  .p-step:not(:last-child)::after { left: 25.5px; top: 52px; }
+  .shot-preview { padding-top: 56px; }
+  .shot { width: 100%; }
+  .case-split .shot { width: 100%; }
+  .phone { width: 22%; min-width: 64px; right: 4%; border-width: 4px; border-radius: 16px 16px 0 0; }
+  .phone img { border-radius: 12px 12px 0 0; }
+  .case .preview .label { top: 14px; left: 14px; font-size: 9px; padding: 6px 11px; }
+  .case .body { padding: 26px 22px 24px; }
+  .case .body .row { font-size: 11px; }
+  .footer { padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px)); }
+}
+@media (max-width: 480px) {
+  :root { --pad-x: 18px; }
+  .hero h1 { font-size: clamp(38px, 12.8vw, 50px); }
+  .brand-sub { display: none; }
+  .nav-brand { gap: 8px; }
+}
+@media (max-width: 380px) {
+  .nav-inner { gap: 6px; }
+  .nav-cta { padding: 0 13px; }
+}
+
+/* Respect a reduced-motion preference across the page. The reveal and entry
+   states above only exist under .motion, which the head script withholds
+   from anyone who asks for less. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+    animation-delay: 0s !important;
     transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
     scroll-behavior: auto !important;
   }
-  .case:hover { transform: none; }
+  .case:hover, .make-card:hover { transform: none; }
+  .case:hover .shot-view img, .case:hover .phone, .case:hover .phone img, .case:hover .preview svg.deco { transform: none; }
+  .hero-bloom, .scroll-cue .stem::after { transform: none !important; }
+  .scroll-cue .stem::after { display: none; }
 }
 </style>
+<!-- The head script decides, before first paint, whether this visit gets the
+     motion layer. "js" is only a hook for the mobile menu; "motion" is what
+     switches on every hidden-until-revealed state in the stylesheet. If the
+     page script below has not reported in after a few seconds, motion is
+     withdrawn so nothing can stay hidden behind a script that never ran. -->
+<script>
+(function () {
+  var r = document.documentElement;
+  r.classList.add("js");
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  r.classList.add("motion");
+  window.setTimeout(function () { if (!window.__atelierReady) r.classList.remove("motion"); }, 3500);
+})();
+</script>
 </head>
 <body>
 
@@ -606,76 +986,88 @@ img, svg { display: block; max-width: 100%; }
 <div class="page-veil" aria-hidden="true"></div>
 
 <!-- ============ NAV ============ -->
-<nav class="nav" id="nav">
+<nav class="nav" id="nav" aria-label="Main navigation">
   <div class="nav-inner">
     <a href="index.html" class="nav-brand" aria-label="Aster Studio — back to home">
       <img class="brand-mark" src="logo.png" width="60" height="60" alt="" decoding="async" />
-      Aster
+      <span class="brand-text">
+        <span class="brand-word">Aster</span>
+        <span class="brand-sub">Studio</span>
+      </span>
     </a>
     <div class="nav-links">
-      <a href="index.html" class="nav-link-text">Home</a>
-      <a href="atelier.html" class="nav-link-text active">Atelier</a>
-      <a href="pricing.html" class="nav-link-text">Pricing</a>
-      <a href="index.html#connect" class="nav-cta">Begin a conversation</a>
+      <a href="index.html" class="nl">Home</a>
+      <a href="atelier.html" class="nl active" aria-current="page">Atelier</a>
+      <a href="pricing.html" class="nl">Pricing</a>
+      <a href="index.html#connect" class="nav-cta"><span class="long">Begin a conversation</span><span class="short">Let’s talk</span></a>
+      <button class="nav-toggle" id="navToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="navMenu"><span></span><span></span></button>
     </div>
+  </div>
+  <div class="nav-menu" id="navMenu">
+    <a href="index.html">Home</a>
+    <a href="atelier.html" aria-current="page">Atelier</a>
+    <a href="pricing.html">Pricing</a>
   </div>
 </nav>
 
 <main id="main" tabindex="-1">
 
 <!-- ============ HERO ============ -->
-<section class="hero">
-  <div class="wrap">
-    <span class="eyebrow">The Atelier</span>
-    <h1>Where every site is <em>grown by hand.</em></h1>
-    <p class="lede">No templates. No clones. A small studio that shapes each project from seed to full bloom — and the gardens we've grown along the way.</p>
+<section class="hero" id="top">
+  <div class="hero-bloom" id="heroBloom" aria-hidden="true">
+    <svg viewBox="-300 -300 600 600" focusable="false"></svg>
   </div>
+  <div class="wrap hero-inner">
+    <span class="eyebrow" style="--n:0">The Atelier</span>
+    <h1><span class="hl" style="--n:1">Where every site is</span> <span class="hl" style="--n:2"><em>grown by hand.</em></span></h1>
+    <p class="lede" style="--n:3">No templates. No clones. A small studio that shapes each project from seed to full bloom — and the gardens we've grown along the way.</p>
+  </div>
+  <a class="scroll-cue" href="#make" style="--n:5" aria-label="Scroll to what we make">
+    Scroll
+    <span class="stem" aria-hidden="true"></span>
+  </a>
 </section>
 
 <!-- ============ WHAT WE MAKE ============ -->
-<section class="section make">
+<section class="section make" id="make">
   <div class="wrap">
-    <div class="section-head">
+    <div class="section-head rv">
       <span class="eyebrow">What we make</span>
       <h2>A few ways a bloom <em>can take shape.</em></h2>
     </div>
-    <div class="make-grid">
-      <article class="make-card">
-        <svg class="mk-flower" viewBox="-30 -30 60 60" fill="currentColor" aria-hidden="true">
-          <circle cx="0" cy="0" r="6"/>
-          <ellipse cx="0" cy="-15" rx="3.5" ry="10" opacity="0.6"/>
+    <div class="make-grid" data-stagger>
+      <article class="make-card rv" data-glow>
+        <svg class="mk-flower" viewBox="-30 -30 60 60" aria-hidden="true" focusable="false">
+          <ellipse class="ln wash" pathLength="1" style="--g:1" cx="0" cy="-15" rx="3.5" ry="10"/>
+          <circle class="ln core" pathLength="1" style="--g:0" cx="0" cy="0" r="6"/>
         </svg>
         <h3>Landing <em>pages</em></h3>
         <p>A single, tailored page — built fast and built well. For campaigns, launches, and brave small starts.</p>
         <span class="mk-meta">Seed · from $350</span>
       </article>
-      <article class="make-card">
-        <svg class="mk-flower" viewBox="-30 -30 60 60" fill="currentColor" aria-hidden="true">
-          <g>
-            <ellipse cx="0" cy="-14" rx="4" ry="10"/>
-            <ellipse cx="0" cy="14" rx="4" ry="10"/>
-            <ellipse cx="-14" cy="0" rx="10" ry="4"/>
-            <ellipse cx="14" cy="0" rx="10" ry="4"/>
-          </g>
-          <circle cx="0" cy="0" r="5" fill="var(--bloom)"/>
+      <article class="make-card rv" data-glow>
+        <svg class="mk-flower" viewBox="-30 -30 60 60" aria-hidden="true" focusable="false">
+          <ellipse class="ln wash" pathLength="1" style="--g:1" cx="0" cy="-14" rx="4" ry="10"/>
+          <ellipse class="ln wash" pathLength="1" style="--g:2" cx="14" cy="0" rx="10" ry="4"/>
+          <ellipse class="ln wash" pathLength="1" style="--g:3" cx="0" cy="14" rx="4" ry="10"/>
+          <ellipse class="ln wash" pathLength="1" style="--g:4" cx="-14" cy="0" rx="10" ry="4"/>
+          <circle class="ln core" pathLength="1" style="--g:0" cx="0" cy="0" r="5"/>
         </svg>
         <h3>Multi-page <em>sites</em></h3>
         <p>A presence in full sway — premium multi-page experiences with bespoke motion and a considered system.</p>
         <span class="mk-meta">Blossom · from $1,500</span>
       </article>
-      <article class="make-card">
-        <svg class="mk-flower" viewBox="-30 -30 60 60" fill="currentColor" aria-hidden="true">
-          <g>
-            <ellipse cx="0" cy="-16" rx="4" ry="12"/>
-            <ellipse cx="0" cy="16" rx="4" ry="12"/>
-            <ellipse cx="-16" cy="0" rx="12" ry="4"/>
-            <ellipse cx="16" cy="0" rx="12" ry="4"/>
-            <ellipse cx="-11" cy="-11" rx="12" ry="4" transform="rotate(-45 -11 -11)"/>
-            <ellipse cx="11" cy="11" rx="12" ry="4" transform="rotate(-45 11 11)"/>
-            <ellipse cx="11" cy="-11" rx="12" ry="4" transform="rotate(45 11 -11)"/>
-            <ellipse cx="-11" cy="11" rx="12" ry="4" transform="rotate(45 -11 11)"/>
-          </g>
-          <circle cx="0" cy="0" r="6" fill="var(--bloom)"/>
+      <article class="make-card rv" data-glow>
+        <svg class="mk-flower" viewBox="-30 -30 60 60" aria-hidden="true" focusable="false">
+          <ellipse class="ln wash" pathLength="1" style="--g:1" cx="0" cy="-16" rx="4" ry="12"/>
+          <ellipse class="ln wash" pathLength="1" style="--g:2" cx="11" cy="-11" rx="12" ry="4" transform="rotate(45 11 -11)"/>
+          <ellipse class="ln wash" pathLength="1" style="--g:3" cx="16" cy="0" rx="12" ry="4"/>
+          <ellipse class="ln wash" pathLength="1" style="--g:4" cx="11" cy="11" rx="12" ry="4" transform="rotate(-45 11 11)"/>
+          <ellipse class="ln wash" pathLength="1" style="--g:5" cx="0" cy="16" rx="4" ry="12"/>
+          <ellipse class="ln wash" pathLength="1" style="--g:6" cx="-11" cy="11" rx="12" ry="4" transform="rotate(45 -11 11)"/>
+          <ellipse class="ln wash" pathLength="1" style="--g:7" cx="-16" cy="0" rx="12" ry="4"/>
+          <ellipse class="ln wash" pathLength="1" style="--g:8" cx="-11" cy="-11" rx="12" ry="4" transform="rotate(-45 -11 -11)"/>
+          <circle class="ln core" pathLength="1" style="--g:0" cx="0" cy="0" r="6"/>
         </svg>
         <h3>Brand <em>systems</em></h3>
         <p>A bespoke garden, fully tended — complete identity, component library, motion language, and long-form handover.</p>
@@ -686,45 +1078,106 @@ img, svg { display: block; max-width: 100%; }
 </section>
 
 <!-- ============ HOW WE WORK ============ -->
-<section class="section">
-  <div class="wrap">
-    <div class="section-head">
-      <span class="eyebrow">How we work</span>
-      <h2>From bulb <em>to full bloom.</em></h2>
+<section class="section process" id="process">
+  <div class="wrap process-layout">
+    <div class="process-aside">
+      <div class="section-head rv">
+        <span class="eyebrow">How we work</span>
+        <h2>From bulb <em>to full bloom.</em></h2>
+      </div>
+      <!-- A plant that grows as the four stages are passed: bulb, stem and
+           leaves, then the bloom. Decorative; the steps carry the meaning. -->
+      <div class="plant" id="plant" aria-hidden="true">
+        <svg viewBox="0 0 320 440" focusable="false"></svg>
+      </div>
     </div>
-    <div class="process-steps">
-      <article class="p-step">
-        <span class="p-num">01</span>
-        <span class="p-phase">Bulb</span>
-        <h4>Discovery <em>— the quiet seed.</em></h4>
-        <p>Listen first. Map the terrain. Understand the goal before a single pixel is placed.</p>
-      </article>
-      <article class="p-step">
-        <span class="p-num">02</span>
-        <span class="p-phase">Sprouting</span>
-        <h4>Blueprint <em>— roots take hold.</em></h4>
-        <p>Architecture, wireframes, and direction. The structure beneath the beauty.</p>
-      </article>
-      <article class="p-step">
-        <span class="p-num">03</span>
-        <span class="p-phase">Budding</span>
-        <h4>Craft <em>— the form emerges.</em></h4>
-        <p>Pixel-perfect UI and meticulous engineering. Where the bloom takes its shape.</p>
-      </article>
-      <article class="p-step">
-        <span class="p-num">04</span>
-        <span class="p-phase">Full Bloom</span>
-        <h4>Launch <em>— your identity, alive.</em></h4>
-        <p>Staged launch, tuned, and handed over. The garden, open to the world.</p>
-      </article>
+    <div class="timeline" id="timeline">
+    <ol class="steps">
+      <li class="p-step rv">
+        <div class="p-node">
+          <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+            <path class="gf" d="M24 17 C32 25 33 35 24 37 C15 35 16 25 24 17 Z"/>
+            <path class="gl" pathLength="1" style="--g:0" d="M7 38 H41"/>
+            <path class="gl" pathLength="1" style="--g:1" d="M24 17 C32 25 33 35 24 37 C15 35 16 25 24 17 Z"/>
+            <path class="gl" pathLength="1" style="--g:3" d="M24 21 C22 27 22 32 24 35"/>
+            <path class="gl" pathLength="1" style="--g:4" d="M20 41 C21 42.5 22 43 23 44 M28 41 C27 42.5 26 43 25 44"/>
+          </svg>
+        </div>
+        <div class="p-body">
+          <div class="p-head"><span class="p-num">01</span><span class="p-phase">Bulb</span></div>
+          <h3>Discovery <em>— the quiet seed.</em></h3>
+          <p>Listen first. Map the terrain. Understand the goal before a single pixel is placed.</p>
+        </div>
+      </li>
+      <li class="p-step rv">
+        <div class="p-node">
+          <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+            <path class="gf" d="M24 28 C16 28 11 24 10 18 C18 18 23 22 24 28 Z"/>
+            <path class="gf" d="M24 25 C31 25 36 21 37 15 C30 15 25 19 24 25 Z"/>
+            <path class="gl" pathLength="1" style="--g:0" d="M7 38 H41"/>
+            <path class="gl leaf" pathLength="1" style="--g:1" d="M24 38 C24 32 24 28 24 22"/>
+            <path class="gl leaf" pathLength="1" style="--g:3" d="M24 28 C16 28 11 24 10 18 C18 18 23 22 24 28 Z"/>
+            <path class="gl leaf" pathLength="1" style="--g:4" d="M24 25 C31 25 36 21 37 15 C30 15 25 19 24 25 Z"/>
+          </svg>
+        </div>
+        <div class="p-body">
+          <div class="p-head"><span class="p-num">02</span><span class="p-phase">Sprouting</span></div>
+          <h3>Blueprint <em>— roots take hold.</em></h3>
+          <p>Architecture, wireframes, and direction. The structure beneath the beauty.</p>
+        </div>
+      </li>
+      <li class="p-step rv">
+        <div class="p-node">
+          <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+            <path class="gf" d="M24 7 C30 11 30 19 24 22 C18 19 18 11 24 7 Z"/>
+            <path class="gf" d="M24 34 C17 34 12 31 11 26 C18 26 23 29 24 34 Z"/>
+            <path class="gl" pathLength="1" style="--g:0" d="M7 40 H41"/>
+            <path class="gl leaf" pathLength="1" style="--g:1" d="M24 40 V22"/>
+            <path class="gl leaf" pathLength="1" style="--g:2" d="M24 34 C17 34 12 31 11 26 C18 26 23 29 24 34 Z"/>
+            <path class="gl leaf" pathLength="1" style="--g:3" d="M24 31 C30 31 35 28 36 23 C30 23 25 26 24 31 Z"/>
+            <path class="gl" pathLength="1" style="--g:4" d="M24 7 C30 11 30 19 24 22 C18 19 18 11 24 7 Z"/>
+            <path class="gl" pathLength="1" style="--g:5" d="M18.5 19 C20.5 22.5 22 22.5 24 20.5 C26 22.5 27.5 22.5 29.5 19"/>
+          </svg>
+        </div>
+        <div class="p-body">
+          <div class="p-head"><span class="p-num">03</span><span class="p-phase">Budding</span></div>
+          <h3>Craft <em>— the form emerges.</em></h3>
+          <p>Pixel-perfect UI and meticulous engineering. Where the bloom takes its shape.</p>
+        </div>
+      </li>
+      <li class="p-step rv">
+        <div class="p-node">
+          <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+            <circle class="gf sun" cx="24" cy="18" r="3"/>
+            <path class="gl leaf" pathLength="1" style="--g:0" d="M24 43 V28"/>
+            <path class="gl leaf" pathLength="1" style="--g:1" d="M24 37 C19 37 16 35 15 31 C20 31 23 33 24 37 Z"/>
+            <g class="gl-petals">
+              <ellipse class="gl" pathLength="1" style="--g:2" cx="24" cy="9.5" rx="2.6" ry="6.5"/>
+              <ellipse class="gl" pathLength="1" style="--g:3" cx="24" cy="9.5" rx="2.6" ry="6.5" transform="rotate(45 24 18)"/>
+              <ellipse class="gl" pathLength="1" style="--g:4" cx="24" cy="9.5" rx="2.6" ry="6.5" transform="rotate(90 24 18)"/>
+              <ellipse class="gl" pathLength="1" style="--g:5" cx="24" cy="9.5" rx="2.6" ry="6.5" transform="rotate(135 24 18)"/>
+              <ellipse class="gl" pathLength="1" style="--g:6" cx="24" cy="9.5" rx="2.6" ry="6.5" transform="rotate(180 24 18)"/>
+              <ellipse class="gl" pathLength="1" style="--g:7" cx="24" cy="9.5" rx="2.6" ry="6.5" transform="rotate(225 24 18)"/>
+              <ellipse class="gl" pathLength="1" style="--g:8" cx="24" cy="9.5" rx="2.6" ry="6.5" transform="rotate(270 24 18)"/>
+              <ellipse class="gl" pathLength="1" style="--g:9" cx="24" cy="9.5" rx="2.6" ry="6.5" transform="rotate(315 24 18)"/>
+            </g>
+          </svg>
+        </div>
+        <div class="p-body">
+          <div class="p-head"><span class="p-num">04</span><span class="p-phase">Full Bloom</span></div>
+          <h3>Launch <em>— your identity, alive.</em></h3>
+          <p>Staged launch, tuned, and handed over. The garden, open to the world.</p>
+        </div>
+      </li>
+        </ol>
     </div>
   </div>
 </section>
 
 <!-- ============ SITES CREATED ============ -->
-<section class="section sites">
+<section class="section sites" id="sites">
   <div class="wrap">
-    <div class="section-head">
+    <div class="section-head rv">
       <span class="eyebrow">Sites we've grown</span>
       <h2>Gardens, <em>tended this year.</em></h2>
     </div>
@@ -732,65 +1185,73 @@ img, svg { display: block; max-width: 100%; }
 
       <!-- Power Tagun Engineering — real, live project, and the studio's
            largest engagement to date, so it leads as the featured card. -->
-      <a class="case case-featured case-tagun" href="https://powertagun.vercel.app/" target="_blank" rel="noopener noreferrer">
-        <div class="preview">
-          <div class="logo-plate"><img src="assets/logos/powertagun-logo.png" alt="Power Tagun Engineering Co., Ltd" loading="lazy" /></div>
+      <a class="case case-wide case-tagun rv" data-glow href="https://powertagun.vercel.app/" target="_blank" rel="noopener noreferrer">
+        <div class="preview shot-preview">
+          <div class="shot">
+            <div class="shot-bar" aria-hidden="true"><i></i><i></i><i></i><span>powertagun.vercel.app</span></div>
+            <div class="shot-view"><img src="assets/work/powertagun-desktop.jpg" width="1440" height="497" alt="The Power Tagun Engineering website: product plates, an energized 230 kV substation and a rated-specification table." loading="lazy" decoding="async" /></div>
+          </div>
+          <div class="phone"><img src="assets/work/powertagun-mobile.jpg" width="620" height="1176" alt="The Power Tagun website on a phone." loading="lazy" decoding="async" /></div>
           <span class="label">Live · Flagship project · Electrical engineering</span>
         </div>
         <div class="body">
           <h3>Power Tagun — <em>engineering group</em></h3>
           <p>Our largest build to date — a full corporate site for a Myanmar electrical engineering group: product supply, procurement, and EPC turnkey delivery, with a project-reference library buyers can actually search.</p>
-          <div class="row"><span>Live · Myanmar</span><strong>Visit Power Tagun ↗</strong></div>
+          <div class="row"><span>Live · Myanmar</span><strong>Visit Power Tagun <span class="arr" aria-hidden="true"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 11L11 3M11 3H5M11 3V9"/></svg></span></strong></div>
+        </div>
+      </a>
+
+      <!-- KTK / Kaung Thu Kha — real, live project. -->
+      <a class="case case-wide case-split case-ktk rv" data-glow href="https://ktk-umber.vercel.app/" target="_blank" rel="noopener noreferrer">
+        <div class="preview shot-preview">
+          <div class="shot">
+            <div class="shot-bar" aria-hidden="true"><i></i><i></i><i></i><span>ktk-umber.vercel.app</span></div>
+            <div class="shot-view"><img src="assets/work/ktk-desktop.jpg" width="1440" height="645" alt="The Kaung Thu Kha Group website: a woven KTK cement sack against a dark ground, with the headline “Strength, woven in.”" loading="lazy" decoding="async" /></div>
+          </div>
+          <div class="phone"><img src="assets/work/ktk-mobile.jpg" width="620" height="1163" alt="The KTK website on a phone, showing a woven valve sack product." loading="lazy" decoding="async" /></div>
+          <span class="label">Live · Industrial packaging</span>
+        </div>
+        <div class="body">
+          <h3>KTK — <em>woven packaging</em></h3>
+          <p>A manufacturer site for Kaung Thu Kha Group: cement sacks and PP woven bags off European STARLINGER lines, told through the weave itself.</p>
+          <div class="row"><span>Live · Myanmar</span><strong>Visit KTK <span class="arr" aria-hidden="true"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 11L11 3M11 3H5M11 3V9"/></svg></span></strong></div>
         </div>
       </a>
 
       <!-- Foliyo — real, live project. -->
-      <a class="case case-foliyo" href="https://foliyo-delta.vercel.app/" target="_blank" rel="noopener noreferrer">
-        <div class="preview">
-          <svg class="deco" viewBox="0 0 40 40" fill="none">
+      <a class="case case-foliyo rv" data-glow href="https://foliyo-delta.vercel.app/" target="_blank" rel="noopener noreferrer">
+        <div class="preview plain-preview">
+          <svg class="deco" viewBox="0 0 40 40" fill="none" aria-hidden="true" focusable="false">
             <rect width="40" height="40" rx="10" fill="#05070e"/>
-            <rect x="7"  y="24" width="7" height="9"  rx="2.5" fill="#06b6d4" opacity="0.45"/>
-            <rect x="17" y="17" width="7" height="16" rx="2.5" fill="#06b6d4" opacity="0.72"/>
-            <rect x="27" y="9"  width="7" height="24" rx="2.5" fill="#06b6d4"/>
+            <rect class="bar" style="--g:0" x="7"  y="24" width="7" height="9"  rx="2.5" fill="#06b6d4" opacity="0.45"/>
+            <rect class="bar" style="--g:1" x="17" y="17" width="7" height="16" rx="2.5" fill="#06b6d4" opacity="0.72"/>
+            <rect class="bar" style="--g:2" x="27" y="9"  width="7" height="24" rx="2.5" fill="#06b6d4"/>
           </svg>
           <span class="label">Live · Fintech web app</span>
         </div>
         <div class="body">
           <h3>Foliyo — <em>stock app</em></h3>
           <p>A stock and portfolio tracker that brings a calm, focused interface to complex market information.</p>
-          <div class="row"><span>Live site</span><strong>Visit Foliyo ↗</strong></div>
+          <div class="row"><span>Live site</span><strong>Visit Foliyo <span class="arr" aria-hidden="true"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 11L11 3M11 3H5M11 3V9"/></svg></span></strong></div>
         </div>
       </a>
 
       <!-- Gateway Orbital Explorer — real, live project. -->
-      <a class="case case-gateway" href="https://gateway-orbital-explorer.vercel.app/" target="_blank" rel="noopener noreferrer">
-        <div class="preview">
-          <svg class="deco" viewBox="-100 -100 200 200" fill="none" stroke="currentColor">
-            <ellipse cx="0" cy="0" rx="80" ry="30" stroke-width="3"/>
-            <ellipse cx="0" cy="0" rx="56" ry="56" stroke-width="3" transform="rotate(28)"/>
-            <ellipse cx="0" cy="0" rx="40" ry="74" stroke-width="3" transform="rotate(-22)"/>
-            <circle cx="0" cy="0" r="11" fill="currentColor" stroke="none"/>
-            <circle cx="80" cy="0" r="6" fill="currentColor" stroke="none"/>
+      <a class="case case-gateway rv" data-glow href="https://gateway-orbital-explorer.vercel.app/" target="_blank" rel="noopener noreferrer">
+        <div class="preview plain-preview">
+          <svg class="deco" viewBox="-100 -100 200 200" fill="none" stroke="currentColor" aria-hidden="true" focusable="false">
+            <ellipse class="orb" pathLength="1" style="--g:0" cx="0" cy="0" rx="80" ry="30" stroke-width="3"/>
+            <ellipse class="orb" pathLength="1" style="--g:1" cx="0" cy="0" rx="56" ry="56" stroke-width="3" transform="rotate(28)"/>
+            <ellipse class="orb" pathLength="1" style="--g:2" cx="0" cy="0" rx="40" ry="74" stroke-width="3" transform="rotate(-22)"/>
+            <circle class="orb-dot" cx="0" cy="0" r="11" fill="currentColor" stroke="none"/>
+            <circle class="orb-dot" cx="80" cy="0" r="6" fill="currentColor" stroke="none"/>
           </svg>
           <span class="label">Live · Orbital physics sim</span>
         </div>
         <div class="body">
           <h3>Gateway Orbital — <em>physics sim</em></h3>
           <p>An independent simulation exploring the Lunar Gateway orbit through a mission-control interface.</p>
-          <div class="row"><span>Live · Artemis</span><strong>Launch ↗</strong></div>
-        </div>
-      </a>
-
-      <!-- KTK / Kaung Thu Kha — real, live project. -->
-      <a class="case case-ktk" href="https://ktk-umber.vercel.app/" target="_blank" rel="noopener noreferrer">
-        <div class="preview">
-          <div class="logo-plate"><img src="assets/logos/ktk-logo.png" alt="Kaung Thu Kha Group Co., Ltd." loading="lazy" /></div>
-          <span class="label">Live · Industrial packaging</span>
-        </div>
-        <div class="body">
-          <h3>KTK — <em>woven packaging</em></h3>
-          <p>A manufacturer site for Kaung Thu Kha Group: cement sacks and PP woven bags off European STARLINGER lines, told through the weave itself.</p>
-          <div class="row"><span>Live · Myanmar</span><strong>Visit KTK ↗</strong></div>
+          <div class="row"><span>Live · Artemis</span><strong>Launch <span class="arr" aria-hidden="true"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 11L11 3M11 3H5M11 3V9"/></svg></span></strong></div>
         </div>
       </a>
 
@@ -798,8 +1259,12 @@ img, svg { display: block; max-width: 100%; }
   </div>
 </section>
 
-<!-- ============ FINAL CTA ============ -->
-<section class="final-cta-section">
+<!-- ============ FINAL CTA — a candlelit stage ============ -->
+<section class="final-cta-section stage" id="cta">
+  <div class="stage-bg" aria-hidden="true"></div>
+  <div class="stage-glow" aria-hidden="true"></div>
+  <div class="cta-bloom" id="ctaBloom" aria-hidden="true"><svg viewBox="-300 -300 600 600" focusable="false"></svg></div>
+  <div class="lamp" aria-hidden="true"></div>
   <div class="wrap">
     <h2>Give us the seed. <em>We'll make it bloom.</em></h2>
     <p>Tell us about your project. We'll respond within 48 hours with thoughts, questions, and a starting direction.</p>
@@ -825,16 +1290,362 @@ img, svg { display: block; max-width: 100%; }
 </footer>
 
 <script>
-// Sticky nav border on scroll
+/* Atelier — the motion layer.
+
+   Everything here only ever writes class names, CSS custom properties, and
+   transforms. Scroll work is batched into one requestAnimationFrame and
+   skips any section that is nowhere near the viewport. Nothing loops: the
+   few things that animate over time are short tweens that end. */
 (function () {
-  const nav = document.getElementById("nav");
-  if (!nav) return;
-  function update() {
-    if (window.scrollY > 16) nav.classList.add("scrolled");
-    else nav.classList.remove("scrolled");
+  "use strict";
+
+  var doc = document;
+  var root = doc.documentElement;
+  var motion = root.classList.contains("motion");
+  var fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  var NS = "http://www.w3.org/2000/svg";
+
+  function $(s, c) { return (c || doc).querySelector(s); }
+  function $$(s, c) { return [].slice.call((c || doc).querySelectorAll(s)); }
+  function clamp(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+  function ease(t) { t = clamp(t); return 1 - Math.pow(1 - t, 3); }
+  function smooth(t) { t = clamp(t); return t * t * (3 - 2 * t); }
+  function f(n) { return (Math.round(n * 10) / 10).toString(); }
+  function seeded(s) { return function () { s = (s * 16807) % 2147483647; return s / 2147483647; }; }
+
+  function mk(tag, attrs, parent) {
+    var e = doc.createElementNS(NS, tag);
+    for (var k in attrs) if (attrs.hasOwnProperty(k)) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
   }
+  /* A drawn stroke: starts at --o of the group's --p, draws at speed --k. */
+  function dr(parent, tag, attrs, o, k, cls) {
+    attrs.pathLength = 1;
+    attrs["class"] = cls || "dr";
+    attrs.style = "--o:" + o.toFixed(3) + ";--k:" + k.toFixed(2);
+    return mk(tag, attrs, parent);
+  }
+  function tween(fn, dur, delay) {
+    var start = 0;
+    function step(now) {
+      if (!start) start = now + delay;
+      var t = (now - start) / dur;
+      if (t < 0) { requestAnimationFrame(step); return; }
+      fn(ease(t));
+      if (t < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  /* ---------- A top-down aster: rings of strap petals around a dotted disc */
+  function petal(r0, L, W) {
+    return "M0 " + f(-r0) +
+      " C" + f(W) + " " + f(-(r0 + L * 0.2)) + " " + f(W * 0.9) + " " + f(-(r0 + L * 0.75)) + " 0 " + f(-(r0 + L)) +
+      " C" + f(-W * 0.9) + " " + f(-(r0 + L * 0.75)) + " " + f(-W) + " " + f(-(r0 + L * 0.2)) + " 0 " + f(-r0);
+  }
+  function buildBloom(svg, rings, seed, disc) {
+    var rnd = seeded(seed), thin = window.innerWidth <= 760;
+    var g = mk("g", {}, svg);
+    rings.forEach(function (rg) {
+      var step = 360 / rg.n, span = rg.o1 - rg.o0;
+      for (var i = 0; i < rg.n; i++) {
+        var a = (rg.off || 0) + step * i + (rnd() - 0.5) * step * 0.28;
+        var L = rg.L * (0.92 + rnd() * 0.14), W = rg.W * (0.85 + rnd() * 0.3);
+        var o = rg.o0 + (i / rg.n) * span * 0.55, k = 1 / (span * 0.45 + 0.02);
+        dr(g, "path", { d: petal(rg.r0, L, W), transform: "rotate(" + f(a) + ")" }, o, k);
+        if (!thin && rg.vein) {
+          dr(g, "path", { d: "M0 " + f(-(rg.r0 + L * 0.1)) + " L0 " + f(-(rg.r0 + L * 0.62)), transform: "rotate(" + f(a) + ")" }, o + 0.03, k, "dr vein");
+        }
+      }
+    });
+    dr(g, "circle", { r: disc }, 0, 5);
+    dr(g, "circle", { r: disc * 0.64 }, 0.04, 5);
+    var n = thin ? 34 : 58, ga = Math.PI * (3 - Math.sqrt(5));
+    for (var j = 1; j <= n; j++) {
+      var rr = disc * 0.56 * Math.sqrt(j / n), th = j * ga;
+      var dot = mk("circle", { cx: f(rr * Math.cos(th)), cy: f(rr * Math.sin(th)), r: "1", "class": "dot" }, g);
+      dot.setAttribute("style", "--o:" + (0.02 + (j / n) * 0.18).toFixed(3) + ";--k:14");
+    }
+  }
+  var heroRings = [
+    { n: 14, r0: 40, L: 70,  W: 15, o0: 0.04, o1: 0.38, vein: 1 },
+    { n: 20, r0: 54, L: 120, W: 18, o0: 0.18, o1: 0.58, off: 9, vein: 1 },
+    { n: 26, r0: 70, L: 164, W: 19, o0: 0.36, o1: 0.80, off: 4 },
+    { n: 34, r0: 88, L: 188, W: 16, o0: 0.54, o1: 1.00, off: 11 }
+  ];
+  var ctaRings = [
+    { n: 12, r0: 36, L: 66,  W: 14, o0: 0.04, o1: 0.40, vein: 1 },
+    { n: 18, r0: 50, L: 120, W: 17, o0: 0.22, o1: 0.70, off: 8, vein: 1 },
+    { n: 26, r0: 68, L: 190, W: 17, o0: 0.46, o1: 1.00, off: 3 }
+  ];
+
+  var heroSvg = $("#heroBloom svg"), ctaSvg = $("#ctaBloom svg");
+  if (heroSvg) buildBloom(heroSvg, heroRings, 4177, 32);
+  if (ctaSvg) buildBloom(ctaSvg, ctaRings, 9311, 30);
+
+  /* ---------- The growing plant beside the process --------------------- */
+  var plantSvg = $("#plant svg");
+  if (plantSvg) {
+    var rnd = seeded(2203);
+    var g = mk("g", {}, plantSvg);
+    var stemD = "M160 380 C150 330 176 282 158 232 C142 184 172 142 160 96";
+    dr(g, "path", { d: "M44 404 H276" }, 0, 7).style.color = "#b8ad92";
+    // the bulb, then roots under the ground line
+    dr(g, "path", { d: "M160 352 C190 376 192 402 160 404 C128 402 130 376 160 352 Z" }, 0.02, 9, "dr fillable").setAttribute("style", "--o:.02;--k:9;--fa:.16");
+    [["M160 404 C156 416 148 424 138 432", 0.07], ["M160 404 C162 418 170 426 182 434", 0.09], ["M152 404 C146 412 132 416 124 414", 0.11]].forEach(function (r) {
+      dr(g, "path", { d: r[0] }, r[1], 8).setAttribute("class", "dr vein");
+    });
+    var stem = dr(g, "path", { d: stemD }, 0.08, 1.55);
+    // leaves sit on the stem; their bases are read off the real curve
+    var probe = mk("path", { d: stemD }, plantSvg), len = probe.getTotalLength();
+    var leaves = [[0.16, -1, 0.18], [0.28, 1, 0.26], [0.4, -1, 0.34], [0.52, 1, 0.42], [0.62, -1, 0.5]];
+    leaves.forEach(function (l, i) {
+      var pt = probe.getPointAtLength(len * (1 - l[0]));
+      var size = 74 - i * 6, ang = l[1] < 0 ? -28 - (i % 2) * 8 : -28 - (i % 2) * 8;
+      var t = "translate(" + f(pt.x) + " " + f(pt.y) + ") scale(" + l[1] + " 1) rotate(" + ang + ")";
+      var body = "M0 0 C" + f(size * 0.25) + " " + f(-size * 0.2) + " " + f(size * 0.7) + " " + f(-size * 0.2) + " " + f(size) + " " + f(-size * 0.05) +
+                 " C" + f(size * 0.7) + " " + f(size * 0.18) + " " + f(size * 0.25) + " " + f(size * 0.16) + " 0 0 Z";
+      dr(g, "path", { d: body, transform: t }, l[2], 4.2, "dr fillable").setAttribute("style", "--o:" + l[2] + ";--k:4.2;--fa:.20");
+      dr(g, "path", { d: "M3 0 L" + f(size * 0.86) + " " + f(-size * 0.04), transform: t }, l[2] + 0.05, 4.2, "dr vein");
+    });
+    probe.parentNode.removeChild(probe);
+    // the bloom at the top of the stem
+    var bloom = mk("g", { transform: "translate(160 92) scale(.4)", "class": "bloom" }, plantSvg);
+    var ringsB = [
+      { n: 12, r0: 30, L: 60,  W: 11, o0: 0.64, o1: 0.82 },
+      { n: 18, r0: 44, L: 118, W: 13, o0: 0.72, o1: 0.92, off: 10 },
+      { n: 24, r0: 60, L: 176, W: 14, o0: 0.80, o1: 1.00, off: 5 }
+    ];
+    var tmp = mk("svg", {}, null);
+    buildBloom(tmp, ringsB, 5521, 24);
+    while (tmp.firstChild) bloom.appendChild(tmp.firstChild);
+    // keep the stroke weight steady under the scale()
+    $$(".dr", bloom).forEach(function (p) { p.style.strokeWidth = "1"; });
+  }
+
+  /* ---------- The vine through the four stages -------------------------- */
+  var tl = $("#timeline");
+  var steps = tl ? $$(".p-step", tl) : [];
+  var vine = null, vineY = [], vineLast = -1;
+  function layoutVine() {
+    if (!tl || !steps.length) return;
+    var nodes = steps.map(function (s) { return $(".p-node", s); });
+    // offsetTop, not getBoundingClientRect: a step that has not been revealed
+    // yet is still translated down, and the vine must plant itself on the
+    // layout position, not the animated one.
+    var th = tl.offsetHeight;
+    vineY = nodes.map(function (n, i) { return steps[i].offsetTop + n.offsetTop + n.offsetHeight / 2; });
+    var cx = nodes[0].offsetWidth / 2;
+    if (vine) vine.parentNode.removeChild(vine);
+    vine = mk("svg", { "class": "vine", viewBox: "0 0 " + f(cx * 2) + " " + f(th), width: f(cx * 2), height: f(th), "aria-hidden": "true", focusable: "false" });
+    var y0 = vineY[0], yN = vineY[vineY.length - 1], span = Math.max(1, yN - y0);
+    var d = "M" + f(cx) + " " + f(y0), amp = 8, leafs = [];
+    for (var i = 0; i < vineY.length - 1; i++) {
+      var ya = vineY[i], yb = vineY[i + 1], h = yb - ya, s = i % 2 ? 1 : -1;
+      var c1x = cx + amp * s, c1y = ya + h * 0.33, c2x = cx - amp * s, c2y = ya + h * 0.66;
+      d += " C" + f(c1x) + " " + f(c1y) + " " + f(c2x) + " " + f(c2y) + " " + f(cx) + " " + f(yb);
+      [0.3, 0.7].forEach(function (t, j) {
+        var u = 1 - t;
+        var px = u * u * u * cx + 3 * u * u * t * c1x + 3 * u * t * t * c2x + t * t * t * cx;
+        var py = u * u * u * ya + 3 * u * u * t * c1y + 3 * u * t * t * c2y + t * t * t * yb;
+        leafs.push({ x: px, y: py, side: (i + j) % 2 ? 1 : -1 });
+      });
+    }
+    var g = mk("g", {}, vine);
+    dr(g, "path", { d: d }, 0, 1);
+    leafs.forEach(function (lf) {
+      var o = (lf.y - y0) / span;
+      var t = "translate(" + f(lf.x) + " " + f(lf.y) + ") scale(" + lf.side + " 1) rotate(-38)";
+      var body = "M0 0 C5 -6 14 -7 22 -2 C14 4 5 4 0 0 Z";
+      dr(g, "path", { d: body, transform: t }, o, 16, "dr lf fillable").setAttribute("style", "--o:" + o.toFixed(3) + ";--k:16;--fa:.2");
+    });
+    tl.insertBefore(vine, tl.firstChild);
+    tl.classList.add("vine-live");
+    vineLast = -1;
+  }
+
+  /* ---------- Reveals --------------------------------------------------- */
+  if (motion && "IntersectionObserver" in window) {
+    $$("[data-stagger]").forEach(function (grid) {
+      [].forEach.call(grid.children, function (c, i) { c.style.setProperty("--d", (i * 0.11).toFixed(2) + "s"); });
+    });
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        e.target.classList.add("in");
+        io.unobserve(e.target);
+      });
+    }, { threshold: 0.12, rootMargin: "0px 0px -6% 0px" });
+    $$(".rv").forEach(function (el) { io.observe(el); });
+    // Cards that arrive as a pair get a small stagger without a wrapper.
+    $$(".sites-grid .case-foliyo, .sites-grid .case-gateway").forEach(function (c, i) { c.style.setProperty("--d", (i * 0.12).toFixed(2) + "s"); });
+  } else {
+    $$(".rv").forEach(function (el) { el.classList.add("in"); });
+  }
+
+  /* ---------- Intro tweens (load, and the CTA bloom on arrival) --------- */
+  var heroWrap = $("#heroBloom"), ctaWrap = $("#ctaBloom");
+  if (motion && heroSvg) {
+    heroSvg.style.setProperty("--p", "0");
+    tween(function (v) { heroSvg.style.setProperty("--p", v.toFixed(3)); }, 3600, 350);
+  }
+  var ctaPlayed = false;
+  if (motion && ctaSvg) ctaSvg.style.setProperty("--p", "0");
+  function playCta() {
+    if (ctaPlayed || !ctaSvg) return;
+    ctaPlayed = true;
+    tween(function (v) { ctaSvg.style.setProperty("--p", v.toFixed(3)); }, 3600, 150);
+  }
+
+  /* ---------- Scroll: one rAF, only the sections that are near ---------- */
+  var nav = $("#nav"), hero = $("#top"), cue = $(".scroll-cue"), plantSvgEl = plantSvg;
+  var cta = $("#cta"), process = $("#process");
+  var scrolled = false, onDark = false, ticking = false;
+  var lastP = -1, lastPlant = -1, steppedTo = -2;
+  var px = 0, py = 0, cx = 0, cy = 0, hraf = 0;   // hero pointer lean
+
+  function writeHero(sy) {
+    if (!heroWrap) return;
+    heroWrap.style.transform = "translate3d(" + cx.toFixed(1) + "px," + (cy + sy * 0.16).toFixed(1) + "px,0) rotate(" + (sy * 0.012).toFixed(2) + "deg)";
+  }
+  var heroSY = 0;
+  function heroFrame() {
+    hraf = 0;
+    cx += (px - cx) * 0.07; cy += (py - cy) * 0.07;
+    writeHero(heroSY);
+    if (Math.abs(px - cx) > 0.1 || Math.abs(py - cy) > 0.1) hraf = requestAnimationFrame(heroFrame);
+  }
+
+  function update() {
+    ticking = false;
+    var vh = window.innerHeight, sy = window.scrollY || window.pageYOffset;
+
+    // reads
+    var hr = hero.getBoundingClientRect();
+    var cr = cta.getBoundingClientRect();
+    var tr = tl && !(process.getBoundingClientRect().top > vh * 1.4 || process.getBoundingClientRect().bottom < -vh * 0.4) ? tl.getBoundingClientRect() : null;
+
+    // nav states
+    var s = sy > 12;
+    if (s !== scrolled) { scrolled = s; nav.classList.toggle("scrolled", s); }
+    // dark only once the nav sits inside the opaque part of the room, not its masked edges
+    var fade = Math.min(170, Math.max(90, window.innerWidth * 0.11)) * 0.85;
+    var dk = cr.top <= 56 - fade && cr.bottom >= 56 + fade;
+    if (dk !== onDark) { onDark = dk; nav.classList.toggle("on-dark", dk); }
+
+    // hero: slow parallax on the bloom, cue pauses once it is gone
+    var heroVisible = hr.bottom > 0;
+    if (cue) cue.classList.toggle("paused", !heroVisible);
+    if (motion && heroVisible) { heroSY = sy; writeHero(sy); }
+
+    // cta bloom plays once, when the stage comes up
+    if (motion && cr.top < vh * 0.8) playCta();
+
+    // process: vine, stage glyphs, and the plant
+    if (tr && vineY.length) {
+      var reach = vh * 0.64 - tr.top;
+      var y0 = vineY[0], yN = vineY[vineY.length - 1];
+      var p = clamp((reach - y0) / Math.max(1, yN - y0));
+      p = Math.round(p * 500) / 500;
+      if (p !== lastP) { lastP = p; vine.style.setProperty("--p", p.toFixed(3)); }
+      var pp = Math.round(smooth(clamp((reach - y0 + 70) / Math.max(1, yN - y0 + 190))) * 500) / 500;
+      if (plantSvgEl && pp !== lastPlant) { lastPlant = pp; plantSvgEl.style.setProperty("--p", pp.toFixed(3)); }
+      var n = -1;
+      for (var i = 0; i < vineY.length; i++) if (reach >= vineY[i] - 12) n = i;
+      if (n !== steppedTo) {
+        steppedTo = n;
+        steps.forEach(function (st, j) { st.classList.toggle("on", j <= n); });
+      }
+    }
+  }
+  function request() { if (!ticking) { ticking = true; requestAnimationFrame(update); } }
+
+  if (tl) layoutVine();
+  if (motion) {
+    if (vine) vine.style.setProperty("--p", "0");
+    if (plantSvgEl) plantSvgEl.style.setProperty("--p", "0");
+  }
+  window.addEventListener("scroll", request, { passive: true });
+  window.addEventListener("resize", function () { layoutVine(); lastP = -1; steppedTo = -2; request(); });
+  if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(function () { layoutVine(); lastP = -1; steppedTo = -2; request(); });
+  window.addEventListener("load", function () { layoutVine(); lastP = -1; steppedTo = -2; request(); });
   update();
-  window.addEventListener("scroll", update, { passive: true });
+
+  /* ---------- Pointer: card light, hero lean, stage lamp ---------------- */
+  if (fine) {
+    var pend = null, gx = 0, gy = 0, graf = 0;
+    function glow() {
+      graf = 0;
+      if (!pend) return;
+      var r = pend.getBoundingClientRect();
+      pend.style.setProperty("--mx", (gx - r.left).toFixed(0) + "px");
+      pend.style.setProperty("--my", (gy - r.top).toFixed(0) + "px");
+      var pv = $(".preview", pend);
+      if (pv) {
+        var q = pv.getBoundingClientRect();
+        pv.style.setProperty("--px", (gx - q.left).toFixed(0) + "px");
+        pv.style.setProperty("--py", (gy - q.top).toFixed(0) + "px");
+      }
+    }
+    $$(".make-grid, .sites-grid").forEach(function (grid) {
+      grid.addEventListener("pointermove", function (e) {
+        var c = e.target.closest ? e.target.closest("[data-glow]") : null;
+        if (!c) return;
+        pend = c; gx = e.clientX; gy = e.clientY;
+        if (!graf) graf = requestAnimationFrame(glow);
+      }, { passive: true });
+    });
+
+    if (motion && heroWrap) {
+      hero.addEventListener("pointermove", function (e) {
+        var r = hero.getBoundingClientRect();
+        px = ((e.clientX - r.left) / r.width - 0.5) * -26;
+        py = ((e.clientY - r.top) / r.height - 0.5) * -18;
+        if (!hraf) hraf = requestAnimationFrame(heroFrame);
+      }, { passive: true });
+      hero.addEventListener("pointerleave", function () { px = 0; py = 0; if (!hraf) hraf = requestAnimationFrame(heroFrame); });
+    }
+
+    var lamp = $(".lamp", cta);
+    if (motion && lamp) {
+      var lx = 0, ly = 0, tx = 0, ty = 0, lraf = 0;
+      function lampFrame() {
+        lraf = 0;
+        lx += (tx - lx) * 0.14; ly += (ty - ly) * 0.14;
+        lamp.style.transform = "translate3d(" + lx.toFixed(1) + "px," + ly.toFixed(1) + "px,0)";
+        if (Math.abs(tx - lx) > 0.4 || Math.abs(ty - ly) > 0.4) lraf = requestAnimationFrame(lampFrame);
+      }
+      cta.addEventListener("pointerenter", function (e) {
+        var r = cta.getBoundingClientRect();
+        tx = lx = e.clientX - r.left; ty = ly = e.clientY - r.top;
+        lamp.style.transform = "translate3d(" + lx + "px," + ly + "px,0)";
+        lamp.classList.add("lit");
+      });
+      cta.addEventListener("pointermove", function (e) {
+        var r = cta.getBoundingClientRect();
+        tx = e.clientX - r.left; ty = e.clientY - r.top;
+        if (!lraf) lraf = requestAnimationFrame(lampFrame);
+      }, { passive: true });
+      cta.addEventListener("pointerleave", function () { lamp.classList.remove("lit"); });
+    }
+  }
+
+  /* ---------- Mobile menu ----------------------------------------------- */
+  var toggle = $("#navToggle");
+  if (toggle) {
+    function setMenu(open) {
+      nav.classList.toggle("menu-open", open);
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    }
+    toggle.addEventListener("click", function () { setMenu(!nav.classList.contains("menu-open")); });
+    doc.addEventListener("keydown", function (e) { if (e.key === "Escape" && nav.classList.contains("menu-open")) { setMenu(false); toggle.focus(); } });
+    doc.addEventListener("click", function (e) { if (nav.classList.contains("menu-open") && !nav.contains(e.target)) setMenu(false); });
+    window.addEventListener("resize", function () { if (window.innerWidth > 760) setMenu(false); });
+  }
+
+  window.__atelierReady = true;
 })();
 
 // Page transition — fade out through cream before navigating to
