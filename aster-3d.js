@@ -363,12 +363,19 @@
   // colour. It is a cheap term, not transmission: no extra pass, no refracted
   // backbuffer, so nothing washes out to grey.
   // ────────────────────────────────────────────────────────────────────────
+  // Ceiling on how far inertia may push a petal out of shape, in scene units
+  // (a petal is ~2 long). Below it the lag is untouched, so ordinary drags
+  // feel the same; above it the displacement flattens out instead of growing
+  // with drag speed, which is what made a hard fling stretch the head like
+  // dough. Soft (a 4-norm), so there is no visible knee.
+  const LAG_MAX = 0.55;
   function patchPetalVertex(sh, U, withNormals) {
     sh.uniforms.uTime = U.uTime;
     sh.uniforms.uSwing = U.uSwing;
     sh.uniforms.uFlutter = U.uFlutter;
     let vs = sh.vertexShader.replace('#include <common>',
       '#include <common>\n' +
+      'const float LAG_MAX = ' + LAG_MAX.toFixed(3) + ';\n' +
       'attribute vec4 aVar;\nuniform float uTime;\nuniform vec2 uSwing;\nuniform float uFlutter;\nvarying vec2 vPU;\n');
     if (withNormals) {
       vs = vs.replace('#include <beginnormal_vertex>',
@@ -399,7 +406,9 @@
       '#endif\n' +
       '{\n' +
       '  float sw = smoothstep(0.35, 2.1, length(mvPosition.xy));\n' +
-      '  mvPosition.z += sw * sw * (mvPosition.x * uSwing.y - mvPosition.y * uSwing.x) * (0.7 + 0.6 * aVar.w);\n' +
+      '  float lagD = sw * sw * (mvPosition.x * uSwing.y - mvPosition.y * uSwing.x) * (0.7 + 0.6 * aVar.w);\n' +
+      '  lagD *= LAG_MAX / pow(pow(LAG_MAX, 4.0) + pow(abs(lagD), 4.0), 0.25);\n' +
+      '  mvPosition.z += lagD;\n' +
       '}\n' +
       'mvPosition = modelViewMatrix * mvPosition;\n' +
       'gl_Position = projectionMatrix * mvPosition;\n');
@@ -1116,6 +1125,7 @@
     // touch and settle, rather than being welded to the head.
     let prevRX = root.rotation.x, prevRY = root.rotation.y;
     let swX = 0, swY = 0, swVX = 0, swVY = 0;
+    const SWING_MAX = 0.55;
 
     function tick(now) {
       rafId = requestAnimationFrame(tick);
@@ -1193,6 +1203,12 @@
         swVX += ((wx - swX) * 0.12 - swVX * 0.16) * f;
         swVY += ((wy - swY) * 0.12 - swVY * 0.16) * f;
         swX += swVX * f; swY += swVY * f;
+        // The spring may overshoot, but not without limit.
+        const swLen = Math.hypot(swX, swY);
+        if (swLen > SWING_MAX) {
+          const k = SWING_MAX / swLen;
+          swX *= k; swY *= k; swVX *= k; swVY *= k;
+        }
         U.uSwing.value.set(swX, swY);
         // The head breathes: a very slow, very small swell.
         floatGroup.scale.setScalar(1 + Math.sin(ft * 1.35) * 0.0055 * amp);

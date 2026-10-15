@@ -4497,38 +4497,52 @@ body.in-bloom-zoom .ambient-petals {
 
 <div class="fine-divide"></div>
 
-<!-- Expertise. The three disciplines are the same story the process section
-     tells — seed, bud, bloom — so they are drawn as one: a single fine vine
-     runs under the three columns and grows left to right as the section
-     scrolls in, and each discipline's glyph draws itself when the vine reaches
-     it. Line art only, in the botanical-plate register the rest of the site
-     uses, so it fills the section without competing with the type.
-     expertise.js drives it; without JS every stroke is simply drawn. -->
+<!-- Expertise. One sticky heading on the left, three chapters on the right,
+     and a single vine growing down the left edge of the chapters: seed, bud,
+     bloom — the same story as the process section, in the order a project
+     actually happens. Every deliverable listed is taken from the tiers on the
+     pricing page, so nothing here promises more than the pricing does.
+     expertise.js draws the vine and glyphs with scroll; without JS (or with
+     reduced motion) everything is simply drawn. -->
 <section class="section expertise" id="expertise" aria-labelledby="expertiseTitle">
-  <svg class="exp-aster" viewBox="-200 -200 400 400" aria-hidden="true" focusable="false"></svg>
-  <div class="wrap">
-    <div class="expertise-head">
+  <div class="wrap xp">
+    <div class="xp-intro">
       <span class="eyebrow">Our expertise</span>
-      <h2 id="expertiseTitle">From first idea.<br /><em>To what’s next.</em></h2>
-      <p>Three disciplines under one roof, so nothing gets lost between the plan, the look, and the build.</p>
+      <h2 id="expertiseTitle">Everything your site needs, <em>grown in one place.</em></h2>
+      <p>One small studio takes your project from the first conversation to launch day. Fewer handoffs, and fewer things lost along the way.</p>
+      <div class="xp-links">
+        <a class="xp-link xp-link--main" href="#connect">Start a conversation <span aria-hidden="true">→</span></a>
+        <a class="xp-link" href="pricing.html">What each tier includes <span aria-hidden="true">→</span></a>
+      </div>
     </div>
-    <div class="expertise-grid">
-      <svg class="exp-vine" aria-hidden="true" focusable="false"><path class="exp-vine-path" pathLength="1" /></svg>
-      <article class="expertise-item">
-        <svg class="exp-glyph" viewBox="0 0 64 72" aria-hidden="true" focusable="false">
+
+    <div class="xp-rows">
+      <svg class="xp-vine" aria-hidden="true" focusable="false"><path class="xp-vine-path" pathLength="1" /></svg>
+
+      <article class="xp-row">
+        <svg class="xp-glyph" viewBox="0 0 64 72" aria-hidden="true" focusable="false">
           <ellipse class="g-fill g-seed" cx="11" cy="66" rx="6.5" ry="4" transform="rotate(-14 11 66)" pathLength="1" />
           <path class="g-line" d="M10 63 C10 55 12 47 17 40" pathLength="1" />
           <path class="g-fill g-leaf" d="M17 40 C 9 39, 4 33, 5 26 C 12 27, 17 32, 17 40 Z" pathLength="1" />
           <path class="g-fill g-leaf" d="M17 40 C 22 33, 30 30, 38 32 C 34 39, 26 42, 17 40 Z" pathLength="1" />
           <path class="g-line g-vein" d="M16 38 C 12 35, 9 32, 7 28 M19 39 C 24 36, 29 34, 35 33" pathLength="1" />
         </svg>
-        <span class="expertise-number" aria-hidden="true">01</span>
-        <h3>Direction.</h3>
-        <p>Strategy, story, and a clear plan.</p>
-        <div class="expertise-tags" aria-label="Includes"><span>Discovery</span><span>Site structure</span><span>Content plan</span></div>
+        <div class="xp-body">
+          <span class="xp-num" aria-hidden="true">01</span>
+          <h3>Direction</h3>
+          <p class="xp-tag">Know where you’re going.</p>
+          <p class="xp-desc">Before anything is drawn, we settle what the site is for, who it speaks to, and how the pages fit together, so every later choice has something to answer to.</p>
+          <ul class="xp-list" aria-label="Direction includes">
+            <li>Discovery &amp; goals</li>
+            <li>Site structure &amp; page plan</li>
+            <li>Copy guidance &amp; voice</li>
+            <li>Staged launch plan</li>
+          </ul>
+        </div>
       </article>
-      <article class="expertise-item">
-        <svg class="exp-glyph" viewBox="0 0 64 72" aria-hidden="true" focusable="false">
+
+      <article class="xp-row">
+        <svg class="xp-glyph" viewBox="0 0 64 72" aria-hidden="true" focusable="false">
           <path class="g-line" d="M10 72 C10 58 13 44 19 31" pathLength="1" />
           <path class="g-fill g-leaf" d="M12 57 C 20 50, 30 50, 37 54 C 29 61, 19 61, 12 57 Z" pathLength="1" />
           <path class="g-line g-vein" d="M14 57 C 21 55, 28 55, 34 55" pathLength="1" />
@@ -4536,30 +4550,47 @@ body.in-bloom-zoom .ambient-petals {
           <path class="g-fill g-tip" d="M20.5 10.5 C 21.5 8.5, 22.2 7.4, 23 6 C 23.9 7.4, 24.6 8.6, 25.6 10.6 C 24 11.6, 22 11.6, 20.5 10.5 Z" pathLength="1" />
           <path class="g-line g-vein" d="M19 31 C 16 24, 16 18, 19 12 M19 31 C 23 25, 25 19, 24.5 13" pathLength="1" />
         </svg>
-        <span class="expertise-number" aria-hidden="true">02</span>
-        <h3>Design.</h3>
-        <p>Identity, websites, and considered motion.</p>
-        <div class="expertise-tags" aria-label="Includes"><span>Identity</span><span>Interface</span><span>Motion</span></div>
+        <div class="xp-body">
+          <span class="xp-num" aria-hidden="true">02</span>
+          <h3>Design</h3>
+          <p class="xp-tag">Make it unmistakably yours.</p>
+          <p class="xp-desc">Type, colour and layout drawn for your business, never picked from a template. Motion is there to guide the eye, not to show off.</p>
+          <ul class="xp-list" aria-label="Design includes">
+            <li>Type, colour &amp; spacing system</li>
+            <li>Bespoke layouts, mobile-first</li>
+            <li>Motion &amp; interaction</li>
+            <li>Logo &amp; brand identity</li>
+          </ul>
+        </div>
       </article>
-      <article class="expertise-item">
-        <svg class="exp-glyph" viewBox="0 0 64 72" aria-hidden="true" focusable="false">
-          <defs><ellipse id="expRay" cx="27" cy="13" rx="2.5" ry="7.6" pathLength="1" /></defs>
+
+      <article class="xp-row">
+        <svg class="xp-glyph" viewBox="0 0 64 72" aria-hidden="true" focusable="false">
+          <defs><ellipse id="xpRay" cx="27" cy="13" rx="2.5" ry="7.6" pathLength="1" /></defs>
           <path class="g-line" d="M10 72 C10 60 14 49 24 39" pathLength="1" />
           <path class="g-fill g-leaf" d="M13 60 C 20 53, 30 54, 35 59 C 27 64, 19 64, 13 60 Z" pathLength="1" />
           <path class="g-line g-vein" d="M15 60 C 21 58, 27 58, 32 59" pathLength="1" />
           <g class="g-fill g-ray">
-            <use href="#expRay" /><use href="#expRay" transform="rotate(25.7 27 24)" /><use href="#expRay" transform="rotate(51.4 27 24)" />
-            <use href="#expRay" transform="rotate(77.1 27 24)" /><use href="#expRay" transform="rotate(102.9 27 24)" /><use href="#expRay" transform="rotate(128.6 27 24)" />
-            <use href="#expRay" transform="rotate(154.3 27 24)" /><use href="#expRay" transform="rotate(180 27 24)" /><use href="#expRay" transform="rotate(205.7 27 24)" />
-            <use href="#expRay" transform="rotate(231.4 27 24)" /><use href="#expRay" transform="rotate(257.1 27 24)" /><use href="#expRay" transform="rotate(282.9 27 24)" />
-            <use href="#expRay" transform="rotate(308.6 27 24)" /><use href="#expRay" transform="rotate(334.3 27 24)" />
+            <use href="#xpRay" /><use href="#xpRay" transform="rotate(25.7 27 24)" /><use href="#xpRay" transform="rotate(51.4 27 24)" />
+            <use href="#xpRay" transform="rotate(77.1 27 24)" /><use href="#xpRay" transform="rotate(102.9 27 24)" /><use href="#xpRay" transform="rotate(128.6 27 24)" />
+            <use href="#xpRay" transform="rotate(154.3 27 24)" /><use href="#xpRay" transform="rotate(180 27 24)" /><use href="#xpRay" transform="rotate(205.7 27 24)" />
+            <use href="#xpRay" transform="rotate(231.4 27 24)" /><use href="#xpRay" transform="rotate(257.1 27 24)" /><use href="#xpRay" transform="rotate(282.9 27 24)" />
+            <use href="#xpRay" transform="rotate(308.6 27 24)" /><use href="#xpRay" transform="rotate(334.3 27 24)" />
           </g>
           <circle class="g-fill g-disc" cx="27" cy="24" r="4.6" pathLength="1" />
         </svg>
-        <span class="expertise-number" aria-hidden="true">03</span>
-        <h3>Development.</h3>
-        <p>Custom builds, CMS, and ongoing care.</p>
-        <div class="expertise-tags" aria-label="Includes"><span>Custom code</span><span>CMS</span><span>Multilingual</span></div>
+        <div class="xp-body">
+          <span class="xp-num" aria-hidden="true">03</span>
+          <h3>Development</h3>
+          <p class="xp-tag">Build it to last.</p>
+          <p class="xp-desc">Hand-built, fast and easy to run: a CMS your team can edit, more than one language when you need it, and support after launch.</p>
+          <ul class="xp-list" aria-label="Development includes">
+            <li>Hand-coded, no templates</li>
+            <li>CMS you can run yourself</li>
+            <li>Multilingual builds</li>
+            <li>Fast, accessible, SEO-ready</li>
+          </ul>
+        </div>
       </article>
     </div>
   </div>

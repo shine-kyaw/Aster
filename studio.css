@@ -84,18 +84,6 @@ textarea:focus-visible, select:focus-visible {
     rgba(196, 165, 224, 0.09) 76%,
     rgba(196, 165, 224, 0) 100%);
 }
-.expertise-head { display: grid; grid-template-columns: 1.4fr 1fr; gap: 22px 72px; align-items: end; }
-.expertise-head > .eyebrow { grid-column: 1 / -1; }
-.expertise-head h2 { font: 400 clamp(38px, 4.6vw, 66px)/1.1 var(--serif); letter-spacing: -.035em; margin: 0; }
-.expertise-head h2 em { color: var(--aster-deep); }
-.expertise-head > p { font-size: 15px; line-height: 1.8; max-width: 40ch; margin: 0 0 4px; color: var(--ink-soft); }
-.expertise-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 36px; margin-top: 64px; }
-.expertise-item { display: flex; flex-direction: column; border-top: 1px solid #c8bbce; padding-top: 24px; }
-.expertise-number { font-size: 11px; color: var(--aster-deep); margin-bottom: 40px; }
-.expertise-item h3 { font: 400 clamp(24px, 2.2vw, 31px)/1.2 var(--serif); letter-spacing: -.025em; margin: 0 0 18px; }
-.expertise-item p { font-size: 14px; line-height: 1.8; margin: 0 0 32px; color: var(--ink-soft); }
-.expertise-tags { display: flex; flex-wrap: wrap; gap: 9px 16px; margin-top: auto; }
-.expertise-tags span { font-size: 10px; color: var(--aster-deep); border-bottom: 1px solid #c8bbce; padding-bottom: 6px; }
 .process { padding-top: var(--pad-section); }
 .tier { border-radius: 8px; }
 .tier.featured { box-shadow: none; }
@@ -131,8 +119,6 @@ textarea:focus-visible, select:focus-visible {
   .hero { padding-top: clamp(120px, 16svh, 168px); }
   .hero-flower { right: -16%; opacity: .5; }
   .hero-title { font-size: clamp(48px, 6.7vw, 72px); }
-  .expertise-head { gap: 20px 40px; }
-  .expertise-grid { gap: 24px; }
 }
 @media (max-width: 760px) {
   :root { --pad-x: 24px; }
@@ -152,14 +138,6 @@ textarea:focus-visible, select:focus-visible {
   .hero-actions { flex-direction: row; align-items: center; gap: 14px 24px; }
   .hero-actions .btn { width: auto; padding: 16px 21px; }
   .hero-secondary { font-size: 12px; gap: 12px; }
-  .expertise-head { grid-template-columns: 1fr; gap: 20px; }
-  .expertise-head h2 { font-size: clamp(36px, 7vw, 52px); }
-  .expertise-head > p { max-width: 47ch; font-size: 14px; }
-  .expertise-grid { grid-template-columns: 1fr; margin-top: 44px; gap: 36px; }
-  .expertise-number { margin-bottom: 22px; }
-  .expertise-item h3 { font-size: 29px; }
-  .expertise-item p { max-width: 50ch; margin-bottom: 23px; }
-  .expertise-tags span { font-size: 11px; }
   .philosophy-grid { gap: 32px; }
 }
 @media (max-width: 380px) {
@@ -201,8 +179,6 @@ textarea:focus-visible, select:focus-visible {
   .hero-secondary { align-self: flex-start; min-height: 44px; }
   .hero-scroll { bottom: calc(24px + env(safe-area-inset-bottom, 0px)); }
   .hero-flower { --fw: clamp(380px, 112vw, 510px); right: -58%; top: 44%; margin-top: calc(var(--fw) * -.46); }
-  .expertise-number { margin-bottom: 16px; }
-  .expertise-grid { gap: 28px; }
   .connect-form input, .connect-form select, .connect-form textarea { font-size: 16px; }
   .connect-form input, .connect-form select { min-height: 48px; }
   .connect-form textarea { min-height: 144px; }
@@ -222,100 +198,119 @@ textarea:focus-visible, select:focus-visible {
   .on-ink { overflow-x: clip; }
 }
 
-/* ========== Expertise: vine, glyphs, faint aster ==========
-   Kept at the end of the sheet so it wins over the phone blocks above. The
-   drawing is driven by two custom properties that expertise.js sets:
-   --draw (0..1) on each glyph and the vine, --fill (0..1) for the washes.
-   Both default to 1, so with no JS every stroke is simply there. */
-.expertise { position: relative; overflow: hidden; overflow: clip; isolation: isolate; }
-.expertise > .wrap { position: relative; z-index: 1; }
-.expertise-head > p { align-self: end; justify-self: start; }
+/* ========== Expertise ==========
+   One sticky heading, three chapters, one vine down the left edge. Kept at the
+   end of the sheet so it wins over the phone blocks above. expertise.js sets
+   --draw (0..1) on the vine, its branches and each glyph, and --fill (0..1)
+   for the washes; both default to 1, so with no JS every stroke is drawn. */
+.expertise { position: relative; }
+.xp { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 0 clamp(48px, 7vw, 112px); align-items: start; }
 
-.exp-aster {
-  position: absolute; z-index: 0; pointer-events: none;
-  width: min(46vw, 640px); aspect-ratio: 1;
-  right: max(-15vw, -220px); top: -18%;
-  color: #b49bd0;
-  opacity: .34;
-  will-change: transform;
+.xp-intro { position: sticky; top: 128px; }
+.xp-intro h2 {
+  font: 400 clamp(38px, 4.1vw, 60px)/1.08 var(--serif);
+  letter-spacing: -.035em; margin: 22px 0 26px; text-wrap: balance;
 }
-.exp-aster path, .exp-aster circle {
-  fill: none; stroke: currentColor; stroke-width: .9; vector-effect: non-scaling-stroke;
+.xp-intro h2 em { color: var(--aster-deep); }
+.xp-intro > p { font-size: 16px; line-height: 1.75; color: var(--ink-soft); max-width: 36ch; margin: 0 0 34px; }
+.xp-links { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
+.xp-link {
+  display: inline-flex; align-items: center; gap: 10px; font-size: 14px; letter-spacing: .01em;
+  color: var(--ink); padding-bottom: 5px; border-bottom: 1px solid rgba(94, 61, 138, .35);
+  transition: color .3s, border-color .3s, gap .3s;
+}
+.xp-link:hover, .xp-link:focus-visible { color: var(--aster-deep); border-color: var(--aster-deep); gap: 14px; }
+.xp-link--main {
+  padding: 15px 24px; border: 0; border-radius: 999px; background: var(--ink); color: var(--cream);
+  transition: background .3s, transform .3s, gap .3s;
+}
+.xp-link--main:hover, .xp-link--main:focus-visible { background: var(--aster-deep); color: var(--cream); transform: translateY(-2px); }
+
+.xp-rows { position: relative; padding-left: 46px; }
+.xp-vine { position: absolute; left: 0; top: 0; width: 28px; height: 100%; overflow: visible; pointer-events: none; color: #a58cc6; }
+.xp-vine path {
+  fill: none; stroke: currentColor; stroke-width: 1.25; stroke-linecap: round;
   stroke-dasharray: 1; stroke-dashoffset: calc(1 - var(--draw, 1));
 }
-.exp-aster .a-disc { stroke-dasharray: .012 .02; stroke-dashoffset: 0; opacity: calc(var(--draw, 1)); }
+.xp-vine .xp-branch { stroke-width: 1.1; }
 
-.expertise-grid { position: relative; margin-top: 128px; }
-.exp-vine {
-  position: absolute; left: 0; top: -14px; width: 100%; height: 28px;
-  overflow: visible; pointer-events: none; color: #a58cc6;
+.xp-row {
+  position: relative; display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 0 34px;
+  padding: 52px 0 60px; border-top: 1px solid rgba(94, 61, 138, .16);
 }
-.exp-vine-path {
-  fill: none; stroke: currentColor; stroke-width: 1.15; stroke-linecap: round;
-  stroke-dasharray: 1; stroke-dashoffset: calc(1 - var(--draw, 1));
+.xp-rows > .xp-row:first-of-type { border-top: 0; padding-top: 6px; }
+.xp-row::before {
+  content: ""; position: absolute; inset: 14px -28px 14px -34px; z-index: -1;
+  border-radius: 22px; pointer-events: none;
+  background: radial-gradient(300px circle at var(--mx, 30%) var(--my, 30%), rgba(196, 165, 224, .30), rgba(196, 165, 224, 0) 70%);
+  opacity: 0; transition: opacity .5s ease;
 }
-.expertise.exp-live .expertise-item { border-top-color: transparent; }
+.xp-row:hover::before { opacity: 1; }
 
-.expertise-item { position: relative; }
-.exp-glyph {
-  position: absolute; left: -12.5px; top: -90px; width: 80px; height: 90px;
-  overflow: visible; color: var(--aster-deep);
-  transform-origin: 12.5px 90px;
-  transition: transform .9s cubic-bezier(.2, .7, .2, 1);
+.xp-glyph {
+  width: 104px; height: 117px; overflow: visible; color: var(--aster-deep);
+  transform-origin: 16px 117px; transition: transform .9s cubic-bezier(.2, .7, .2, 1);
 }
-.exp-glyph .g-line, .exp-glyph .g-fill {
+.xp-glyph .g-line, .xp-glyph .g-fill {
   stroke: currentColor; stroke-width: 1.1; stroke-linecap: round; stroke-linejoin: round;
   stroke-dasharray: 1; stroke-dashoffset: calc(1 - var(--draw, 1));
 }
-.exp-glyph .g-line { fill: none; }
-.exp-glyph .g-vein { stroke-width: .8; opacity: .7; }
-.exp-glyph .g-fill { fill-opacity: calc(var(--fill, 1) * .5); transition: fill-opacity .6s ease; }
-.exp-glyph .g-seed { fill: #c79a6e; }
-.exp-glyph .g-leaf { fill: #9db58c; }
-.exp-glyph .g-bud  { fill: #9db58c; }
-.exp-glyph .g-tip  { fill: #b490d8; fill-opacity: calc(var(--fill, 1) * .9); }
-.exp-glyph .g-ray  { fill: #c4a5e0; }
-.exp-glyph .g-ray use { stroke-width: 1; }
-.exp-glyph .g-disc { fill: #e3b552; fill-opacity: calc(var(--fill, 1) * .95); }
+.xp-glyph .g-line { fill: none; }
+.xp-glyph .g-vein { stroke-width: .8; opacity: .7; }
+.xp-glyph .g-fill { fill-opacity: calc(var(--fill, 1) * .5); transition: fill-opacity .6s ease; }
+.xp-glyph .g-seed { fill: #c79a6e; }
+.xp-glyph .g-leaf, .xp-glyph .g-bud { fill: #9db58c; }
+.xp-glyph .g-tip { fill: #b490d8; fill-opacity: calc(var(--fill, 1) * .9); }
+.xp-glyph .g-ray { fill: #c4a5e0; }
+.xp-glyph .g-ray use { stroke-width: 1; }
+.xp-glyph .g-disc { fill: #e3b552; fill-opacity: calc(var(--fill, 1) * .95); }
+.xp-row:hover .xp-glyph { animation: xp-sway 3.2s ease-in-out infinite; }
+@keyframes xp-sway { 0%, 100% { transform: rotate(0deg); } 30% { transform: rotate(-4deg); } 70% { transform: rotate(3deg); } }
 
-/* A soft light that follows the pointer inside the hovered discipline. */
-.expertise-item::before {
-  content: ""; position: absolute; inset: -6px -28px -12px; z-index: -1;
-  border-radius: 18px; pointer-events: none;
-  background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 40%),
-    rgba(196, 165, 224, .34), rgba(196, 165, 224, 0) 70%);
-  opacity: 0; transition: opacity .5s ease;
+.xp-num { display: block; font: 500 11px/1 var(--sans); letter-spacing: .22em; color: var(--aster-deep); margin-top: 8px; transition: letter-spacing .5s ease; }
+.xp-row:hover .xp-num { letter-spacing: .34em; }
+.xp-body h3 { font: 400 clamp(40px, 4.4vw, 62px)/1.02 var(--serif); letter-spacing: -.035em; margin: 14px 0 10px; transition: transform .6s cubic-bezier(.2, .7, .2, 1); }
+.xp-row:hover .xp-body h3 { transform: translateX(5px); }
+.xp-tag { font: italic 400 clamp(19px, 1.7vw, 24px)/1.3 var(--serif); letter-spacing: -.01em; color: var(--aster-deep); margin: 0 0 20px; }
+.xp-desc { font-size: 15.5px; line-height: 1.75; color: var(--ink-soft); max-width: 52ch; margin: 0 0 28px; }
+.xp-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 13px 30px; max-width: 540px; }
+.xp-list li { position: relative; padding-left: 24px; font-size: 14px; line-height: 1.45; color: var(--ink); }
+.xp-list li::before {
+  content: ""; position: absolute; left: 1px; top: .42em; width: 11px; height: 7px;
+  border-radius: 0 100% 0 100%; background: #bba2d9; transform: rotate(-32deg);
 }
-.expertise-item:hover::before { opacity: 1; }
-.expertise-number { transition: color .4s ease, letter-spacing .5s ease; }
-.expertise-item:hover .expertise-number { letter-spacing: .14em; }
-.expertise-item h3 { transition: transform .6s cubic-bezier(.2, .7, .2, 1); }
-.expertise-item:hover h3 { transform: translateX(4px); }
-.expertise-item:hover .exp-glyph { animation: exp-sway 3.2s ease-in-out infinite; }
-@keyframes exp-sway {
-  0%, 100% { transform: rotate(0deg); }
-  30% { transform: rotate(-4deg); }
-  70% { transform: rotate(3deg); }
-}
-.expertise-tags { margin-top: auto; }
-.expertise-tags span { letter-spacing: .08em; text-transform: uppercase; border-bottom-color: rgba(94, 61, 138, .22); }
+
+/* With JS and motion: the chapter's list unfolds item by item when the row
+   comes into view. Never applied without the .exp-live class. */
+.expertise.exp-live .xp-row .xp-list li { opacity: 0; transform: translateY(10px); transition: opacity .6s ease, transform .6s cubic-bezier(.2, .7, .2, 1); }
+.expertise.exp-live .xp-row.xp-in .xp-list li { opacity: 1; transform: none; }
+.expertise.exp-live .xp-row.xp-in .xp-list li:nth-child(2) { transition-delay: .08s; }
+.expertise.exp-live .xp-row.xp-in .xp-list li:nth-child(3) { transition-delay: .16s; }
+.expertise.exp-live .xp-row.xp-in .xp-list li:nth-child(4) { transition-delay: .24s; }
 
 @media (max-width: 1050px) {
-  .exp-aster { width: 62vw; right: -22vw; top: -2%; opacity: .38; }
+  .xp { gap: 0 44px; }
+  .xp-row { grid-template-columns: 84px minmax(0, 1fr); gap: 0 24px; }
+  .xp-glyph { width: 84px; height: 94px; transform-origin: 13px 94px; }
+  .xp-list { grid-template-columns: 1fr; gap: 11px; }
 }
-@media (max-width: 760px) {
-  .exp-aster { width: 118vw; right: -58vw; top: -40px; opacity: .3; }
-  .expertise-grid { margin-top: 112px; gap: 104px; }
-  .exp-vine { display: none; }
-  .expertise.exp-live .expertise-item { border-top-color: #c8bbce; }
-  .exp-glyph { left: -4px; }
-  .expertise-grid { margin-top: 132px; gap: 120px; }
+@media (max-width: 860px) {
+  .xp { grid-template-columns: 1fr; }
+  .xp-intro { position: static; margin-bottom: 52px; }
+  .xp-intro h2 { font-size: clamp(36px, 9vw, 52px); }
+  .xp-rows { padding-left: 0; }
+  .xp-vine { display: none; }
+  .xp-row { grid-template-columns: 1fr; gap: 0; padding: 40px 0 44px; }
+  .xp-rows > .xp-row:first-of-type { border-top: 1px solid rgba(94, 61, 138, .16); padding-top: 40px; }
+  .xp-row::before { display: none; }
+  .xp-glyph { width: 96px; height: 108px; margin-bottom: 14px; transform-origin: 15px 108px; }
+  .xp-num { margin-top: 0; }
+  .xp-body h3 { font-size: clamp(38px, 11vw, 52px); }
+  .xp-list { grid-template-columns: 1fr 1fr; }
 }
-@media (hover: none) {
-  .expertise-item::before { display: none; }
-  .expertise-item:hover .exp-glyph { animation: none; }
-}
+@media (max-width: 460px) { .xp-list { grid-template-columns: 1fr; } }
+@media (hover: none) { .xp-row::before { display: none; } .xp-row:hover .xp-glyph { animation: none; } }
 @media (prefers-reduced-motion: reduce) {
-  .exp-aster { transform: none !important; }
-  .expertise-item:hover .exp-glyph, .expertise-item:hover h3 { animation: none; transform: none; }
+  .xp-row:hover .xp-glyph { animation: none; }
+  .xp-row:hover .xp-body h3, .xp-row:hover .xp-num { transform: none; letter-spacing: .22em; }
 }
