@@ -2336,79 +2336,14 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
   .work-grid > .case:not(.case-featured) .preview { aspect-ratio: 16 / 9; }
 }
 
-/* ── The gallery rail ────────────────────────────────────────
-   The four projects stop stacking and travel sideways instead. Scrolling down
-   moves the gallery across, so a visitor covers the whole body of work in one
-   gesture without ever deciding to — which is the entire argument for the
-   pattern on a portfolio.
-
-   The hierarchy survives the change: the two projects with real captures stay
-   roughly twice the width of the two without, so the rail reads as edited
-   rather than as four equal tiles. */
-.work-rail {
-  position: relative;
-  margin-top: clamp(28px, 3.6vw, 48px);
-  /* The rail is the window the track slides behind. Without this the track's
-     full max-content width (measured live at 3432px against a 1303px viewport)
-     spills past the right edge — cards three and four sit visible out in the
-     margin before the pin has even engaged, and the document reports a
-     horizontal scroll width more than twice the viewport. */
-  overflow: hidden;
-}
-.work-track {
-  display: flex;                 /* overrides .work-grid's `display: grid` */
-  align-items: stretch;
-  gap: clamp(20px, 2.6vw, 40px);
-  padding: 0 var(--pad-x);
-  width: max-content;
-}
-.work-track > .case {
-  flex: 0 0 auto;
-  grid-column: auto;             /* .case-featured's `1 / -1` is meaningless here */
-}
-.work-track > .case-featured { width: min(82vw, 1040px); }
-.work-track > .case:not(.case-featured) { width: min(46vw, 560px); }
-
-/* No pinning on touch, and none for reduced motion. Hijacking vertical scroll
-   to drive horizontal movement is genuinely unpleasant on a phone, and a
-   native swipe with snap points is the better interaction there regardless —
-   so the rail becomes an ordinary scroll container and the JS below skips it. */
-@media (max-width: 880px), (prefers-reduced-motion: reduce) {
-  .work-rail {
-    overflow-x: auto;
-    overflow-y: hidden;
-    overscroll-behavior-x: contain;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-  .work-rail::-webkit-scrollbar { display: none; }
-  .work-track { width: max-content; }
-  .work-track > .case,
-  .work-track > .case-featured,
-  .work-track > .case:not(.case-featured) {
-    width: min(84vw, 520px);
-    scroll-snap-align: center;
-  }
-  /* Stacked again at this width, so the featured pair drops its row layout. */
-  .work-track > .case-featured { flex-direction: column; }
-}
-
-/* A quiet instruction, shown only where the rail is actually swipeable. */
-.work-rail-hint {
-  display: none;
-  margin: 18px auto 0;
-  text-align: center;
-  font-family: var(--sans);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
-}
-@media (max-width: 880px) {
-  .work-rail-hint { display: block; }
-}
+/* ── The gallery ─────────────────────────────────────────────
+   Plain document flow. The gallery used to travel sideways while the page
+   held still, which took the scroll wheel away from the visitor in the middle
+   of a long page and made it one of three scroll-driven effects competing for
+   attention. The hierarchy it was built around is unchanged and lives in
+   .work-grid above: the two projects with real captures take a full row each,
+   alternating sides, and the two without share the last row. */
+.work-rail { margin-top: clamp(28px, 3.6vw, 48px); }
 
 /* ── Projected work ──────────────────────────────────────────
    The 601 Inc composition: the room is dark, so the work is the only lit
@@ -4371,8 +4306,8 @@ body.in-bloom-zoom .ambient-petals {
 
   <!-- The rail sits OUTSIDE .wrap so the gallery runs full-bleed, and so it
        can be pinned on its own without taking the heading and outro with it. -->
-  <div class="work-rail">
-    <div class="work-grid work-track reveal-stagger">
+  <div class="wrap work-rail">
+    <div class="work-grid reveal-stagger">
       <!-- Power Tagun Engineering — real, live project, and the studio's
            largest engagement to date, so it leads as the featured card. -->
       <a class="case case-featured case-tagun" href="https://powertagun.vercel.app/" target="_blank" rel="noopener noreferrer">
@@ -4456,7 +4391,6 @@ body.in-bloom-zoom .ambient-petals {
     <!-- The Atelier link used to sit top-right in the section head, competing
          with the headline and asking visitors to leave before they had seen a
          single project. It belongs here: after the proof, as the next step. -->
-    <p class="work-rail-hint" aria-hidden="true">Swipe to explore →</p>
     <div class="work-outro reveal">
       <p class="work-atelier-line">
         Experiments, ideas, and things we’ve made.
@@ -6870,43 +6804,6 @@ body.in-bloom-zoom .ambient-petals {
           apply();
         },
       });
-    });
-  }
-
-  /* ---------- 2. the gallery travels sideways ---------- */
-  const workRail = document.querySelector(".work-rail");
-  const workTrack = document.querySelector(".work-track");
-  const canPin =
-    window.matchMedia("(min-width: 881px)").matches &&
-    !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  if (workRail && workTrack && canPin) {
-    // Recomputed rather than captured, because it depends on both the track's
-    // content width and the viewport — and `invalidateOnRefresh` re-runs these
-    // on every resize and font load. A captured constant would leave the last
-    // card stranded off-screen after any reflow.
-    const travel = function () {
-      return Math.max(0, workTrack.scrollWidth - window.innerWidth);
-    };
-
-    gsap.to(workTrack, {
-      x: function () { return -travel(); },
-      ease: "none",
-      scrollTrigger: {
-        trigger: workRail,
-        // Pins once the rail is centred, so the gallery locks into the middle
-        // of the screen rather than jumping to the top edge.
-        start: "center center",
-        // Scroll distance equals travel distance: one pixel down is one pixel
-        // across, which keeps the gesture feeling direct rather than geared.
-        end: function () { return "+=" + travel(); },
-        pin: true,
-        anticipatePin: 1,
-        invalidateOnRefresh: true,
-        // Same lag as the hero. This is the whole difference between a gallery
-        // that glides and one that is welded to the wheel.
-        scrub: 0.9,
-      },
     });
   }
 
