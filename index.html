@@ -2336,14 +2336,88 @@ a.tier-cta { text-decoration: none; cursor: pointer; }
   .work-grid > .case:not(.case-featured) .preview { aspect-ratio: 16 / 9; }
 }
 
-/* ── The gallery ─────────────────────────────────────────────
-   Plain document flow. The gallery used to travel sideways while the page
-   held still, which took the scroll wheel away from the visitor in the middle
-   of a long page and made it one of three scroll-driven effects competing for
-   attention. The hierarchy it was built around is unchanged and lives in
-   .work-grid above: the two projects with real captures take a full row each,
-   alternating sides, and the two without share the last row. */
-.work-rail { margin-top: clamp(28px, 3.6vw, 48px); }
+/* ── The gallery rail ────────────────────────────────────────
+   The four projects sit in one row that the visitor MAY scroll sideways, and
+   may equally ignore. It is an ordinary horizontal scroll container, so the
+   page never pins and the wheel is never taken over: scrolling down simply
+   carries on past it. Drag with a mouse, swipe on a phone, use the arrows or
+   the keyboard, or do nothing and read the first two cards at a glance.
+
+   The hierarchy is the same as everywhere else on the site: the two projects
+   with real captures are roughly twice the width of the two without. */
+.work-rail { margin-top: clamp(24px, 3vw, 40px); }
+.work-bar {
+  display: flex; align-items: center; gap: clamp(16px, 3vw, 36px);
+  margin-bottom: 22px;
+}
+.work-hint {
+  margin: 0; font: 500 11px/1 var(--sans); letter-spacing: .2em; text-transform: uppercase;
+  color: var(--ink-mute); white-space: nowrap;
+}
+.work-progress {
+  flex: 1 1 auto; height: 2px; border-radius: 2px; background: rgba(245, 237, 224, .14);
+  position: relative; overflow: hidden; min-width: 40px;
+}
+.work-progress span {
+  position: absolute; inset: 0; border-radius: 2px; background: var(--aster-light, #c4a5e0);
+  transform-origin: 0 50%; transform: scaleX(var(--wp, .3));
+  transition: transform .25s ease-out;
+}
+.work-nav { display: flex; gap: 10px; flex: none; }
+@media (min-width: 1200px) { .work-bar { padding-right: calc(var(--pad-x) + 130px); } }  /* clear of the fixed side navigation */
+.work-btn {
+  width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; padding: 0;
+  border: 1px solid rgba(245, 237, 224, .30); background: rgba(245, 237, 224, .06); color: #f5ede0;
+  cursor: pointer; transition: background .3s, border-color .3s, opacity .3s, transform .3s;
+}
+.work-btn svg { width: 18px; height: 18px; }
+.work-btn:hover:not(:disabled), .work-btn:focus-visible { background: rgba(196, 165, 224, .16); border-color: rgba(196, 165, 224, .6); }
+.work-btn:active:not(:disabled) { transform: scale(.94); }
+.work-btn:disabled { opacity: .3; cursor: default; }
+
+.work-scroller {
+  overflow-x: auto; overflow-y: hidden;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: var(--work-inset);
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  cursor: grab;
+  padding-bottom: 6px;
+  outline: none;
+  --work-inset: calc(max(0px, (100vw - var(--max)) / 2) + var(--pad-x));
+}
+.work-scroller::-webkit-scrollbar { display: none; }
+.work-scroller:focus-visible { outline: 2px solid rgba(196, 165, 224, .6); outline-offset: -2px; border-radius: 12px; }
+.work-scroller.is-dragging { cursor: grabbing; scroll-snap-type: none; user-select: none; }
+.work-scroller.is-dragging .case { pointer-events: none; }
+/* A soft fade on whichever side still has more, so a half-cut card reads as an
+   invitation rather than as a layout mistake. */
+.work-rail.can-next .work-scroller { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 72px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 72px), transparent); }
+.work-rail.can-prev .work-scroller { -webkit-mask-image: linear-gradient(90deg, transparent, #000 56px); mask-image: linear-gradient(90deg, transparent, #000 56px); }
+.work-rail.can-prev.can-next .work-scroller { -webkit-mask-image: linear-gradient(90deg, transparent, #000 56px, #000 calc(100% - 72px), transparent); mask-image: linear-gradient(90deg, transparent, #000 56px, #000 calc(100% - 72px), transparent); }
+
+.work-track {
+  display: flex;                 /* overrides .work-grid's `display: grid` */
+  align-items: stretch;
+  gap: clamp(20px, 2.6vw, 40px);
+  padding: 0 var(--work-inset);
+  width: max-content;
+}
+.work-track > .case { flex: 0 0 auto; grid-column: auto; scroll-snap-align: start; }
+.work-track > .case-featured { width: min(82vw, 1040px); }
+.work-track > .case:not(.case-featured) { width: min(46vw, 560px); }
+
+@media (max-width: 880px) {
+  .work-track > .case,
+  .work-track > .case-featured,
+  .work-track > .case:not(.case-featured) { width: min(84vw, 520px); }
+  .work-track > .case-featured { flex-direction: column; }
+  .work-nav { display: none; }
+  .work-scroller { cursor: auto; --work-inset: var(--pad-x); }
+}
+@media (hover: none) { .work-nav { display: none; } }
+@media (prefers-reduced-motion: reduce) { .work-progress span { transition: none; } }
 
 /* ── Projected work ──────────────────────────────────────────
    The 601 Inc composition: the room is dark, so the work is the only lit
@@ -4079,6 +4153,10 @@ body.in-bloom-zoom .ambient-petals {
     </div>
   </div>
 
+  <!-- The grained wall darkens into the stage's first colour here, so the heading's
+       room and the flower's room are joined by a gradient, not an edge. -->
+  <div class="process-fade" aria-hidden="true"></div>
+
   <!-- ============ CINEMATIC BLOOM ZOOM (full-bleed) ============ -->
   <div class="bloom-zoom" aria-label="Cinematic bloom into the seed of the process">
     <div class="bloom-zoom-stage">
@@ -4306,8 +4384,21 @@ body.in-bloom-zoom .ambient-petals {
 
   <!-- The rail sits OUTSIDE .wrap so the gallery runs full-bleed, and so it
        can be pinned on its own without taking the heading and outro with it. -->
-  <div class="wrap work-rail">
-    <div class="work-grid reveal-stagger">
+  <div class="work-rail reveal">
+    <div class="wrap work-bar">
+      <p class="work-hint" id="workHint">Browse the work</p>
+      <div class="work-nav">
+        <button class="work-btn" type="button" data-work="prev" aria-label="Previous project" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+        </button>
+        <button class="work-btn" type="button" data-work="next" aria-label="Next project">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+      <div class="work-progress" aria-hidden="true"><span></span></div>
+    </div>
+    <div class="work-scroller" tabindex="0" role="region" aria-label="Selected projects, scrolls sideways" aria-describedby="workHint">
+    <div class="work-grid work-track">
       <!-- Power Tagun Engineering — real, live project, and the studio's
            largest engagement to date, so it leads as the featured card. -->
       <a class="case case-featured case-tagun" href="https://powertagun.vercel.app/" target="_blank" rel="noopener noreferrer">
@@ -4380,9 +4471,7 @@ body.in-bloom-zoom .ambient-petals {
         </div>
       </a>
     </div>
-
-    <!-- Closing line into the full Atelier — the studio's products,
-         process, and the complete set of sites we've created. -->
+    </div>
   </div>
 
   <div class="wrap">
@@ -4877,6 +4966,7 @@ body.in-bloom-zoom .ambient-petals {
      ============================================================ -->
 <script src="studio.js"></script>
 <script src="expertise.js" defer></script>
+<script src="work-rail.js" defer></script>
 <script>
   /* Real-footage bloom. Dormant by default: nothing below runs and bloom-seq.js
      is never requested unless scripts/build-bloom.py has processed footage and

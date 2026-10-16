@@ -314,3 +314,25 @@ textarea:focus-visible, select:focus-visible {
   .xp-row:hover .xp-glyph { animation: none; }
   .xp-row:hover .xp-body h3, .xp-row:hover .xp-num { transform: none; letter-spacing: .22em; }
 }
+
+/* ========== Process: from the wall into the flower's night ==========
+   The heading sits on the warm, grained candlelit wall; the bloom plays on a
+   different, cooler surface. They used to meet at a hard edge with only a few
+   RGB points between them, which read as a mismatch rather than a choice.
+   Now it is a choice: the stage is a deep violet night, clearly a different
+   room from the warm brown above, and the two are joined by a long feather so
+   there is no line to see - the wall simply darkens into the night as the
+   flower begins. The last stretch warms back toward the next section's
+   near-black so the exit is as soft as the entrance.
+   Applied in every state (also before JS, and for reduced motion) so the
+   section never flashes between two colours. */
+.process .bloom-zoom {
+  background:
+    linear-gradient(180deg, #17150f 0, rgba(23, 21, 15, .85) 70px, rgba(23, 21, 15, 0) clamp(280px, 42vh, 460px)),
+    linear-gradient(180deg, #1d1530 0%, #21183a 30%, #1a1229 70%, #130f1b 90%, #100e0a 100%);
+}
+
+.process-fade {
+  position: relative; z-index: 3; height: 170px; margin-top: -170px; pointer-events: none;
+  background: linear-gradient(180deg, rgba(23, 21, 15, 0) 0%, rgba(23, 21, 15, .55) 55%, #17150f 100%);
+}
