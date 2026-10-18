@@ -73,6 +73,18 @@
                          automatically on first use — see lib/db.js.
                          Without this, delivery still works — only
                          lookup and the staff console are unavailable.
+     NTFY_TOPIC          Optional second channel: a phone push via ntfy
+                         (install the ntfy app, subscribe to this topic).
+                         Use a long, unguessable topic name. The push
+                         carries the sender's name and the first ~90
+                         characters of the message through ntfy's servers
+                         (or your own, with NTFY_SERVER), nothing else.
+     NTFY_SERVER         Optional. Defaults to https://ntfy.sh.
+     NOTIFY_WEBHOOK_URL  Optional third channel: any Slack- or Discord-style
+                         incoming webhook. Same minimal content.
+                         The studio is told if ANY configured channel
+                         succeeds, so one broken route cannot silence the
+                         others.
    ============================================================ */
 
 const TO_EMAILS = (process.env.ASTER_TO_EMAIL ||
@@ -84,6 +96,10 @@ const FROM_EMAIL = process.env.ASTER_FROM_EMAIL ||
 
 // Generous enough for a real enquiry, tight enough to blunt abuse.
 const LIMITS = { name: 120, email: 200, phone: 60, message: 5000 };
+
+// Different messages one address may store per hour before further ones are
+// acknowledged without being saved again. Generous for a real person.
+const MAX_PER_HOUR = 5;
 
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no I/O/0/1
 
@@ -109,7 +125,7 @@ function looksLikeEmail(value) {
 
 /* ---------- optional persistence (Neon Postgres) ---------- */
 // Shared with api/admin/enquiries.js — see lib/kv.js.
-const { dbEnabled, saveEnquiry, loadEnquiry } = require("../lib/db");
+const { dbEnabled, saveEnquiry, loadEnquiry, markNotified, recentByEmail } = require("../lib/db");
 
 /* ---------- email delivery ---------- */
 
@@ -162,7 +178,13 @@ async function sendViaSmtp(payload) {
     port,
     // 465 speaks TLS from the first byte; 587 upgrades via STARTTLS.
     secure: port === 465,
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+    // A serverless function has a hard time limit. Failing in a few seconds
+    // lets the other channels run and lets the visitor hear back, instead of
+    // the function being killed mid-connection with no answer at all.
+    connectionTimeout: 8000,
+    greetingTimeout: 8000,
+    socketTimeout: 15000
   });
 
   const { subject, text, html } = buildEmail(payload);
@@ -229,6 +251,55 @@ function deliver(payload) {
   if (process.env.RESEND_API_KEY) return sendViaResend(payload);
   if (process.env.WEB3FORMS_KEY) return sendViaWeb3Forms(payload);
   return null; // nothing configured — caller reports this honestly
+}
+
+// A short, one-line summary for the push channels. Deliberately minimal: the
+// full message lives in the email and the staff console, not on a third
+// party's servers.
+function brief({ name, message, code }) {
+  const preview = String(message).replace(/\s+/g, " ").slice(0, 90);
+  return `${name}: ${preview}${String(message).length > 90 ? "…" : ""} (${code})`;
+}
+
+async function notifyNtfy(payload) {
+  const server = (process.env.NTFY_SERVER || "https://ntfy.sh").replace(/\/+$/, "");
+  const response = await fetch(`${server}/${encodeURIComponent(process.env.NTFY_TOPIC)}`, {
+    method: "POST",
+    // Header values must be plain ASCII, so the name goes in the body.
+    headers: {
+      Title: "New Aster enquiry",
+      Priority: "high",
+      Tags: "incoming_envelope",
+      Click: "https://www.astermade.com/staff.html"
+    },
+    body: brief(payload),
+    signal: AbortSignal.timeout(5000)
+  });
+  if (!response.ok) throw new Error(`ntfy ${response.status}`);
+}
+
+async function notifyWebhook(payload) {
+  const text = `New Aster enquiry — ${brief(payload)}`;
+  const response = await fetch(process.env.NOTIFY_WEBHOOK_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    // `content` is Discord's field, `text` is Slack's; each ignores the other.
+    body: JSON.stringify({ content: text, text }),
+    signal: AbortSignal.timeout(5000)
+  });
+  if (!response.ok) throw new Error(`webhook ${response.status}`);
+}
+
+// Every channel that is configured. The studio counts as notified if ANY of
+// them goes through, so one broken route (an expired mailbox password, say)
+// can no longer silence an enquiry. Empty means nothing is set up at all.
+function buildNotifiers(payload) {
+  const list = [];
+  const email = deliver(payload);
+  if (email) list.push({ name: "email", promise: email });
+  if (process.env.NTFY_TOPIC) list.push({ name: "ntfy", promise: notifyNtfy(payload) });
+  if (process.env.NOTIFY_WEBHOOK_URL) list.push({ name: "webhook", promise: notifyWebhook(payload) });
+  return list;
 }
 
 /* ---------- handler ---------- */
@@ -306,43 +377,74 @@ async function handleSubmit(req, res) {
     return res.status(400).json({ ok: false, error: "That email doesn't look quite right — mind checking it?" });
   }
 
-  const code = generateCode();
+  const now = Date.now();
+
+  // Duplicate and flood guard. A visitor who is told "we couldn't get your
+  // message through" naturally tries again, and every retry used to be saved
+  // as a brand-new enquiry (one person produced 31). Now:
+  //  - the same message from the same address within the hour is the SAME
+  //    enquiry: if the studio was already told, the visitor just gets their
+  //    original code back; if not, the notification is retried on that row;
+  //  - more than a handful of different messages from one address in an hour
+  //    are acknowledged but not stored again. Never blocks a first message.
+  let recent = [];
+  if (dbEnabled) {
+    try { recent = await recentByEmail(email, now - 60 * 60 * 1000); }
+    catch (error) { console.error("[enquiry] duplicate check failed:", error); }
+  }
+  const same = recent.find(r => r.message === message);
+  if (same && same.notified) {
+    return res.status(200).json({ ok: true, code: same.code, tracking: dbEnabled, duplicate: true });
+  }
+  if (!same && recent.length >= MAX_PER_HOUR) {
+    return res.status(200).json({ ok: true, code: recent[0].code, tracking: dbEnabled, duplicate: true });
+  }
+
+  const code = same ? same.code : generateCode();
   const record = {
     code, name, email, phone, message,
     status: "Received",
     previewUrl: "",
-    time: Date.now()
+    time: now,
+    notified: false
   };
   const payload = {
     name, email, phone, message, code,
     meta: { receivedAt: new Date(record.time).toUTCString() }
   };
 
-  // Store first. The staff console reads this record, not the inbox —
-  // a mail hiccup must not also make the enquiry invisible. A storage
-  // failure here is logged but never blocks a visitor who's about to
-  // get a real email anyway.
-  if (dbEnabled) {
-    try { await saveEnquiry(record); }
+  // Store first, as an un-notified row. The staff console reads this record,
+  // not the inbox: a mail hiccup must not also make the enquiry invisible.
+  let stored = Boolean(same);
+  if (dbEnabled && !same) {
+    try { await saveEnquiry(record); stored = true; }
     catch (error) { console.error("[enquiry] stored copy failed:", error); }
   }
 
-  // Delivery is what the visitor is told about — it's the only signal
-  // they get that someone will read this.
-  const delivery = deliver(payload);
-  if (!delivery) {
-    console.error("[enquiry] no delivery provider configured — set SMTP_HOST/SMTP_USER/SMTP_PASS, RESEND_API_KEY, or WEB3FORMS_KEY");
+  // Tell the studio. Every configured channel runs; any one succeeding counts.
+  const notifiers = buildNotifiers(payload);
+  if (!notifiers.length) {
+    console.error("[enquiry] no notification channel configured — set SMTP_HOST/SMTP_USER/SMTP_PASS, RESEND_API_KEY, WEB3FORMS_KEY, NTFY_TOPIC or NOTIFY_WEBHOOK_URL");
     return res.status(503).json({
       ok: false,
       reason: "unconfigured",
       error: "This form isn't connected to our inbox yet."
     });
   }
+  const results = await Promise.allSettled(notifiers.map(n => n.promise));
+  results.forEach((r, i) => {
+    if (r.status === "rejected") console.error(`[enquiry] ${notifiers[i].name} notification failed:`, r.reason);
+  });
+  const notified = results.some(r => r.status === "fulfilled");
 
-  try {
-    await delivery;
-  } catch (error) {
-    console.error("[enquiry] delivery failed:", error);
+  if (stored && dbEnabled && notified) {
+    try { await markNotified(code, true); }
+    catch (error) { console.error("[enquiry] could not mark notified:", error); }
+  }
+
+  if (!notified) {
+    // Honest failure: the visitor is told so (and offered a mailto), and a
+    // retry re-notifies THIS row instead of creating another.
     return res.status(502).json({
       ok: false,
       reason: "delivery-failed",
