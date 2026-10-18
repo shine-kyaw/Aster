@@ -247,10 +247,23 @@ async function sendViaWeb3Forms(payload) {
 
 function deliver(payload) {
   const smtpReady = process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS;
-  if (smtpReady) return sendViaSmtp(payload);
-  if (process.env.RESEND_API_KEY) return sendViaResend(payload);
-  if (process.env.WEB3FORMS_KEY) return sendViaWeb3Forms(payload);
-  return null; // nothing configured — caller reports this honestly
+  const providers = [];
+  if (smtpReady) providers.push(["smtp", sendViaSmtp]);
+  if (process.env.RESEND_API_KEY) providers.push(["resend", sendViaResend]);
+  if (process.env.WEB3FORMS_KEY) providers.push(["web3forms", sendViaWeb3Forms]);
+  if (!providers.length) return null; // nothing configured — caller reports this honestly
+
+  // Try each configured provider in turn until one works. This used to stop at
+  // the FIRST configured provider, so a stale one (an old mailbox password)
+  // silently blocked a newly added, working one.
+  return (async () => {
+    let last;
+    for (const [name, send] of providers) {
+      try { await send(payload); return; }
+      catch (error) { last = error; console.error(`[enquiry] ${name} failed, trying next:`, error); }
+    }
+    throw last;
+  })();
 }
 
 // A short, one-line summary for the push channels. Deliberately minimal: the
