@@ -1169,6 +1169,35 @@ img, svg { display: block; max-width: 100%; }
   .ov-card.featured { translate: none; }
   .ov-card:hover::before { opacity: 0; }
 }
+
+/* ========== Shared motion: the same feel as the homepage ==========
+   Deliberately small. These pages already carry their own reveals, drawn line
+   art and cursor glow, so this adds no new effects: it moves what is already
+   there onto the site-wide spring, so a lifted card or a pressed button
+   behaves identically on every page. --spring is a real damped spring
+   (~10% overshoot, settled by the end) written as linear(), with a bezier
+   fallback. Plus a hairline scroll-progress bar, the one piece of chrome the
+   homepage also has. No heading splits, no magnetic buttons: that much motion
+   belongs on the page with the flower. */
+:root { --spring: cubic-bezier(.34, 1.32, .64, 1); }
+@supports (transition-timing-function: linear(0, 1)) {
+  :root { --spring: linear(0, 0.035 2.9%, 0.125, 0.247, 0.386, 0.527 14.7%, 0.661, 0.78, 0.881, 0.961 26.5%, 1.022, 1.065, 1.091, 1.104 38.2%, 1.107, 1.101, 1.091, 1.077 50%, 1.062, 1.047, 1.033, 1.021 61.8%, 1.011, 1.002, 0.996, 0.992 73.5%, 0.99, 0.989, 0.989, 0.989 85.3%, 0.991, 0.992, 0.994, 0.995 97.1%, 1); }
+}
+.scroll-progress {
+  position: fixed; left: 0; top: 0; right: 0; height: 2px; z-index: 1200; pointer-events: none;
+  background: linear-gradient(90deg, #8b5fbf, #c4a5e0 60%, #e3b552);
+  transform-origin: 0 50%; transform: scaleX(0); opacity: 0; transition: opacity .4s ease;
+}
+.scroll-progress.on { opacity: .85; }
+@media (prefers-reduced-motion: reduce) { .scroll-progress { display: none; } }
+
+.nav-cta { transition: background 0.3s var(--ease), color 0.3s var(--ease), scale 0.45s var(--spring); }
+.btn { transition: background 0.3s var(--ease), color 0.3s var(--ease), border-color 0.3s var(--ease), scale 0.45s var(--spring); }
+.final-cta-btn { transition: background 0.3s var(--ease), color 0.3s var(--ease), box-shadow 0.5s var(--ease), scale 0.45s var(--spring); }
+.nav-cta:active, .btn:active, .final-cta-btn:active { scale: .95; transition-duration: .3s, .3s, .3s, .1s; }
+.btn .arr, .final-cta-btn .arr { transition: transform 0.5s var(--spring); }
+.ov-card { transition: translate 0.75s var(--spring), box-shadow 0.6s var(--ease), border-color 0.5s var(--ease); }
+@media (prefers-reduced-motion: reduce) { .nav-cta:active, .btn:active, .final-cta-btn:active { scale: 1; } }
 </style>
 <script>
 /* Enhancement flags. `.motion` is the only thing that ever hides content
@@ -1877,5 +1906,27 @@ img, svg { display: block; max-width: 100%; }
 </script>
 
 <script src="aster-chat.js"></script>
+<script>
+/* Hairline scroll-progress bar, same as the homepage. Decorative only. */
+(function () {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  var bar = document.createElement("div");
+  bar.className = "scroll-progress";
+  bar.setAttribute("aria-hidden", "true");
+  document.body.appendChild(bar);
+  var queued = false;
+  function paint() {
+    queued = false;
+    var max = document.documentElement.scrollHeight - window.innerHeight;
+    var p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+    bar.style.transform = "scaleX(" + p.toFixed(4) + ")";
+    bar.classList.toggle("on", window.scrollY > 24);
+  }
+  function req() { if (!queued) { queued = true; requestAnimationFrame(paint); } }
+  window.addEventListener("scroll", req, { passive: true });
+  window.addEventListener("resize", req);
+  paint();
+})();
+</script>
 </body>
 </html>
